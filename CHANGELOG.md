@@ -2,6 +2,14 @@
 
 All notable changes to the `research-agent` platform will be documented in this file.
 
+## [Phase 4] - Durable State in Redis & Chaos Resilience
+- Implemented `RedisCheckpointSaver` extending LangGraph `BaseCheckpointSaver` to persist state checkpoints after every node.
+- Added automatic disk snapshot synchronization for fake Redis mode to guarantee cross-process durability.
+- Implemented idempotency key manager derived from `(run_id, node, input_hash)` to prevent duplicate LLM/tool execution.
+- Added distributed locking per run using Redis `SET NX PX` and configurable TTLs for finished runs.
+- Built background worker with startup recovery for interrupted workflows.
+- Verified with subprocess chaos test: worker process killed via `SIGKILL` mid-run, restarted in separate process, completed without replaying finished nodes.
+
 ## [Phase 3] - Live Search with Provenance & Parallel Fan-Out
 - Integrated search and extraction engine with URL canonicalization and SHA-256 content deduplication.
 - Built readability-style full-page extraction using `trafilatura` with token truncation cap.
