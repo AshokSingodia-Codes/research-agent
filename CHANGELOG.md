@@ -2,6 +2,14 @@
 
 All notable changes to the `research-agent` platform will be documented in this file.
 
+## [Phase 2] - Supervisor Graph with Hard Budgets
+- Implemented `BudgetGuard` in code enforcing max sub-questions, searches, tokens, USD cost, wall-clock timeout, and repair attempts.
+- Implemented LangGraph StateGraph (`plan -> dispatch -> research -> review -> (loop | write) -> critic -> finish`).
+- Built `Supervisor` review specialist enforcing strict 1-retry maximum per sub-question.
+- Built `Critic` specialist assessing draft report coverage against plan and ungrounded claims.
+- Verified independent triggers for each budget constraint yielding graceful partial report degradation (`partial=true`).
+- Verified property-based graph termination over randomized executions with zero infinite loops.
+
 ## [Phase 1] - Typed Specialists & LLM Provider Abstraction
 - Built `app/llm/` provider abstraction (`LLMProvider` ABC, `AnthropicProvider`, `GroqProvider`, `FakeProvider`).
 - Integrated per-provider pricing tables and accurate token/USD cost accounting.

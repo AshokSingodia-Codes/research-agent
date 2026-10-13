@@ -73,17 +73,31 @@ class FakeProvider(LLMProvider):
             self.return_raw_invalid_json = False
             raise InvalidOutputError("Malformed json response from model", raw_output="{'broken_json': ")
 
-        # If custom responses queued, pop one
-        if self.custom_responses:
-            item = self.custom_responses.pop(0)
+        # Search for first matching response in queue
+        matched_idx = None
+        for i, item in enumerate(self.custom_responses):
+            if isinstance(item, Exception):
+                matched_idx = i
+                break
+            if isinstance(item, output_schema):
+                matched_idx = i
+                break
+            if isinstance(item, dict):
+                try:
+                    output_schema.model_validate(item)
+                    matched_idx = i
+                    break
+                except Exception:
+                    pass
+
+        if matched_idx is not None:
+            item = self.custom_responses.pop(matched_idx)
             if isinstance(item, Exception):
                 raise item
             if isinstance(item, output_schema):
                 parsed = item
-            elif isinstance(item, dict):
-                parsed = output_schema.model_validate(item)
             else:
-                parsed = item
+                parsed = output_schema.model_validate(item)
         else:
             parsed = self._generate_default_canned(messages, output_schema)
 
