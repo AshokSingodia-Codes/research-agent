@@ -1,0 +1,35 @@
+[project]
+name = "research-agent"
+version = "1.0.0"
+description = "Production-grade Multi-Agent Research Assistant with durable Redis state, hard budgets, and step-level tracing."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "langgraph>=0.2.60",
+    "langchain-core>=0.3.30",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "redis>=5.2.0",
+    "fakeredis>=2.26.0",
+    "tavily-python>=0.5.0",
+    "trafilatura>=2.3.0",
+    "anthropic>=0.40.0",
+    "groq>=0.15.0",
+    "httpx>=0.28.0",
+    "python-dotenv>=1.0.1",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-v --strict-markers -m 'not live'"
