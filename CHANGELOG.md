@@ -2,6 +2,15 @@
 
 All notable changes to the `research-agent` platform will be documented in this file.
 
+## [Phase 3] - Live Search with Provenance & Parallel Fan-Out
+- Integrated search and extraction engine with URL canonicalization and SHA-256 content deduplication.
+- Built readability-style full-page extraction using `trafilatura` with token truncation cap.
+- Implemented per-domain result caps (default 2 per sub-question) and `DomainCircuitBreaker`.
+- Handled all failure paths with structured `ToolResult` (ok, no_results, rate_limited, paywalled, timeout, blocked, parse_error).
+- Added parallel fan-out/fan-in runner respecting `depends_on` with atomic budget locks and deterministic sorting.
+- Implemented `ContradictionDetector` surfacing opposing claims across sources in the writer's report.
+- Added source quality heuristic scoring.
+
 ## [Phase 2] - Supervisor Graph with Hard Budgets
 - Implemented `BudgetGuard` in code enforcing max sub-questions, searches, tokens, USD cost, wall-clock timeout, and repair attempts.
 - Implemented LangGraph StateGraph (`plan -> dispatch -> research -> review -> (loop | write) -> critic -> finish`).

@@ -180,8 +180,15 @@ def write_node(state: AgentState) -> dict[str, Any]:
     """Write Node: Synthesizes findings and conflicting evidence into a report."""
     run_id = state.get("run_id", "run_default")
     question = state.get("question", "")
-    findings = state.get("findings", [])
-    conflicts = state.get("conflicting_evidence", [])
+    findings = list(state.get("findings", []))
+    # Order findings by source quality score descending
+    findings.sort(key=lambda f: f.source_quality_score, reverse=True)
+
+    conflicts = list(state.get("conflicting_evidence", []))
+    if not conflicts and findings:
+        from app.tools.contradiction import detect_contradictions
+        conflicts = detect_contradictions(findings)
+
     partial = state.get("partial", False)
     degradation_reason = state.get("degradation_reason")
 
