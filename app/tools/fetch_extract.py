@@ -1,4 +1,7 @@
+import ipaddress
 import logging
+import socket
+from urllib.parse import urlparse
 
 import httpx
 
@@ -15,25 +18,108 @@ PAYWALL_KEYWORDS = [
     "paywall",
 ]
 
+MAX_RESPONSE_BYTES = 2 * 1024 * 1024  # 2 MB response size cap
+MAX_REDIRECTS = 3
+DEFAULT_TIMEOUT_SECONDS = 10.0
+
+
+def is_safe_url(url: str) -> tuple[bool, str]:
+    """
+    Validates a URL against SSRF vulnerabilities:
+    - Blocks non-http/https schemes (e.g. file://, ftp://, gopher://).
+    - Blocks private, loopback, link-local, and cloud metadata IP addresses.
+    Returns: (is_safe, reason)
+    """
+    try:
+        parsed = urlparse(url)
+    except Exception as e:
+        return False, f"Malformed URL: {e}"
+
+    scheme = (parsed.scheme or "").lower()
+    if scheme not in ("http", "https"):
+        return False, f"Prohibited scheme '{scheme}'. Only http and https are allowed."
+
+    hostname = parsed.hostname
+    if not hostname:
+        return False, "Missing or invalid hostname in URL."
+
+    # Direct IP string validation
+    try:
+        ip = ipaddress.ip_address(hostname)
+        if _is_disallowed_ip(ip):
+            return False, f"Blocked internal/private IP address: {ip}"
+        return True, "Safe URL"
+    except ValueError:
+        # Hostname is a domain, resolve via DNS
+        pass
+
+    try:
+        # Resolve all IPv4 and IPv6 addresses
+        addr_info = socket.getaddrinfo(hostname, None, proto=socket.IPPROTO_TCP)
+        for _, _, _, _, sockaddr in addr_info:
+            ip_str = sockaddr[0]
+            ip = ipaddress.ip_address(ip_str)
+            if _is_disallowed_ip(ip):
+                return False, f"Resolved hostname '{hostname}' points to blocked IP: {ip}"
+    except socket.gaierror:
+        # If domain cannot be resolved via DNS, it cannot route to a private/internal IP.
+        # Allow client to handle (e.g. mocked HTTP client in tests or network-level ConnectError).
+        return True, "Safe URL (unresolved domain)"
+    except Exception as e:
+        return False, f"IP verification error for '{hostname}': {e}"
+
+    return True, "Safe URL"
+
+
+def _is_disallowed_ip(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
+    """Checks whether an IP address is internal, loopback, private, or link-local."""
+    return bool(
+        ip.is_private
+        or ip.is_loopback
+        or ip.is_link_local
+        or ip.is_multicast
+        or ip.is_reserved
+        or ip.is_unspecified
+        or str(ip) == "169.254.169.254"  # Cloud metadata service (AWS/GCP/Azure)
+    )
+
 
 def extract_full_page(
     url: str,
-    timeout_seconds: float = 8.0,
+    timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
     token_cap: int = 2500,
 ) -> tuple[str, ToolStatus]:
     """
     Fetches full page HTML and extracts readable article text via trafilatura.
-    Truncates extracted content to token cap before returning to model.
+    Enforces SSRF prevention, max response size (2 MB), max redirects (3), and token caps.
     Returns: (extracted_text, status)
     """
+    # 1. SSRF Safety Check
+    is_safe, reason = is_safe_url(url)
+    if not is_safe:
+        logger.warning(f"SSRF protection blocked fetch for URL '{url}': {reason}")
+        return "", ToolStatus.BLOCKED
+
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     }
 
     try:
-        with httpx.Client(timeout=timeout_seconds, follow_redirects=True, headers=headers) as client:
+        with httpx.Client(
+            timeout=timeout_seconds,
+            follow_redirects=True,
+            max_redirects=MAX_REDIRECTS,
+            headers=headers,
+            verify=True,
+        ) as client:
             resp = client.get(url)
+            # Validate redirected URL if redirect occurred
+            if hasattr(resp, "url") and str(resp.url) != url:
+                redirect_safe, redirect_reason = is_safe_url(str(resp.url))
+                if not redirect_safe:
+                    logger.warning(f"SSRF blocked redirect target '{resp.url}': {redirect_reason}")
+                    return "", ToolStatus.BLOCKED
 
             if resp.status_code in (401, 402):
                 return "", ToolStatus.PAYWALLED
@@ -42,8 +128,19 @@ def extract_full_page(
             elif resp.status_code >= 400:
                 return "", ToolStatus.PARSE_ERROR
 
-            html_content = resp.text
+            # Enforce 2 MB max response limit
+            raw_content = getattr(resp, "content", b"")
+            if not isinstance(raw_content, bytes):
+                raw_content = getattr(resp, "text", "").encode("utf-8", errors="replace")
+            content_bytes = raw_content[:MAX_RESPONSE_BYTES]
+            if len(raw_content) > MAX_RESPONSE_BYTES:
+                logger.warning(f"Response size exceeded {MAX_RESPONSE_BYTES} bytes cap for {url}. Truncating.")
+            encoding = getattr(resp, "encoding", None) or "utf-8"
+            html_content = content_bytes.decode(encoding, errors="replace")
 
+    except httpx.TooManyRedirects:
+        logger.warning(f"Exceeded max redirects ({MAX_REDIRECTS}) fetching {url}")
+        return "", ToolStatus.BLOCKED
     except httpx.TimeoutException:
         return "", ToolStatus.TIMEOUT
     except httpx.RequestError as e:
@@ -69,7 +166,7 @@ def extract_full_page(
         extracted = None
 
     if not extracted or len(extracted.strip()) < 50:
-        # Fallback to simple extraction
+        # Fallback to simple BeautifulSoup extraction
         try:
             from bs4 import BeautifulSoup
             soup = BeautifulSoup(html_content, "html.parser")

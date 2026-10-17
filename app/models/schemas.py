@@ -1,7 +1,7 @@
 import uuid
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.models.enums import ReviewAction, RunStatus, ToolStatus
 
@@ -132,9 +132,16 @@ class StepTrace(BaseModel):
 
 
 class ResearchRequest(BaseModel):
-    question: str = Field(..., min_length=3, description="Research topic or question")
+    question: str = Field(..., min_length=3, max_length=500, description="Research topic or question")
     require_approval: bool = Field(default=False, description="Whether to pause for human approval before writing")
     budget_overrides: dict[str, Any] | None = Field(default=None, description="Optional overrides for BudgetGuard")
+
+    @field_validator("question", mode="before")
+    @classmethod
+    def sanitize_question(cls, v: Any) -> str:
+        if isinstance(v, str):
+            v = v.strip()
+        return v
 
 
 class ResearchRunResponse(BaseModel):

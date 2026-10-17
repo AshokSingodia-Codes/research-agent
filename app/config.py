@@ -1,3 +1,4 @@
+from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -8,11 +9,22 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # API Keys
+    # API Keys & Auth
     anthropic_api_key: str = ""
     groq_api_key: str = ""
     tavily_api_key: str = ""
     api_key: str = "test-key-12345"  # System API key for endpoint auth
+    env: str = "development"  # "development", "staging", "production"
+    cors_origins: List[str] = ["http://localhost:8000", "http://127.0.0.1:8000"]
+
+    # Security & Integrity
+    checkpoint_hmac_key: str = ""
+
+    # Global LLM Model Defaults
+    groq_model: str = "llama-3.3-70b-versatile"
+    anthropic_model: str = "claude-3-5-sonnet-20241022"
+    llm_timeout_seconds: float = 30.0
+    llm_max_retries: int = 2
 
     # Per-Agent Providers ("anthropic", "groq", "fake")
     planner_provider: str = "anthropic"

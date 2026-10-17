@@ -110,10 +110,12 @@ class RedisStore:
         self.sync_to_disk()
 
     def get_run_state(self, run_id: str) -> dict[str, Any] | None:
-        self.load_from_disk()
         client = self.get_client()
         key = f"research:state:{run_id}"
         raw = client.get(key)
+        if raw is None and settings.use_fake_redis:
+            self.load_from_disk()
+            raw = client.get(key)
         if not raw:
             return None
         try:
@@ -122,7 +124,6 @@ class RedisStore:
             return None
 
     def list_running_runs(self) -> list[str]:
-        self.load_from_disk()
         client = self.get_client()
         members = client.smembers("research:running_runs")
         return list(members) if members else []
@@ -131,7 +132,6 @@ class RedisStore:
 
     def acquire_lock(self, run_id: str, timeout_seconds: float = 30.0) -> bool:
         """Acquires a distributed lock for the specified run_id using SET NX PX."""
-        self.load_from_disk()
         client = self.get_client()
         lock_key = f"research:lock:{run_id}"
         px_ms = int(timeout_seconds * 1000)
@@ -165,10 +165,12 @@ class RedisStore:
         self.sync_to_disk()
 
     def get_trace_steps(self, run_id: str) -> list[dict[str, Any]]:
-        self.load_from_disk()
         client = self.get_client()
         key = f"research:trace:{run_id}"
         items = client.lrange(key, 0, -1)
+        if not items and settings.use_fake_redis:
+            self.load_from_disk()
+            items = client.lrange(key, 0, -1)
         res = []
         for item in items:
             try:
@@ -187,10 +189,13 @@ class RedisStore:
         self.sync_to_disk()
 
     def get_final_report(self, run_id: str) -> str | None:
-        self.load_from_disk()
         client = self.get_client()
         key = f"research:report:{run_id}"
-        return client.get(key)
+        val = client.get(key)
+        if val is None and settings.use_fake_redis:
+            self.load_from_disk()
+            val = client.get(key)
+        return val
 
 
 redis_store = RedisStore()

@@ -185,20 +185,33 @@ class LLMClient:
         messages: list[dict[str, str]],
         output_schema: type[T],
         model: str,
-        max_retries: int = 2,
+        max_retries: int | None = None,
     ) -> LLMResponse[T]:
-        """Handles rate limits with exponential backoff and jitter."""
+        """Handles rate limits and transient errors with exponential backoff and jitter."""
+        import random
+        retries_limit = settings.llm_max_retries if max_retries is None else max_retries
         retries = 0
         while True:
             try:
                 return provider.generate_structured(messages=messages, output_schema=output_schema, model=model)
             except RateLimitedError as rle:
                 retries += 1
-                if retries > max_retries:
+                if retries > retries_limit:
                     raise rle
-                sleep_dur = (rle.retry_after or 1.0) * (2 ** (retries - 1))
-                logger.info(f"Rate limited. Backing off for {sleep_dur:.2f}s...")
+                jitter = random.uniform(0.1, 0.5)
+                sleep_dur = ((rle.retry_after or 1.0) * (2 ** (retries - 1))) + jitter
+                logger.info(f"Rate limited. Backing off for {sleep_dur:.2f}s (attempt {retries}/{retries_limit})...")
                 time.sleep(sleep_dur)
+            except Exception as e:
+                err_lower = str(e).lower()
+                if ("timeout" in err_lower or "timed out" in err_lower or "connection" in err_lower) and retries < retries_limit:
+                    retries += 1
+                    jitter = random.uniform(0.1, 0.5)
+                    sleep_dur = (1.5 ** retries) + jitter
+                    logger.warning(f"Transient error ({e}). Retrying in {sleep_dur:.2f}s (attempt {retries}/{retries_limit})...")
+                    time.sleep(sleep_dur)
+                    continue
+                raise e
 
     def _redact_secrets(self, messages: list[dict[str, str]]) -> list[dict[str, str]]:
         """Redacts sensitive API keys or tokens from trace input."""
