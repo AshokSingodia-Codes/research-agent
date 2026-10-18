@@ -32,7 +32,8 @@ async def create_research_run(
 ) -> ResearchRunResponse:
     """
     Initializes a new multi-agent research workflow.
-    Returns immediately with run_id while agents execute asynchronously in the background.
+    Saves initial state before XADD and returns 202 Accepted.
+    Jobs are processed asynchronously by stream workers.
     """
     check_research_rate_limit(caller_id)
     run_id = f"run_{uuid.uuid4().hex[:12]}"
@@ -40,8 +41,8 @@ async def create_research_run(
     initial_state = {
         "run_id": run_id,
         "question": request.question,
-        "status": RunStatus.PLANNING,
-        "start_time": None,  # Will be set upon execution
+        "status": RunStatus.QUEUED,
+        "start_time": None,
         "total_tokens": 0,
         "total_usd_cost": 0.0,
         "step_index": 0,
@@ -50,11 +51,27 @@ async def create_research_run(
         "cancelled": False,
     }
 
+    # Save initial state BEFORE XADD
     redis_store.save_run_state(run_id, initial_state)
     event_broker.publish_event(run_id, "initialized", {"run_id": run_id, "question": request.question})
 
-    # Dispatch background execution
-    asyncio.create_task(_execute_research_workflow(run_id, request.question, request.require_approval))
+    # XADD to research:jobs stream
+    try:
+        client = redis_store.get_client()
+        job_data = {
+            "run_id": run_id,
+            "question": request.question,
+            "require_approval": str(request.require_approval).lower(),
+            "type": "initial",
+        }
+        client.xadd("research:jobs", job_data)
+    except Exception as e:
+        logger.exception(f"Failed to enqueue research job for {run_id}: {e}")
+        redis_store.save_run_state(run_id, {"status": RunStatus.FAILED, "error": f"Failed to enqueue to stream: {e}"})
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Failed to enqueue research job to stream.",
+        )
 
     return ResearchRunResponse(
         run_id=run_id,
@@ -186,7 +203,13 @@ async def approve_research_run(
         )
 
     event_broker.publish_event(run_id, "approved", {"message": "Human approval granted; resuming synthesis."})
-    asyncio.create_task(_resume_approved_workflow(run_id))
+    try:
+        client = redis_store.get_client()
+        client.xadd("research:jobs", {"run_id": run_id, "type": "resume"})
+    except Exception as e:
+        logger.exception(f"Failed to enqueue resume job for {run_id}: {e}")
+        redis_store.save_run_state(run_id, {"status": RunStatus.FAILED, "error": str(e)})
+        raise HTTPException(status_code=503, detail="Failed to enqueue resume job.")
 
     return {"status": "approved", "message": f"Run '{run_id}' approved. Resuming synthesis."}
 
@@ -208,8 +231,34 @@ async def cancel_research_run(
     caller_id: str = Depends(verify_api_key),
 ) -> dict[str, str]:
     """Cancels an ongoing research workflow."""
-    redis_store.save_run_state(run_id, {"status": RunStatus.CANCELLED})
+    state = redis_store.get_run_state(run_id)
+    if not state:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Run '{run_id}' not found.")
+
+    curr_status = state.get("status")
+    if hasattr(curr_status, "value"):
+        curr_status = curr_status.value
+
+    terminal_statuses = (
+        RunStatus.COMPLETED.value,
+        RunStatus.FAILED.value,
+        RunStatus.CANCELLED.value,
+        "completed",
+        "failed",
+        "cancelled",
+        "needs_review",
+    )
+    if curr_status in terminal_statuses:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Run '{run_id}' is already in terminal status '{curr_status}'.",
+        )
+
+    client = redis_store.get_client()
+    client.set(f"research:cancel:{run_id}", "1", ex=86400)
+    redis_store.save_run_state(run_id, {"status": RunStatus.CANCELLED, "cancelled": True})
     event_broker.publish_event(run_id, "cancelled", {"reason": "Explicit user cancellation"})
+    redis_store.release_lock(run_id)
     return {"status": "cancelled", "message": f"Run '{run_id}' marked cancelled."}
 
 

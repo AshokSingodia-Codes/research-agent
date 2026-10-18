@@ -73,12 +73,21 @@ def reset_rate_limiter_and_fake_llm(monkeypatch):
     """
     monkeypatch.setattr(settings, "mock_llm", "true")
     monkeypatch.setattr(settings, "mock_search", "true")
+    monkeypatch.setattr(settings, "run_worker_inprocess", True)
 
     client = redis_store.get_client()
     try:
-        keys = list(client.keys("research:ratelimit:*")) + list(client.keys("budget:*"))
+        keys = (
+            list(client.keys("research:ratelimit:*"))
+            + list(client.keys("budget:*"))
+            + list(client.keys("research:worker:*"))
+            + list(client.keys("research:cancel:*"))
+        )
         if keys:
             client.delete(*keys)
+        # Flush or trim stream
+        client.delete("research:jobs")
+        client.delete("research:jobs:dlq")
     except Exception:
         pass
 
@@ -86,12 +95,39 @@ def reset_rate_limiter_and_fake_llm(monkeypatch):
     llm_client.set_override_provider(fake)
     yield fake
     llm_client.set_override_provider(None)
+    global _INPROCESS_WORKER, _INPROCESS_TASK
+    if _INPROCESS_WORKER is not None:
+        _INPROCESS_WORKER.stop()
+        _INPROCESS_WORKER.unregister_fake_worker()
+        _INPROCESS_WORKER = None
+        _INPROCESS_TASK = None
 
 
 @pytest.fixture
 def setup_fake_llm(reset_rate_limiter_and_fake_llm):
     """Alias for backwards compatibility with tests expecting setup_fake_llm fixture."""
     return reset_rate_limiter_and_fake_llm
+
+
+_INPROCESS_WORKER: Any = None
+_INPROCESS_TASK: asyncio.Task | None = None
+_INPROCESS_WORKER_LOCK = asyncio.Lock()
+
+
+async def _ensure_inprocess_worker():
+    global _INPROCESS_WORKER, _INPROCESS_TASK
+    if not getattr(settings, "run_worker_inprocess", False):
+        return
+    async with _INPROCESS_WORKER_LOCK:
+        if _INPROCESS_TASK is not None and not _INPROCESS_TASK.done():
+            return
+        from app.worker import ResearchStreamWorker
+
+        _INPROCESS_WORKER = ResearchStreamWorker(
+            consumer_name=f"inprocess-test-{os.getpid()}-{int(time.time() * 1000)}"
+        )
+        _INPROCESS_TASK = asyncio.create_task(_INPROCESS_WORKER.run_loop())
+
 
 
 async def wait_for_status(
@@ -102,16 +138,29 @@ async def wait_for_status(
     headers: dict | None = None,
 ) -> dict:
     """Polls GET /research/{id} with exponential backoff until status matches expected_statuses."""
+    await _ensure_inprocess_worker()
     start_time = time.time()
     delay = 0.1
     expected_values = {s.value if hasattr(s, "value") else str(s) for s in expected_statuses}
     while time.time() - start_time < timeout:
+        if _INPROCESS_TASK is not None and _INPROCESS_TASK.done():
+            exc = _INPROCESS_TASK.exception()
+            if exc:
+                raise RuntimeError(f"Background worker task failed with: {exc}") from exc
+
         status_resp = await client.get(f"/research/{run_id}", headers=headers or {})
         if status_resp.status_code == 200:
             data = status_resp.json()
             status_val = data.get("status")
             if status_val in expected_values or status_val in expected_statuses:
                 return data
+        elif status_resp.status_code == 429:
+            await asyncio.sleep(0.5)
+            continue
         await asyncio.sleep(delay)
-        delay = min(delay * 1.5, 0.5)
-    raise TimeoutError(f"Run {run_id} did not reach {expected_statuses} within {timeout}s")
+        delay = min(delay * 1.5, 1.0)
+    raise TimeoutError(f"Run {run_id} did not reach {expected_statuses} within {timeout}s (last={status_val})")
+
+
+
+

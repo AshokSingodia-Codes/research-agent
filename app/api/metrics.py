@@ -37,11 +37,46 @@ async def health_check() -> dict[str, Any]:
 @router.get("/metrics", response_class=PlainTextResponse)
 async def prometheus_metrics() -> str:
     """Prometheus-compatible operational metrics exporter."""
-    running_count = len(redis_store.list_running_runs())
+    client = redis_store.get_client()
+    running_count = 0
+    queue_depth = 0
+    dlq_total = 0
+    worker_reclaims = 0
+    try:
+        running_count = client.scard("research:running_runs")
+    except Exception:
+        running_count = 0
+
+    try:
+        queue_depth = client.xlen("research:jobs")
+    except Exception:
+        queue_depth = 0
+
+    try:
+        dlq_total = client.xlen("research:jobs:dlq")
+    except Exception:
+        dlq_total = 0
+
+    try:
+        worker_reclaims = int(client.get("research:metrics:worker_reclaims_total") or 0)
+    except Exception:
+        worker_reclaims = 0
 
     metrics_text = f"""# HELP research_active_runs Number of currently executing research workflows
 # TYPE research_active_runs gauge
 research_active_runs {running_count}
+
+# HELP queue_depth Number of jobs currently queued in research:jobs stream
+# TYPE queue_depth gauge
+queue_depth {queue_depth}
+
+# HELP dlq_total Number of failed jobs moved to research:jobs:dlq
+# TYPE dlq_total counter
+dlq_total {dlq_total}
+
+# HELP worker_reclaims_total Total number of abandoned jobs reclaimed by workers
+# TYPE worker_reclaims_total counter
+worker_reclaims_total {worker_reclaims}
 
 # HELP research_runs_total Total count of initialized research runs
 # TYPE research_runs_total counter

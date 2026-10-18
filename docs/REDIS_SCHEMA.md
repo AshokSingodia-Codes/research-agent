@@ -23,6 +23,11 @@ This document details every Redis key, stream, consumer group, data type, expira
 | `research:budget:{run_id}:usd_micros` | `string` (Integer) | 24 Hours | `app.budget.guard` | Cross-process atomic USD cost counter stored as integer micro-dollars ($1 = 1,000,000 µUSD). |
 | `research:budget:{run_id}:searches` | `string` (Integer) | 24 Hours | `app.budget.guard` | Cross-process atomic search tool invocation counter. |
 | `research:budget:{run_id}:start_time` | `string` (Float) | 24 Hours | `app.budget.guard` | Persisted initial run wall-clock epoch timestamp preventing clock resets on run resumption. |
+| `research:cancel:{run_id}` | `string` ("1") | 24 Hours | `app.api.routes`, `app.graph.nodes` | Cancellation flag checked by workers and nodes between steps to halt execution. |
+| `research:worker:active_fake_worker` | `string` (Consumer) | 15 Seconds (heartbeat) | `app.worker` | Enforces that only ONE worker runs concurrently in fake mode (single-worker check). |
+| `research:worker:semaphore` | `string` (Integer) | Persistent | `app.persistence.concurrency`, `app.worker` | Cross-process atomic semaphore tracking active runs against `MAX_CONCURRENT_RUNS`. |
+| `research:metrics:worker_reclaims_total` | `string` (Integer) | Persistent | `app.worker`, `app.api.metrics` | Counter tracking total idle jobs reclaimed across workers. |
+| `research:metrics:dlq_total` | `string` (Integer) | Persistent | `app.worker`, `app.api.metrics` | Counter tracking total poison jobs moved to DLQ after 3 delivery attempts. |
 | `research:concurrency:active` | `zset` | Lease TTL | `app.persistence.concurrency` | Distributed semaphore / lease registry bounding cross-process worker concurrency. |
 
 ---

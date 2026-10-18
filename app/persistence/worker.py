@@ -77,8 +77,7 @@ class BackgroundWorker:
                 # Resuming from crashed state
                 state_input = None
 
-            loop = asyncio.get_running_loop()
-            final_state = await loop.run_in_executor(None, lambda: graph.invoke(state_input, config=config))
+            final_state = await graph.ainvoke(state_input, config=config)
 
             # Check if execution paused for human approval
             curr_state = graph.get_state(config)

@@ -35,8 +35,32 @@ def _get_or_create_guard(state: dict[str, Any]) -> BudgetGuard:
     return guard
 
 
+def _check_cancellation(state: dict[str, Any]) -> bool:
+    """Checks whether the workflow has been cancelled via state or Redis flag."""
+    if state.get("cancelled") or state.get("status") in (RunStatus.CANCELLED, "cancelled"):
+        return True
+    run_id = state.get("run_id")
+    if not run_id or run_id == "run_default":
+        return False
+    try:
+        from app.persistence.redis_store import redis_store
+
+        client = redis_store.get_client()
+        return bool(client.get(f"research:cancel:{run_id}"))
+    except Exception:
+        return False
+
+
 def plan_node(state: AgentState) -> dict[str, Any]:
     """Plan Node: Decomposes question into structured SubQuestions."""
+    if _check_cancellation(state):
+        return {
+            "status": RunStatus.CANCELLED,
+            "cancelled": True,
+            "partial": True,
+            "degradation_reason": "Workflow cancelled by user.",
+        }
+
     run_id = state.get("run_id", "run_default")
     question = state.get("question", "")
     guard = _get_or_create_guard(state)
@@ -69,6 +93,14 @@ def plan_node(state: AgentState) -> dict[str, Any]:
 
 def dispatch_node(state: AgentState) -> dict[str, Any]:
     """Dispatch Node: Validates budget ceiling before parallel fan-out."""
+    if _check_cancellation(state):
+        return {
+            "status": RunStatus.CANCELLED,
+            "cancelled": True,
+            "partial": True,
+            "degradation_reason": "Workflow cancelled by user.",
+        }
+
     guard = _get_or_create_guard(state)
     try:
         guard.check_wall_clock()
@@ -109,6 +141,14 @@ def _get_sync_research_semaphore() -> threading.Semaphore:
 
 def _execute_research_one_core(payload: dict[str, Any]) -> dict[str, Any]:
     """Core logic to research a single sub-question branch with idempotency and typed failure handling."""
+    if _check_cancellation(payload):
+        return {
+            "status": RunStatus.CANCELLED,
+            "cancelled": True,
+            "partial": True,
+            "degradation_reason": "Workflow cancelled by user.",
+        }
+
     run_id = payload.get("run_id", "run_default")
     sub_q = payload.get("sub_question")
     if not sub_q:
@@ -203,6 +243,14 @@ research_one_node = RunnableLambda(_sync_research_one, afunc=_async_research_one
 
 def review_all_node(state: AgentState) -> dict[str, Any]:
     """Review Node (Fan-in): Supervisor reviews findings and decides accept / retry_once / skip / abort."""
+    if _check_cancellation(state):
+        return {
+            "status": RunStatus.CANCELLED,
+            "cancelled": True,
+            "partial": True,
+            "degradation_reason": "Workflow cancelled by user.",
+        }
+
     plan = state.get("plan")
     if not plan or not plan.sub_questions:
         return {}
@@ -380,6 +428,12 @@ def finish_node(state: AgentState) -> dict[str, Any]:
     """Finish Node: Sets final report and completes execution."""
     draft = state.get("draft_report")
     critique = state.get("critique")
+
+    if _check_cancellation(state):
+        return {
+            "final_report": draft,
+            "status": RunStatus.CANCELLED,
+        }
 
     unsupported = getattr(critique, "unsupported_claims", []) if critique else []
     if draft and unsupported:

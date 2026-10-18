@@ -86,7 +86,9 @@ class RedisStore:
                     data[k] = ("set", list(self._fake_client.smembers(k)))
                 elif t == "list":
                     data[k] = ("list", self._fake_client.lrange(k, 0, -1))
-            FAKEDB_FILE.write_text(json.dumps(data), encoding="utf-8")
+            tmp_file = FAKEDB_FILE.with_suffix(".tmp")
+            tmp_file.write_text(json.dumps(data), encoding="utf-8")
+            tmp_file.replace(FAKEDB_FILE)
             self._last_sync_time = now
             self._dirty = False
             self.write_count += 1
@@ -111,7 +113,7 @@ class RedisStore:
                 return
             data = json.loads(content)
             for k, (t, val) in data.items():
-                if k.startswith("research:lock:"):
+                if k.startswith("research:lock:") or k == "research:worker:active_fake_worker":
                     continue
                 if t == "string":
                     self._fake_client.set(k, val)

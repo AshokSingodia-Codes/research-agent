@@ -57,16 +57,29 @@ class InProcessConcurrencyLimiter:
         return self._semaphore._value
 
 
+import threading
+
+_fallback_limiter_lock = threading.Lock()
+
+
 class CrossProcessConcurrencyLimiter:
     """
     Cross-process concurrency limiter using Redis Lua scripting for atomic acquire/release.
     Note: Requires real Redis with Lua scripting support (fakeredis without lupa does not support eval).
+    When fallback_on_unsupported=True, gracefully falls back to thread-safe Redis operations on fakeredis.
     """
 
-    def __init__(self, key: str, max_concurrent: int, client: Any | None = None):
+    def __init__(
+        self,
+        key: str,
+        max_concurrent: int,
+        client: Any | None = None,
+        fallback_on_unsupported: bool = False,
+    ):
         self.key = key
         self.max_concurrent = max_concurrent
         self._client = client
+        self.fallback_on_unsupported = fallback_on_unsupported
 
     @property
     def client(self) -> Any:
@@ -81,6 +94,13 @@ class CrossProcessConcurrencyLimiter:
             return bool(result == 1)
         except ResponseError as e:
             if "unknown command 'eval'" in str(e).lower():
+                if self.fallback_on_unsupported:
+                    with _fallback_limiter_lock:
+                        curr = int(self.client.get(self.key) or 0)
+                        if curr < self.max_concurrent:
+                            self.client.incr(self.key)
+                            return True
+                        return False
                 raise NotImplementedError("Lua eval is unsupported in this Redis client (fakeredis without lupa).")
             raise e
 
@@ -91,5 +111,12 @@ class CrossProcessConcurrencyLimiter:
             return bool(result == 1)
         except ResponseError as e:
             if "unknown command 'eval'" in str(e).lower():
+                if self.fallback_on_unsupported:
+                    with _fallback_limiter_lock:
+                        curr = int(self.client.get(self.key) or 0)
+                        if curr > 0:
+                            self.client.decr(self.key)
+                            return True
+                        return False
                 raise NotImplementedError("Lua eval is unsupported in this Redis client (fakeredis without lupa).")
             raise e

@@ -103,6 +103,9 @@ USE_FAKE_REDIS=true
 | `WRITER_MODEL` | `llama-3.3-70b-versatile` | Model requested by Writer agent |
 | `CRITIC_PROVIDER` | `groq` | Provider for Critic agent (`groq`, `anthropic`, `fake`) |
 | `CRITIC_MODEL` | `llama-3.3-70b-versatile` | Model requested by Critic agent |
+| `MAX_CONCURRENT_RUNS` | `5` | Maximum concurrent research workflow jobs processed globally across workers |
+| `WORKER_VISIBILITY_TIMEOUT` | `60.0` | Visibility timeout in seconds before abandoned stream messages are eligible for reclaim |
+| `RUN_WORKER_INPROCESS` | `false` | When true, spawns a background stream worker in-process for tests and local dev |
 | `MAX_TOTAL_TOKENS` | `50000` | Hard budget limit for total tokens consumed |
 | `MAX_USD_COST` | `1.00` | Hard budget dollar spending ceiling |
 | `WALL_CLOCK_TIMEOUT_SECONDS` | `240.0` | Execution time limit in seconds |

@@ -24,8 +24,26 @@ async def lifespan(app: FastAPI):
 
     # Startup: resume any incomplete or crashed workflows
     await worker.resume_interrupted_runs()
+
+    # In-process worker task if RUN_WORKER_INPROCESS is true
+    worker_task = None
+    inprocess_worker = None
+    if settings.run_worker_inprocess:
+        import asyncio
+        from app.worker import ResearchStreamWorker
+
+        inprocess_worker = ResearchStreamWorker()
+        worker_task = asyncio.create_task(inprocess_worker.run_loop())
+
     yield
+
     # Shutdown
+    if worker_task is not None and inprocess_worker is not None:
+        inprocess_worker.stop()
+        try:
+            await asyncio.wait_for(worker_task, timeout=5.0)
+        except Exception:
+            pass
     redis_store.flush()
 
 
