@@ -4,6 +4,7 @@ import logging
 import os
 import platform
 import signal
+import sys
 from typing import Any
 
 from app.api.events import event_broker
@@ -239,6 +240,18 @@ class ResearchStreamWorker:
                     options=payload,
                 )
 
+            # Check if run paused at awaiting_approval: release lock BEFORE ACK so /approve cannot race it
+            state_check = redis_store.get_run_state(run_id)
+            if state_check and state_check.get("status") in (RunStatus.AWAITING_APPROVAL, "awaiting_approval"):
+                stop_hb.set()
+                if not hb_task.done():
+                    hb_task.cancel()
+                    try:
+                        await hb_task
+                    except (asyncio.CancelledError, Exception):
+                        pass
+                redis_store.release_lock(run_id, owner_token)
+
             # If execution reached this point, job completed, paused, or reached a terminal state: ACK IT!
             self.stream_adapter.ack_job(self.stream, self.group, entry_id)
             return True
@@ -254,10 +267,12 @@ class ResearchStreamWorker:
             return True
         finally:
             stop_hb.set()
-            try:
-                await asyncio.wait_for(hb_task, timeout=1.0)
-            except Exception:
-                pass
+            if not hb_task.done():
+                hb_task.cancel()
+                try:
+                    await hb_task
+                except (asyncio.CancelledError, Exception):
+                    pass
             redis_store.release_lock(run_id, owner_token)
             self._concurrency_limiter.release()
 
@@ -274,20 +289,25 @@ class ResearchStreamWorker:
         graph = build_research_graph(checkpointer=checkpointer, interrupt_before_write=require_approval)
         config = {"configurable": {"thread_id": run_id}}
 
-        initial_state = {
-            "run_id": run_id,
-            "question": question,
-            "status": RunStatus.PLANNING,
-            "start_time": time.time(),
-            "total_tokens": 0,
-            "total_usd_cost": 0.0,
-            "step_index": 0,
-            "require_approval": require_approval,
-            "approved": False,
-            "cancelled": False,
-        }
+        existing = checkpointer.get_tuple(config)
+        state_input = (
+            None
+            if existing
+            else {
+                "run_id": run_id,
+                "question": question,
+                "status": RunStatus.PLANNING,
+                "start_time": time.time(),
+                "total_tokens": 0,
+                "total_usd_cost": 0.0,
+                "step_index": 0,
+                "require_approval": require_approval,
+                "approved": False,
+                "cancelled": False,
+            }
+        )
 
-        final_state = await graph.ainvoke(initial_state, config=config)
+        final_state = await graph.ainvoke(state_input, config=config)
 
         # Check if execution paused before write for human approval
         curr_state = await graph.aget_state(config)
@@ -505,5 +525,6 @@ class ResearchStreamWorker:
 
 
 if __name__ == "__main__":
-    worker_instance = ResearchStreamWorker()
+    consumer_arg = sys.argv[1] if len(sys.argv) > 1 else None
+    worker_instance = ResearchStreamWorker(consumer_name=consumer_arg)
     asyncio.run(worker_instance.run_cli())

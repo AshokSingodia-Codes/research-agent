@@ -81,10 +81,9 @@ class RedisCheckpointSaver(BaseCheckpointSaver):
 
         if not checkpoint_id:
             # Get latest checkpoint_id for this thread
+            if settings.use_fake_redis:
+                redis_store.load_from_disk(force=True)
             latest_id = client.get(self._redis_key("latest", thread_id, checkpoint_ns))
-            if not latest_id and settings.use_fake_redis:
-                redis_store.load_from_disk()
-                latest_id = client.get(self._redis_key("latest", thread_id, checkpoint_ns))
             if not latest_id:
                 return None
             checkpoint_id = latest_id
@@ -196,7 +195,7 @@ class RedisCheckpointSaver(BaseCheckpointSaver):
         # Update latest pointer and history list
         client.set(self._redis_key("latest", thread_id, checkpoint_ns), checkpoint["id"])
         client.rpush(self._redis_key("history", thread_id, checkpoint_ns), checkpoint["id"])
-        redis_store.sync_to_disk()
+        redis_store.sync_to_disk(force=True)
 
         return {
             "configurable": {

@@ -281,6 +281,10 @@ async def test_approve_after_pause_enqueues_exactly_one_resume_job():
     state = redis_store.get_run_state(run_id)
     assert state.get("status") in (RunStatus.AWAITING_APPROVAL, "awaiting_approval")
 
+    # Lock must be released BEFORE ACK so /approve cannot race it
+    client_redis = redis_store.get_client()
+    assert client_redis.get(f"research:lock:{run_id}") is None
+
     # Initial job was ACKed
     pending = adapter.get_pending_summary("research:jobs", "research-workers")
     assert pending.get("pending", 0) == 0
@@ -373,3 +377,77 @@ async def test_sigint_leaves_job_unacked():
     # Job must remain UNACKED in pending list so another worker can reclaim it
     pending = adapter.get_pending_summary("research:jobs", "research-workers")
     assert pending.get("pending") == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.integration
+async def test_lock_released_strictly_prior_to_ack_at_awaiting_approval():
+    """
+    Validates that when pausing at awaiting_approval, the distributed run lock
+    is released strictly BEFORE stream_adapter.ack_job() is invoked.
+    Fails if the lock is released after ACK or not released prior to ACK.
+    """
+    adapter = RedisStreamAdapter()
+    adapter.create_group("research:jobs", "research-workers")
+
+    run_id = f"test_lock_order_{time.time()}"
+    redis_store.save_run_state(run_id, {"run_id": run_id, "status": RunStatus.QUEUED})
+
+    entry_id = adapter.publish_job(
+        "research:jobs",
+        {"run_id": run_id, "question": "Lock order test", "require_approval": "true", "type": "initial"},
+    )
+
+    worker = ResearchStreamWorker(consumer_name="test-worker-lock-order")
+    jobs = adapter.read_job("research:jobs", "research-workers", "test-worker-lock-order", count=1, block=500)
+    assert len(jobs) == 1
+    e_id, payload = jobs[0]
+
+    lock_was_released_at_ack_time = None
+    original_ack = worker.stream_adapter.ack_job
+
+    def spy_ack_job(stream, group, job_id):
+        nonlocal lock_was_released_at_ack_time
+        # Inspect lock status at the exact moment ACK is called
+        client = redis_store.get_client()
+        lock_val = client.get(f"research:lock:{run_id}")
+        lock_was_released_at_ack_time = (lock_val is None)
+        return original_ack(stream, group, job_id)
+
+    with patch.object(worker.stream_adapter, "ack_job", side_effect=spy_ack_job):
+        success = await worker.process_job(e_id, payload)
+        assert success is True
+
+    # State must be awaiting_approval
+    state = redis_store.get_run_state(run_id)
+    assert state.get("status") in (RunStatus.AWAITING_APPROVAL, "awaiting_approval")
+
+    # Lock MUST have been released BEFORE ACK was executed
+    assert lock_was_released_at_ack_time is True
+
+
+@pytest.mark.asyncio
+@pytest.mark.integration
+async def test_without_lock_release_before_ack_immediate_approval_races():
+    """
+    Simulates the condition where a worker fails to release the lock before ACK:
+    if the lock remains held across ACK, an immediate /approve call or subsequent worker
+    attempting to resume fails to acquire the lock immediately without retries.
+    """
+    run_id = f"test_race_{time.time()}"
+    redis_store.save_run_state(run_id, {"run_id": run_id, "status": RunStatus.AWAITING_APPROVAL})
+
+    # Suppose worker 1 did NOT release lock prior to or at ACK, keeping it locked:
+    token = redis_store.acquire_lock(run_id, timeout_seconds=30.0)
+    assert token is not None
+
+    # Immediate lock acquisition by worker 2 without waiting/retry must fail:
+    token_worker_2 = redis_store.acquire_lock(run_id, timeout_seconds=30.0)
+    assert token_worker_2 is None, "Worker 2 cannot acquire lock while worker 1 still holds it"
+
+    # Once worker 1 releases the lock (as required before ACK), worker 2 succeeds:
+    redis_store.release_lock(run_id, token)
+    token_worker_2_after_release = redis_store.acquire_lock(run_id, timeout_seconds=30.0)
+    assert token_worker_2_after_release is not None
+    redis_store.release_lock(run_id, token_worker_2_after_release)
+

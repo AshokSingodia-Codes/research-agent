@@ -66,14 +66,21 @@ def pytest_collection_modifyitems(items):
 
 
 @pytest.fixture(autouse=True)
-def reset_rate_limiter_and_fake_llm(monkeypatch):
+def reset_rate_limiter_and_fake_llm(request, monkeypatch):
     """
-    Resets Redis rate limiter keys and installs FakeProvider for deterministic test execution.
+    Resets Redis rate limiter keys, isolates fake Redis per test with a fresh instance
+    and no disk persistence (except for cross-process chaos tests which require disk sync),
+    and installs FakeProvider for deterministic test execution.
     Prevents API tests from hitting 10 req/min limit.
     """
+    is_chaos = "chaos" in request.keywords
     monkeypatch.setattr(settings, "mock_llm", "true")
     monkeypatch.setattr(settings, "mock_search", "true")
     monkeypatch.setattr(settings, "run_worker_inprocess", True)
+
+    # Isolate fake redis per test (fresh instance, no disk persistence for unit/integration)
+    if settings.use_fake_redis:
+        redis_store.reset_fake_client(fresh_client=None, persist_disk=is_chaos)
 
     client = redis_store.get_client()
     try:
@@ -95,6 +102,8 @@ def reset_rate_limiter_and_fake_llm(monkeypatch):
     llm_client.set_override_provider(fake)
     yield fake
     llm_client.set_override_provider(None)
+    if settings.use_fake_redis:
+        redis_store.reset_fake_client(fresh_client=None, persist_disk=False)
     global _INPROCESS_WORKER, _INPROCESS_TASK
     if _INPROCESS_WORKER is not None:
         _INPROCESS_WORKER.stop()

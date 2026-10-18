@@ -38,6 +38,23 @@ class RedisStore:
         self._sync_debounce_seconds: float = 1.0
         self.write_count: int = 0
         self._owned_locks: dict[str, str] = {}
+        self.persist_disk: bool = True
+
+    def reset_fake_client(self, fresh_client: Any | None = None, persist_disk: bool = False) -> Any:
+        """Resets the fake redis client to a fresh instance and configures disk persistence."""
+        import fakeredis
+
+        self._fake_client = fresh_client or fakeredis.FakeRedis(decode_responses=True)
+        self.persist_disk = persist_disk
+        self._dirty = False
+        self._last_sync_time = 0.0
+        self._owned_locks.clear()
+        if not persist_disk and FAKEDB_FILE.exists():
+            try:
+                FAKEDB_FILE.unlink(missing_ok=True)
+            except Exception:
+                pass
+        return self._fake_client
 
     def get_client(self) -> redis.Redis:
         if self._client is not None:
@@ -49,7 +66,8 @@ class RedisStore:
                     import fakeredis
 
                     self._fake_client = fakeredis.FakeRedis(decode_responses=True)
-                    self.load_from_disk()
+                    if self.persist_disk:
+                        self.load_from_disk()
                 except Exception:
                     self._client = redis.Redis.from_url(settings.redis_url, decode_responses=True)
                     return self._client
@@ -63,14 +81,15 @@ class RedisStore:
             import fakeredis
 
             self._fake_client = fakeredis.FakeRedis(decode_responses=True)
-            self.load_from_disk()
+            if self.persist_disk:
+                self.load_from_disk()
             return self._fake_client
 
         return self._client
 
     def sync_to_disk(self, force: bool = False) -> None:
         """Flushes in-memory fake redis state to disk for subprocess durability with debounce."""
-        if not settings.use_fake_redis or self._fake_client is None:
+        if not settings.use_fake_redis or self._fake_client is None or not self.persist_disk:
             return
         now = time.time()
         self._dirty = True
@@ -79,6 +98,8 @@ class RedisStore:
         try:
             data = {}
             for k in self._fake_client.keys():
+                if k.startswith("research:lock:") or k == "research:worker:active_fake_worker" or k == "research:worker:semaphore":
+                    continue
                 t = self._fake_client.type(k)
                 if t == "string":
                     data[k] = ("string", self._fake_client.get(k))
@@ -86,6 +107,19 @@ class RedisStore:
                     data[k] = ("set", list(self._fake_client.smembers(k)))
                 elif t == "list":
                     data[k] = ("list", self._fake_client.lrange(k, 0, -1))
+                elif t == "stream":
+                    # Serialize stream entries cleanly as dicts/lists without pickle
+                    try:
+                        entries = self._fake_client.xrange(k, "-", "+")
+                        # Also serialize consumer groups
+                        groups = []
+                        try:
+                            groups = self._fake_client.xinfo_groups(k)
+                        except Exception:
+                            pass
+                        data[k] = ("stream_json", {"entries": entries, "groups": groups})
+                    except Exception as ex:
+                        logger.debug(f"Failed to serialize stream {k}: {ex}")
             tmp_file = FAKEDB_FILE.with_suffix(".tmp")
             tmp_file.write_text(json.dumps(data), encoding="utf-8")
             tmp_file.replace(FAKEDB_FILE)
@@ -100,11 +134,11 @@ class RedisStore:
         if self._dirty:
             self.sync_to_disk(force=True)
 
-    def load_from_disk(self) -> None:
+    def load_from_disk(self, force: bool = False) -> None:
         """Restores in-memory fake redis state from disk snapshot."""
-        if not settings.use_fake_redis or self._fake_client is None or not FAKEDB_FILE.exists():
+        if not settings.use_fake_redis or self._fake_client is None or not self.persist_disk or not FAKEDB_FILE.exists():
             return
-        if self._dirty:
+        if self._dirty and not force:
             # In-memory changes exist that have not been written to disk yet; don't clobber
             return
         try:
@@ -113,7 +147,7 @@ class RedisStore:
                 return
             data = json.loads(content)
             for k, (t, val) in data.items():
-                if k.startswith("research:lock:") or k == "research:worker:active_fake_worker":
+                if k.startswith("research:lock:") or k == "research:worker:active_fake_worker" or k == "research:worker:semaphore":
                     continue
                 if t == "string":
                     self._fake_client.set(k, val)
@@ -124,6 +158,23 @@ class RedisStore:
                     self._fake_client.delete(k)
                     for item in val:
                         self._fake_client.rpush(k, item)
+                elif t == "stream_json":
+                    try:
+                        entries = val.get("entries", [])
+                        groups = val.get("groups", [])
+                        for entry_id, fields in entries:
+                            try:
+                                self._fake_client.xadd(k, fields, id=entry_id)
+                            except Exception:
+                                pass
+                        for g in groups:
+                            g_name = g.get("name") if isinstance(g, dict) else g[1]
+                            try:
+                                self._fake_client.xgroup_create(k, g_name, id="0", mkstream=True)
+                            except Exception:
+                                pass
+                    except Exception as ex:
+                        logger.debug(f"Failed to restore stream {k}: {ex}")
         except Exception as e:
             logger.warning(f"Failed to load fake redis snapshot: {e}")
 
