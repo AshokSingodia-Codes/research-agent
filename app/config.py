@@ -48,6 +48,10 @@ class Settings(BaseSettings):
 
     # Concurrency & Networking
     concurrency_limit: int = 3
+    max_parallel_researchers: int = 3
+    max_concurrent_runs: int = 5
+    worker_visibility_timeout: float = 60.0
+    run_worker_inprocess: bool = False
     request_timeout_seconds: float = 30.0
 
     # Hard Budgets

@@ -6,7 +6,8 @@ from app.agents.supervisor import review_findings
 from app.budget.guard import BudgetGuard
 from app.config import settings
 from app.graph.builder import build_research_graph
-from app.graph.parallel_runner import get_ready_subquestions, run_parallel_fanout
+from app.graph.nodes import run_parallel_fanout
+from app.graph.routing import get_ready_subquestions
 from app.llm.client import llm_client
 from app.llm.fake_provider import FakeProvider
 from app.models.enums import ReviewAction, RunStatus
@@ -176,3 +177,157 @@ async def test_fanout_and_dependency_order():
     assert len(findings) > 0
     assert len(reviews) == 1
     assert len(traces) > 0
+
+
+@pytest.mark.asyncio
+async def test_parallel_fanout_dependency_waves(setup_fake_llm):
+    """Validates that sub-questions with dependencies wait for earlier waves to complete."""
+    from app.models.schemas import ResearchPlan
+
+    plan = ResearchPlan(
+        topic="Dependency test",
+        sub_questions=[
+            SubQuestion(id="sq_dep_1", text="Root question 1", rationale="R1", depends_on=[]),
+            SubQuestion(id="sq_dep_2", text="Child question 2", rationale="R2", depends_on=["sq_dep_1"]),
+        ],
+    )
+    setup_fake_llm.queue_response(plan)
+
+    graph = build_research_graph()
+    initial_state = {
+        "run_id": "test_run_dep_waves",
+        "question": "Dependency test topic",
+        "start_time": time.time(),
+        "total_tokens": 0,
+        "total_usd_cost": 0.0,
+        "step_index": 0,
+    }
+
+    final_state = await graph.ainvoke(initial_state)
+    assert final_state["status"] in (RunStatus.COMPLETED, RunStatus.NEEDS_REVIEW)
+    assert "sq_dep_1" in final_state["completed_subquestion_ids"]
+    assert "sq_dep_2" in final_state["completed_subquestion_ids"]
+
+
+@pytest.mark.asyncio
+async def test_parallel_fanout_time_overlap_and_semaphore_bound(setup_fake_llm):
+    """Validates that parallel branches overlap in time and obey the max_parallel_researchers bound."""
+    from app.models.schemas import ResearchPlan
+
+    plan = ResearchPlan(
+        topic="Concurrency test",
+        sub_questions=[
+            SubQuestion(id=f"sq_par_{i}", text=f"Parallel question {i}", rationale=f"R{i}", depends_on=[])
+            for i in range(4)
+        ],
+    )
+    setup_fake_llm.queue_response(plan)
+    # Configure artificial delay on fake provider
+    setup_fake_llm.async_delay_s = 0.25
+
+    graph = build_research_graph()
+    initial_state = {
+        "run_id": "test_run_concurrency",
+        "question": "Concurrency test topic",
+        "start_time": time.time(),
+        "total_tokens": 0,
+        "total_usd_cost": 0.0,
+        "step_index": 0,
+    }
+
+    t0 = time.time()
+    final_state = await graph.ainvoke(initial_state)
+    elapsed = time.time() - t0
+
+    assert final_state["status"] in (RunStatus.COMPLETED, RunStatus.NEEDS_REVIEW)
+    # 4 tasks * 0.25s sequential would take >= 1.0s. With concurrency limit 3, it should finish in < 0.8s
+    assert elapsed < 0.85, f"Expected parallel overlap under 0.85s, took {elapsed:.2f}s"
+
+
+@pytest.mark.asyncio
+async def test_failing_branch_yields_typed_failure_while_others_finish(setup_fake_llm, monkeypatch):
+    """Validates that an individual failing branch yields a typed failure while other branches finish."""
+    import app.graph.nodes as nodes_mod
+    from app.models.schemas import ResearchPlan
+
+    plan = ResearchPlan(
+        topic="Failure resilience test",
+        sub_questions=[
+            SubQuestion(id="sq_good_1", text="Good branch 1", rationale="R1", depends_on=[]),
+            SubQuestion(id="sq_bad_2", text="Failing branch 2", rationale="R2", depends_on=[]),
+        ],
+    )
+    setup_fake_llm.queue_response(plan)
+
+    orig_research = nodes_mod.research_subquestion
+
+    def mock_research_subquestion(sub_question, **kwargs):
+        if sub_question.id == "sq_bad_2":
+            raise RuntimeError("Simulated network timeout in branch sq_bad_2")
+        return orig_research(sub_question, **kwargs)
+
+    monkeypatch.setattr(nodes_mod, "research_subquestion", mock_research_subquestion)
+
+    graph = build_research_graph()
+    initial_state = {
+        "run_id": "test_run_failing_branch",
+        "question": "Resilience test topic",
+        "start_time": time.time(),
+        "total_tokens": 0,
+        "total_usd_cost": 0.0,
+        "step_index": 0,
+    }
+
+    final_state = await graph.ainvoke(initial_state)
+    assert final_state["status"] in (RunStatus.COMPLETED, RunStatus.NEEDS_REVIEW)
+    # Ensure good branch finished with findings
+    assert "sq_good_1" in final_state["completed_subquestion_ids"]
+    # Check trace log contains the typed error for sq_bad_2
+    bad_traces = [t for t in final_state["trace_log"] if t.error and "sq_bad_2" in str(t.input_data)]
+    assert len(bad_traces) > 0
+
+
+@pytest.mark.asyncio
+async def test_retry_cap_holds_in_parallel(setup_fake_llm):
+    """Validates that retry count is capped at 1 per sub-question across parallel waves."""
+    from app.models.schemas import ResearchPlan
+
+    plan = ResearchPlan(
+        topic="Retry cap test",
+        sub_questions=[
+            SubQuestion(id="sq_ret_1", text="Question 1 needing retry", rationale="R1", depends_on=[]),
+        ],
+    )
+    setup_fake_llm.queue_response(plan)
+
+    # Queue retry once twice for sq_ret_1
+    setup_fake_llm.queue_response(
+        ReviewDecision(
+            sub_question_id="sq_ret_1",
+            action=ReviewAction.RETRY_ONCE,
+            reason="Findings insufficient round 1.",
+        )
+    )
+    setup_fake_llm.queue_response(
+        ReviewDecision(
+            sub_question_id="sq_ret_1",
+            action=ReviewAction.RETRY_ONCE,
+            reason="Still insufficient round 2.",
+        )
+    )
+
+    graph = build_research_graph()
+    initial_state = {
+        "run_id": "test_run_retry_cap",
+        "question": "Retry cap test topic",
+        "start_time": time.time(),
+        "total_tokens": 0,
+        "total_usd_cost": 0.0,
+        "step_index": 0,
+    }
+
+    final_state = await graph.ainvoke(initial_state)
+    assert final_state["status"] in (RunStatus.COMPLETED, RunStatus.NEEDS_REVIEW)
+    assert final_state["retry_counts"].get("sq_ret_1", 0) <= 1
+    assert "sq_ret_1" in final_state["completed_subquestion_ids"]
+

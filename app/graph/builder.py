@@ -7,8 +7,8 @@ from app.graph.nodes import (
     dispatch_node,
     finish_node,
     plan_node,
-    research_node,
-    review_node,
+    research_one_node,
+    review_all_node,
     write_node,
 )
 from app.graph.routing import (
@@ -24,16 +24,16 @@ def build_research_graph(
     interrupt_before_write: bool = False,
 ):
     """
-    Constructs the LangGraph multi-agent research workflow:
-    plan -> dispatch -> research -> review -> (loop | write) -> critic -> finish -> END
+    Constructs the LangGraph multi-agent research workflow with Send() parallel fan-out:
+    plan -> dispatch -> [Send(research_one)] -> review_all -> (loop | write) -> critic -> finish -> END
     """
     graph = StateGraph(AgentState)
 
     # Register nodes
     graph.add_node("plan", plan_node)
     graph.add_node("dispatch", dispatch_node)
-    graph.add_node("research", research_node)
-    graph.add_node("review", review_node)
+    graph.add_node("research_one", research_one_node)
+    graph.add_node("review_all", review_all_node)
     graph.add_node("write", write_node)
     graph.add_node("critic", critic_node)
     graph.add_node("finish", finish_node)
@@ -53,19 +53,15 @@ def build_research_graph(
     graph.add_conditional_edges(
         "dispatch",
         route_after_dispatch,
-        {
-            "research": "research",
-            "write": "write",
-        },
+        ["research_one", "write"],
     )
 
-    graph.add_edge("research", "review")
+    graph.add_edge("research_one", "review_all")
 
     graph.add_conditional_edges(
-        "review",
+        "review_all",
         route_after_review,
         {
-            "research": "research",
             "dispatch": "dispatch",
             "write": "write",
         },

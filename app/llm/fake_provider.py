@@ -35,10 +35,31 @@ class FakeProvider(LLMProvider):
     def __init__(self):
         self.call_count: int = 0
         self.artificial_delay_s: float = 0.0
+        self.async_delay_s: float = 0.0
         self.error_to_raise: Exception | None = None
         self.custom_responses: list[Any] = []
         self.canned_plans: dict[str, ResearchPlan] = {}
         self.return_raw_invalid_json: bool = False
+
+    async def agenerate_structured(
+        self,
+        messages: list[dict[str, str]],
+        output_schema: type[T],
+        model: str = "fake-model",
+        max_tokens: int = 4096,
+        temperature: float = 0.1,
+    ) -> LLMResponse[T]:
+        import asyncio
+
+        if self.async_delay_s > 0:
+            await asyncio.sleep(self.async_delay_s)
+        return self.generate_structured(
+            messages=messages,
+            output_schema=output_schema,
+            model=model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
 
     @property
     def provider_name(self) -> str:

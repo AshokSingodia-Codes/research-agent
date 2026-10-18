@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import hmac
 import json
@@ -214,8 +215,12 @@ class RedisCheckpointSaver(BaseCheckpointSaver):
     ) -> None:
         pass
 
+    # Async checkpointer interface implementations:
+    # RedisCheckpointSaver wraps synchronous Redis store operations via asyncio.to_thread
+    # to provide non-blocking asynchronous execution for aput, aget_tuple, alist, and aput_writes.
+
     async def aget_tuple(self, config: RunnableConfig) -> CheckpointTuple | None:
-        return self.get_tuple(config)
+        return await asyncio.to_thread(self.get_tuple, config)
 
     async def alist(
         self,
@@ -225,7 +230,10 @@ class RedisCheckpointSaver(BaseCheckpointSaver):
         before: RunnableConfig | None = None,
         limit: int | None = None,
     ) -> AsyncIterator[CheckpointTuple]:
-        for item in self.list(config, filter=filter, before=before, limit=limit):
+        items = await asyncio.to_thread(
+            lambda: list(self.list(config, filter=filter, before=before, limit=limit))
+        )
+        for item in items:
             yield item
 
     async def aput(
@@ -235,7 +243,7 @@ class RedisCheckpointSaver(BaseCheckpointSaver):
         metadata: CheckpointMetadata,
         new_versions: ChannelVersions,
     ) -> RunnableConfig:
-        return self.put(config, checkpoint, metadata, new_versions)
+        return await asyncio.to_thread(self.put, config, checkpoint, metadata, new_versions)
 
     async def aput_writes(
         self,
@@ -244,7 +252,7 @@ class RedisCheckpointSaver(BaseCheckpointSaver):
         task_id: str,
         task_path: str = "",
     ) -> None:
-        self.put_writes(config, writes, task_id, task_path)
+        await asyncio.to_thread(self.put_writes, config, writes, task_id, task_path)
 
 
 checkpointer = RedisCheckpointSaver()

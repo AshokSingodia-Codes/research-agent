@@ -3,10 +3,8 @@ import time
 import pytest
 
 from app.budget.guard import BudgetGuard
-from app.graph.parallel_runner import (
-    get_ready_subquestions,
-    run_parallel_fanout,
-)
+from app.graph.nodes import run_parallel_fanout
+from app.graph.routing import get_ready_subquestions
 from app.llm.client import llm_client
 from app.llm.fake_provider import FakeProvider
 from app.models.enums import ToolStatus
