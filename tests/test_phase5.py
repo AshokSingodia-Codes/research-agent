@@ -74,7 +74,9 @@ def test_citation_validator_rejects_fabricated_citations():
     assert "Fabricated citation" in warnings[0]
 
 
-async def wait_for_status(client, run_id: str, expected_statuses: tuple, timeout: float = 90.0, headers: dict | None = None) -> dict:
+async def wait_for_status(
+    client, run_id: str, expected_statuses: tuple, timeout: float = 90.0, headers: dict | None = None
+) -> dict:
     """Polls GET /research/{id} with exponential backoff until status matches expected_statuses."""
     start_time = time.time()
     delay = 0.2

@@ -49,5 +49,8 @@ async def test_static_assets_delivery():
         # Check app.js
         js_resp = await client.get("/static/js/app.js")
         assert js_resp.status_code == 200
-        assert "application/javascript" in js_resp.headers["content-type"] or "text/javascript" in js_resp.headers["content-type"]
+        assert (
+            "application/javascript" in js_resp.headers["content-type"]
+            or "text/javascript" in js_resp.headers["content-type"]
+        )
         assert "startResearch" in js_resp.text

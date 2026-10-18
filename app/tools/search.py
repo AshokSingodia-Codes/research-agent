@@ -90,7 +90,7 @@ def search_and_extract(
                 err_str = str(e).lower()
                 if "rate limit" in err_str or "429" in err_str:
                     retries += 1
-                    sleep_time = (2 ** retries) + random.uniform(0.1, 0.5)
+                    sleep_time = (2**retries) + random.uniform(0.1, 0.5)
                     time.sleep(sleep_time)
                 else:
                     return ToolResult(

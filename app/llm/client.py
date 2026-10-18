@@ -39,33 +39,44 @@ class LLMClient:
         """Sets a provider override (e.g., FakeProvider for tests)."""
         self._override_provider = provider
 
+    def get_model_for_agent(self, agent_name: str) -> str:
+        """Returns the configured model string for a given agent role."""
+        agent_key = agent_name.lower()
+        if "planner" in agent_key:
+            return settings.planner_model
+        elif "researcher" in agent_key:
+            return settings.researcher_model
+        elif "writer" in agent_key:
+            return settings.writer_model
+        elif "supervisor" in agent_key or "review" in agent_key:
+            return settings.supervisor_model
+        elif "critic" in agent_key:
+            return settings.critic_model
+        return settings.groq_model
+
     def get_provider_for_agent(self, agent_name: str) -> tuple[LLMProvider, str]:
         """Resolves (provider_instance, model_name) for a specific agent role."""
+        model = self.get_model_for_agent(agent_name)
+
         if self._override_provider is not None:
-            return self._override_provider, "fake-model"
+            return self._override_provider, model
 
         if settings.is_mock_llm:
-            return self._get_fake_provider(), "fake-model"
+            return self._get_fake_provider(), model
 
         agent_key = agent_name.lower()
         if "planner" in agent_key:
             p_name = settings.planner_provider.lower()
-            model = settings.planner_model
         elif "researcher" in agent_key:
             p_name = settings.researcher_provider.lower()
-            model = settings.researcher_model
         elif "writer" in agent_key:
             p_name = settings.writer_provider.lower()
-            model = settings.writer_model
         elif "supervisor" in agent_key or "review" in agent_key:
             p_name = settings.supervisor_provider.lower()
-            model = settings.supervisor_model
         elif "critic" in agent_key:
             p_name = settings.critic_provider.lower()
-            model = settings.critic_model
         else:
-            p_name = "anthropic"
-            model = "claude-haiku-5-5"
+            p_name = "groq"
 
         provider = self._get_or_create_provider(p_name)
         return provider, model
@@ -103,12 +114,14 @@ class LLMClient:
         parent_step_id: str | None = None,
         max_repairs: int = 2,
         budget_guard: Any | None = None,
+        model: str | None = None,
     ) -> tuple[T, StepTrace]:
         """
         Executes structured generation with automatic retry-with-repair on schema validation failure.
         Max 2 repairs; all attempts count against budget and are logged in StepTrace.
         """
-        provider, model = self.get_provider_for_agent(agent_name)
+        provider, default_model = self.get_provider_for_agent(agent_name)
+        chosen_model = model or default_model
         current_messages = list(messages)
 
         repair_attempts = 0
@@ -124,7 +137,7 @@ class LLMClient:
                 budget_guard.check_before_call(estimated_tokens=500)
 
             try:
-                response = self._call_with_backoff(provider, current_messages, output_schema, model)
+                response = self._call_with_backoff(provider, current_messages, output_schema, chosen_model)
                 total_tokens_in += response.tokens_in
                 total_tokens_out += response.tokens_out
                 total_cost_usd += response.cost_usd
@@ -138,7 +151,7 @@ class LLMClient:
                     parent_step_id=parent_step_id,
                     agent=agent_name,
                     provider=provider.provider_name,
-                    model=model,
+                    model=chosen_model,
                     input_data={"messages": self._redact_secrets(current_messages)},
                     output_data=response.parsed.model_dump() if hasattr(response.parsed, "model_dump") else {},
                     tokens_in=total_tokens_in,
@@ -189,6 +202,7 @@ class LLMClient:
     ) -> LLMResponse[T]:
         """Handles rate limits and transient errors with exponential backoff and jitter."""
         import random
+
         retries_limit = settings.llm_max_retries if max_retries is None else max_retries
         retries = 0
         while True:
@@ -204,11 +218,15 @@ class LLMClient:
                 time.sleep(sleep_dur)
             except Exception as e:
                 err_lower = str(e).lower()
-                if ("timeout" in err_lower or "timed out" in err_lower or "connection" in err_lower) and retries < retries_limit:
+                if (
+                    "timeout" in err_lower or "timed out" in err_lower or "connection" in err_lower
+                ) and retries < retries_limit:
                     retries += 1
                     jitter = random.uniform(0.1, 0.5)
-                    sleep_dur = (1.5 ** retries) + jitter
-                    logger.warning(f"Transient error ({e}). Retrying in {sleep_dur:.2f}s (attempt {retries}/{retries_limit})...")
+                    sleep_dur = (1.5**retries) + jitter
+                    logger.warning(
+                        f"Transient error ({e}). Retrying in {sleep_dur:.2f}s (attempt {retries}/{retries_limit})..."
+                    )
                     time.sleep(sleep_dur)
                     continue
                 raise e

@@ -71,9 +71,7 @@ class BudgetGuard:
     def check_usd_cost(self, incoming_cost: float = 0.0) -> None:
         if (self.current_usd_cost + incoming_cost) >= self.max_usd_cost:
             self.is_exhausted = True
-            self.exhaustion_reason = (
-                f"USD cost budget exceeded: ${self.current_usd_cost + incoming_cost:.4f} >= limit ${self.max_usd_cost:.2f}"
-            )
+            self.exhaustion_reason = f"USD cost budget exceeded: ${self.current_usd_cost + incoming_cost:.4f} >= limit ${self.max_usd_cost:.2f}"
             self.exhausted_budget_type = "cost"
             raise BudgetExceededError(self.exhaustion_reason, "cost")
 

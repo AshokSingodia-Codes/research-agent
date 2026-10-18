@@ -13,20 +13,17 @@ class SubQuestion(BaseModel):
     priority: int = Field(default=1, ge=1, le=5, description="Priority ranking from 1 (highest) to 5")
     expected_source_types: list[str] = Field(
         default_factory=lambda: ["technical_documentation", "academic_papers", "benchmarks"],
-        description="Types of sources expected to answer this question"
+        description="Types of sources expected to answer this question",
     )
     depends_on: list[str] = Field(
-        default_factory=list,
-        description="List of other sub-question IDs that must finish before this can execute"
+        default_factory=list, description="List of other sub-question IDs that must finish before this can execute"
     )
 
 
 class ResearchPlan(BaseModel):
     topic: str = Field(description="Original research question or topic")
     sub_questions: list[SubQuestion] = Field(
-        min_length=1,
-        max_length=8,
-        description="List of non-overlapping, specific research sub-questions"
+        min_length=1, max_length=8, description="List of non-overlapping, specific research sub-questions"
     )
 
 
@@ -88,8 +85,7 @@ class ReportSection(BaseModel):
     title: str
     content: str
     citations: list[str] = Field(
-        default_factory=list,
-        description="Inline citation keys used in this section, e.g., ['[1]', '[2]']"
+        default_factory=list, description="Inline citation keys used in this section, e.g., ['[1]', '[2]']"
     )
 
 

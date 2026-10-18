@@ -37,7 +37,7 @@ def test_researcher_in_isolation():
         id="sq_1",
         question="What is the leader election latency in Multi-Raft?",
         rationale="Evaluates consensus recovery time.",
-        expected_evidence="Benchmark figures in milliseconds."
+        expected_evidence="Benchmark figures in milliseconds.",
     )
 
     output, trace = research_subquestion(sub_q)
@@ -64,11 +64,7 @@ def test_researcher_handles_search_failure_gracefully(monkeypatch):
     from src.tools import search
 
     def mock_failing_search(*args, **kwargs):
-        return [], SearchStatus(
-            status="rate_limited",
-            error_message="HTTP 429 Too Many Requests",
-            result_count=0
-        )
+        return [], SearchStatus(status="rate_limited", error_message="HTTP 429 Too Many Requests", result_count=0)
 
     monkeypatch.setattr(search, "search_and_extract", mock_failing_search)
 
@@ -76,7 +72,7 @@ def test_researcher_handles_search_failure_gracefully(monkeypatch):
         id="sq_fail",
         question="What happens when rate limited?",
         rationale="Fault tolerance test.",
-        expected_evidence="None"
+        expected_evidence="None",
     )
 
     output, trace = research_subquestion(sub_q)
@@ -97,14 +93,14 @@ def test_writer_in_isolation():
             source_url="https://arxiv.org/abs/2401.0001",
             domain="arxiv.org",
             snippet="Sharding into multiple raft groups reduces lock contention.",
-            confidence=0.9
+            confidence=0.9,
         ),
         EvidenceRecord(
             claim="Average leader election latency is under 50ms with heartbeats set to 10ms.",
             source_url="https://github.com/tikv/tikv",
             domain="github.com",
             snippet="Empirical benchmarks indicate election time is below 50ms.",
-            confidence=0.95
+            confidence=0.95,
         ),
     ]
 

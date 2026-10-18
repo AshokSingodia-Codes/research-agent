@@ -77,10 +77,36 @@ pip install -r requirements.txt
 ### 2. Environment Configuration
 Copy `.env.example` to `.env`:
 ```env
-ANTHROPIC_API_KEY=your_key_here    # (Optional: auto-mocks if omitted)
-TAVILY_API_KEY=your_key_here       # (Optional: auto-mocks if omitted)
-USE_FAKE_REDIS=true                # Set false if running local/Docker Redis
+GROQ_API_KEY=your_groq_key_here
+ANTHROPIC_API_KEY=your_anthropic_key_here
+TAVILY_API_KEY=your_tavily_key_here
+USE_FAKE_REDIS=true
 ```
+
+#### Configuration Reference Table
+
+| Variable | Default Value | Description |
+| :--- | :--- | :--- |
+| `ENV` | `development` | Deployment environment (`development`, `staging`, `production`) |
+| `API_KEY` | `test-key-12345` | Static authentication key required for API endpoints |
+| `CORS_ORIGINS` | `["http://localhost:8000","http://127.0.0.1:8000"]` | Allowed CORS origin whitelist |
+| `CHECKPOINT_HMAC_KEY` | `""` | Optional secret for HMAC-SHA256 checkpoint tamper validation |
+| `GROQ_MODEL` | `llama-3.3-70b-versatile` | Global fallback Groq model |
+| `ANTHROPIC_MODEL` | `claude-3-5-sonnet-20241022` | Global fallback Anthropic model |
+| `PLANNER_PROVIDER` | `groq` | Provider for Planner agent (`groq`, `anthropic`, `fake`) |
+| `PLANNER_MODEL` | `llama-3.3-70b-versatile` | Model requested by Planner agent |
+| `RESEARCHER_PROVIDER` | `groq` | Provider for Researcher agent (`groq`, `anthropic`, `fake`) |
+| `RESEARCHER_MODEL` | `llama-3.3-70b-versatile` | Model requested by Researcher agent |
+| `SUPERVISOR_PROVIDER` | `groq` | Provider for Supervisor agent (`groq`, `anthropic`, `fake`) |
+| `SUPERVISOR_MODEL` | `llama-3.3-70b-versatile` | Model requested by Supervisor agent |
+| `WRITER_PROVIDER` | `groq` | Provider for Writer agent (`groq`, `anthropic`, `fake`) |
+| `WRITER_MODEL` | `llama-3.3-70b-versatile` | Model requested by Writer agent |
+| `CRITIC_PROVIDER` | `groq` | Provider for Critic agent (`groq`, `anthropic`, `fake`) |
+| `CRITIC_MODEL` | `llama-3.3-70b-versatile` | Model requested by Critic agent |
+| `MAX_TOTAL_TOKENS` | `50000` | Hard budget limit for total tokens consumed |
+| `MAX_USD_COST` | `1.00` | Hard budget dollar spending ceiling |
+| `WALL_CLOCK_TIMEOUT_SECONDS` | `240.0` | Execution time limit in seconds |
+| `MAX_REVISION_LOOPS` | `1` | Strict ceiling on supervisor review retry iterations |
 
 ### 3. Run the Complete Automation Test Suite (20 Tests · 86% Coverage)
 ```bash

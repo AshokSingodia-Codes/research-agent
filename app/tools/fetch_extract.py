@@ -1,8 +1,10 @@
 import ipaddress
 import logging
 import socket
+from typing import Any
 from urllib.parse import urlparse
 
+import httpcore
 import httpx
 
 from app.models.enums import ToolStatus
@@ -72,7 +74,9 @@ def is_safe_url(url: str) -> tuple[bool, str]:
 
 
 def _is_disallowed_ip(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
-    """Checks whether an IP address is internal, loopback, private, or link-local."""
+    """Checks whether an IP address is internal, loopback, private, link-local, or cloud metadata."""
+    if getattr(ip, "ipv4_mapped", None):
+        return _is_disallowed_ip(ip.ipv4_mapped)
     return bool(
         ip.is_private
         or ip.is_loopback
@@ -84,6 +88,51 @@ def _is_disallowed_ip(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool
     )
 
 
+class SSRFSafeBackend(httpcore._backends.sync.SyncBackend):
+    """Custom network backend validating connected peer IP at connect time to prevent DNS rebinding."""
+
+    def connect_tcp(
+        self,
+        host: str,
+        port: int,
+        timeout: float | None = None,
+        local_address: str | None = None,
+        socket_options: Any | None = None,
+    ):
+        stream = super().connect_tcp(host, port, timeout, local_address, socket_options)
+        server_addr = stream.get_extra_info("server_addr")
+        if server_addr:
+            peer_ip_str = server_addr[0]
+            try:
+                peer_ip = ipaddress.ip_address(peer_ip_str)
+                if _is_disallowed_ip(peer_ip):
+                    stream.close()
+                    raise httpx.RequestError(f"SSRF connect-time check blocked peer IP: {peer_ip}")
+            except ValueError:
+                pass
+        return stream
+
+
+class SSRFSafeTransport(httpx.HTTPTransport):
+    """HTTPTransport that injects SSRFSafeBackend to re-validate socket connections."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        try:
+            self._pool = httpcore.ConnectionPool(
+                network_backend=SSRFSafeBackend(),
+                ssl_context=getattr(self._pool, "_ssl_context", None),
+                max_connections=getattr(self._pool, "_max_connections", 100),
+                max_keepalive_connections=getattr(self._pool, "_max_keepalive_connections", 20),
+                keepalive_expiry=getattr(self._pool, "_keepalive_expiry", 5.0),
+                http1=getattr(self._pool, "_http1", True),
+                http2=getattr(self._pool, "_http2", False),
+                retries=getattr(self._pool, "_retries", 0),
+            )
+        except Exception as e:
+            logger.debug(f"SSRFSafeTransport could not replace pool backend: {e}")
+
+
 def extract_full_page(
     url: str,
     timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
@@ -91,10 +140,11 @@ def extract_full_page(
 ) -> tuple[str, ToolStatus]:
     """
     Fetches full page HTML and extracts readable article text via trafilatura.
-    Enforces SSRF prevention, max response size (2 MB), max redirects (3), and token caps.
+    Enforces SSRF prevention, manual redirect following (max 3), connect-time validation,
+    and response size truncation (2 MB).
     Returns: (extracted_text, status)
     """
-    # 1. SSRF Safety Check
+    # 1. SSRF Safety Check on initial URL
     is_safe, reason = is_safe_url(url)
     if not is_safe:
         logger.warning(f"SSRF protection blocked fetch for URL '{url}': {reason}")
@@ -106,20 +156,50 @@ def extract_full_page(
     }
 
     try:
+        transport = SSRFSafeTransport(verify=True)
         with httpx.Client(
+            transport=transport,
             timeout=timeout_seconds,
-            follow_redirects=True,
-            max_redirects=MAX_REDIRECTS,
+            follow_redirects=False,
             headers=headers,
             verify=True,
         ) as client:
-            resp = client.get(url)
-            # Validate redirected URL if redirect occurred
-            if hasattr(resp, "url") and str(resp.url) != url:
-                redirect_safe, redirect_reason = is_safe_url(str(resp.url))
-                if not redirect_safe:
-                    logger.warning(f"SSRF blocked redirect target '{resp.url}': {redirect_reason}")
+            current_url = url
+            resp = None
+            hops = 0
+
+            while True:
+                # Validate URL on every hop
+                hop_safe, hop_reason = is_safe_url(current_url)
+                if not hop_safe:
+                    logger.warning(f"SSRF blocked hop to URL '{current_url}': {hop_reason}")
                     return "", ToolStatus.BLOCKED
+
+                resp = client.get(current_url)
+
+                # Check for redirect responses
+                if resp.status_code in (301, 302, 303, 307, 308):
+                    hops += 1
+                    if hops > MAX_REDIRECTS:
+                        logger.warning(f"Exceeded max redirects ({MAX_REDIRECTS}) starting from {url}")
+                        return "", ToolStatus.BLOCKED
+
+                    location = resp.headers.get("Location")
+                    if not location:
+                        return "", ToolStatus.PARSE_ERROR
+
+                    from urllib.parse import urljoin
+
+                    next_url = urljoin(current_url, location)
+                    next_safe, next_reason = is_safe_url(next_url)
+                    if not next_safe:
+                        logger.warning(f"SSRF blocked redirect target '{next_url}': {next_reason}")
+                        return "", ToolStatus.BLOCKED
+
+                    current_url = next_url
+                    continue
+
+                break
 
             if resp.status_code in (401, 402):
                 return "", ToolStatus.PAYWALLED
@@ -134,7 +214,7 @@ def extract_full_page(
                 raw_content = getattr(resp, "text", "").encode("utf-8", errors="replace")
             content_bytes = raw_content[:MAX_RESPONSE_BYTES]
             if len(raw_content) > MAX_RESPONSE_BYTES:
-                logger.warning(f"Response size exceeded {MAX_RESPONSE_BYTES} bytes cap for {url}. Truncating.")
+                logger.warning(f"Response size exceeded {MAX_RESPONSE_BYTES} bytes cap for {current_url}. Truncating.")
             encoding = getattr(resp, "encoding", None) or "utf-8"
             html_content = content_bytes.decode(encoding, errors="replace")
 
@@ -155,6 +235,7 @@ def extract_full_page(
     # Extract clean readable text with trafilatura
     try:
         import trafilatura
+
         extracted = trafilatura.extract(
             html_content,
             include_comments=False,
@@ -169,6 +250,7 @@ def extract_full_page(
         # Fallback to simple BeautifulSoup extraction
         try:
             from bs4 import BeautifulSoup
+
             soup = BeautifulSoup(html_content, "html.parser")
             for tag in soup(["script", "style", "nav", "footer", "header", "noscript"]):
                 tag.decompose()

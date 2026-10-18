@@ -19,11 +19,7 @@ async def test_sse_progress_streaming_lifecycle():
         # Create a mock run state in Redis
         run_id = "test_sse_run_001"
         redis_store.save_run_state(
-            run_id=run_id,
-            status="in_progress",
-            current_node="planner",
-            total_tokens=100,
-            total_subquestions=2
+            run_id=run_id, status="in_progress", current_node="planner", total_tokens=100, total_subquestions=2
         )
 
         queue = register_stream_queue(run_id)
@@ -48,7 +44,7 @@ async def test_sse_progress_streaming_lifecycle():
 
             async for line in response.aiter_lines():
                 if line.startswith("data:"):
-                    raw_data = line[len("data:"):].strip()
+                    raw_data = line[len("data:") :].strip()
                     payload = json.loads(raw_data)
                     events_received.append(payload)
                 if len(events_received) >= 4:

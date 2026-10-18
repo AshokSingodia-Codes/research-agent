@@ -1,4 +1,3 @@
-
 # Pricing in USD per 1,000,000 tokens (input_price_per_1m, output_price_per_1m)
 MODEL_PRICING: dict[tuple[str, str], tuple[float, float]] = {
     # Anthropic

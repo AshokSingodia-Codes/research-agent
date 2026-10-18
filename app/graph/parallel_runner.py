@@ -71,8 +71,7 @@ def execute_subquestion_pass(
     )
 
     doc_snippets = [
-        {"url": f.source_url, "domain": f.domain, "text": f.extracted_text or f.snippet}
-        for f in search_res.findings
+        {"url": f.source_url, "domain": f.domain, "text": f.extracted_text or f.snippet} for f in search_res.findings
     ]
 
     # 2. Researcher synthesis

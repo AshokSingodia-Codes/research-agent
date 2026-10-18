@@ -70,7 +70,9 @@ def test_planner_returns_valid_quality_on_5_questions(setup_fake_provider):
             assert (
                 sq.text.endswith("?")
                 or sq.text.endswith(".")
-                or any(sq.text.lower().startswith(w) for w in ["analyze", "compare", "evaluate", "examine", "determine"])
+                or any(
+                    sq.text.lower().startswith(w) for w in ["analyze", "compare", "evaluate", "examine", "determine"]
+                )
             ), f"Sub-question '{sq.text}' does not end in question or imperative structure"
             assert sq.rationale and len(sq.rationale.split()) >= 3
             assert sq.priority in [1, 2, 3, 4, 5]
@@ -240,6 +242,7 @@ def test_pricing_and_cost_accounting():
 def test_live_anthropic_planner_smoke():
     """Live smoke test using real Anthropic API key (skipped by default)."""
     import os
+
     if not os.getenv("ANTHROPIC_API_KEY"):
         pytest.skip("ANTHROPIC_API_KEY not set")
 

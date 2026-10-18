@@ -1,5 +1,5 @@
-
 from app.budget.guard import BudgetGuard
+from app.config import settings
 from app.llm.client import llm_client
 from app.models.enums import ReviewAction
 from app.models.schemas import Finding, ReviewDecision, StepTrace, SubQuestion
@@ -73,6 +73,7 @@ def review_findings(
         run_id=run_id,
         parent_step_id=parent_step_id,
         budget_guard=budget_guard,
+        model=settings.supervisor_model,
     )
 
     decision.sub_question_id = sub_question.id

@@ -37,6 +37,7 @@ class AnthropicProvider(LLMProvider):
                 raise AuthError("ANTHROPIC_API_KEY is missing or empty.")
             try:
                 import anthropic
+
                 self._client = anthropic.Anthropic(api_key=self.api_key)
             except Exception as e:
                 raise AuthError(f"Failed to initialize Anthropic client: {e}")

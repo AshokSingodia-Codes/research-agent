@@ -1,6 +1,7 @@
 import time
 from typing import Any
 
+from app.config import settings
 from app.llm.client import llm_client
 from app.models.schemas import ResearchFindings, StepTrace, SubQuestion
 
@@ -67,6 +68,7 @@ def research_subquestion(
         run_id=run_id,
         parent_step_id=parent_step_id,
         budget_guard=budget_guard,
+        model=settings.researcher_model,
     )
 
     # Ensure sub_question_id matches

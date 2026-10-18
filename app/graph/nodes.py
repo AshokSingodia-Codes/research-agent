@@ -187,6 +187,7 @@ def write_node(state: AgentState) -> dict[str, Any]:
     conflicts = list(state.get("conflicting_evidence", []))
     if not conflicts and findings:
         from app.tools.contradiction import detect_contradictions
+
         conflicts = detect_contradictions(findings)
 
     partial = state.get("partial", False)
@@ -215,6 +216,7 @@ def write_node(state: AgentState) -> dict[str, Any]:
     except Exception as e:
         # Graceful fallback: synthesize minimal partial report without crashing
         from app.models.schemas import Report, ReportSection
+
         fallback_report = Report(
             topic=question,
             summary=f"Partial synthesis due to: {e}",
@@ -259,6 +261,7 @@ def critic_node(state: AgentState) -> dict[str, Any]:
         }
     except Exception as e:
         from app.models.schemas import CritiqueResult
+
         return {
             "critique": CritiqueResult(passed=True, critique_notes=f"Critic bypassed due to: {e}"),
             "status": RunStatus.COMPLETED,

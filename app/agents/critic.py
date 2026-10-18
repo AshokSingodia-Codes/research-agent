@@ -1,5 +1,6 @@
 from typing import Any
 
+from app.config import settings
 from app.llm.client import llm_client
 from app.models.schemas import CritiqueResult, Finding, Report, ResearchPlan, StepTrace
 
@@ -49,6 +50,7 @@ def critique_report(
         run_id=run_id,
         parent_step_id=parent_step_id,
         budget_guard=budget_guard,
+        model=settings.critic_model,
     )
 
     return critique, trace

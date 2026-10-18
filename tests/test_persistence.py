@@ -21,7 +21,7 @@ def test_redis_store_state_and_trace_persistence():
         current_node="researcher",
         completed_sq_ids=["sq_1"],
         total_tokens=1500,
-        total_subquestions=3
+        total_subquestions=3,
     )
 
     status = redis_store.get_run_status(run_id)
@@ -41,7 +41,7 @@ def test_redis_store_state_and_trace_persistence():
         latency_ms=120.0,
         tokens_used=500,
         input_summary="Topic",
-        output_summary="Generated 3 questions"
+        output_summary="Generated 3 questions",
     )
     trace2 = StepTrace(
         step_id="step_2",
@@ -49,7 +49,7 @@ def test_redis_store_state_and_trace_persistence():
         latency_ms=250.0,
         tokens_used=1000,
         input_summary="sq_1",
-        output_summary="2 findings"
+        output_summary="2 findings",
     )
     redis_store.append_trace_step(run_id, trace1)
     redis_store.append_trace_step(run_id, trace2)

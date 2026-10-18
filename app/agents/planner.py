@@ -48,6 +48,7 @@ def plan_research(
         run_id=run_id,
         parent_step_id=parent_step_id,
         budget_guard=budget_guard,
+        model=settings.planner_model,
     )
 
     # Enforce limit clamp

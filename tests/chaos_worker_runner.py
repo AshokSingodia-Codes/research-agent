@@ -23,14 +23,18 @@ def run_worker_process(run_id: str, topic: str, delay_per_step: float = 0.5):
 
     # Check if there is an existing checkpoint
     existing = checkpointer.get_tuple(config)
-    state_input = None if existing else {
-        "run_id": run_id,
-        "question": topic,
-        "start_time": time.time(),
-        "total_tokens": 0,
-        "total_usd_cost": 0.0,
-        "step_index": 0,
-    }
+    state_input = (
+        None
+        if existing
+        else {
+            "run_id": run_id,
+            "question": topic,
+            "start_time": time.time(),
+            "total_tokens": 0,
+            "total_usd_cost": 0.0,
+            "step_index": 0,
+        }
+    )
 
     try:
         final_state = graph.invoke(state_input, config=config)

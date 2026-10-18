@@ -26,9 +26,17 @@ def test_url_deduplication_and_domain_capping(monkeypatch):
             return {
                 "results": [
                     {"url": "https://domainA.com/page1", "title": "A1", "content": "Content A1"},
-                    {"url": "https://domainA.com/page1", "title": "A1 Duplicate", "content": "Content A1"},  # duplicate URL
+                    {
+                        "url": "https://domainA.com/page1",
+                        "title": "A1 Duplicate",
+                        "content": "Content A1",
+                    },  # duplicate URL
                     {"url": "https://domainA.com/page2", "title": "A2", "content": "Content A2"},
-                    {"url": "https://domainA.com/page3", "title": "A3", "content": "Content A3"},  # exceeds domain cap (max 2)
+                    {
+                        "url": "https://domainA.com/page3",
+                        "title": "A3",
+                        "content": "Content A3",
+                    },  # exceeds domain cap (max 2)
                     {"url": "https://domainB.com/page1", "title": "B1", "content": "Content B1"},
                 ]
             }
@@ -39,17 +47,13 @@ def test_url_deduplication_and_domain_capping(monkeypatch):
 
     import sys
     from unittest.mock import MagicMock
+
     mock_tavily = MagicMock()
     mock_tavily.TavilyClient = MockTavilyClient
     monkeypatch.setitem(sys.modules, "tavily", mock_tavily)
 
     # Disable network extraction for pure deduplication test
-    findings, status = search_and_extract(
-        query="test query",
-        max_results=5,
-        max_per_domain=2,
-        fetch_full_page=False
-    )
+    findings, status = search_and_extract(query="test query", max_results=5, max_per_domain=2, fetch_full_page=False)
 
     assert status.status == "success"
     # Should only have 3: 2 from domainA, 1 from domainB
@@ -86,10 +90,13 @@ def test_page_extractor_html_cleaning(monkeypatch):
     class MockClient:
         def __init__(self, **kwargs):
             pass
+
         def __enter__(self):
             return self
+
         def __exit__(self, *args):
             pass
+
         def get(self, url):
             return MockResponse()
 
@@ -108,20 +115,26 @@ def test_page_extractor_html_cleaning(monkeypatch):
 @pytest.mark.unit
 def test_page_extractor_failure_paths(monkeypatch):
     """Validates structured classification of extractor HTTP failure paths."""
+
     class FailingClient:
         def __init__(self, status_code=403, raise_timeout=False, **kwargs):
             self.status_code = status_code
             self.raise_timeout = raise_timeout
+
         def __enter__(self):
             return self
+
         def __exit__(self, *args):
             pass
+
         def get(self, url):
             if self.raise_timeout:
                 raise httpx.TimeoutException("Connection timed out")
+
             class Resp:
                 status_code = self.status_code
                 text = "Access Denied"
+
             return Resp()
 
     # 1. Paywalled / Forbidden (403)

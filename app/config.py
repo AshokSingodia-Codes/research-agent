@@ -1,4 +1,3 @@
-from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,7 +14,7 @@ class Settings(BaseSettings):
     tavily_api_key: str = ""
     api_key: str = "test-key-12345"  # System API key for endpoint auth
     env: str = "development"  # "development", "staging", "production"
-    cors_origins: List[str] = ["http://localhost:8000", "http://127.0.0.1:8000"]
+    cors_origins: list[str] = ["http://localhost:8000", "http://127.0.0.1:8000"]
 
     # Security & Integrity
     checkpoint_hmac_key: str = ""
@@ -26,21 +25,21 @@ class Settings(BaseSettings):
     llm_timeout_seconds: float = 30.0
     llm_max_retries: int = 2
 
-    # Per-Agent Providers ("anthropic", "groq", "fake")
-    planner_provider: str = "anthropic"
-    planner_model: str = "claude-haiku-5-5"
+    # Per-Agent Providers & Models ("groq", "anthropic", "fake")
+    planner_provider: str = "groq"
+    planner_model: str = "llama-3.3-70b-versatile"
 
-    researcher_provider: str = "anthropic"
-    researcher_model: str = "claude-haiku-5-5"
+    researcher_provider: str = "groq"
+    researcher_model: str = "llama-3.3-70b-versatile"
 
-    writer_provider: str = "anthropic"
-    writer_model: str = "claude-sonnet-5-5"
+    writer_provider: str = "groq"
+    writer_model: str = "llama-3.3-70b-versatile"
 
-    supervisor_provider: str = "anthropic"
-    supervisor_model: str = "claude-haiku-5-5"
+    supervisor_provider: str = "groq"
+    supervisor_model: str = "llama-3.3-70b-versatile"
 
-    critic_provider: str = "anthropic"
-    critic_model: str = "claude-haiku-5-5"
+    critic_provider: str = "groq"
+    critic_model: str = "llama-3.3-70b-versatile"
 
     # Redis Persistence
     redis_url: str = "redis://localhost:6379/0"

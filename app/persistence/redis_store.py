@@ -31,6 +31,7 @@ class RedisStore:
             if self._fake_client is None:
                 try:
                     import fakeredis
+
                     self._fake_client = fakeredis.FakeRedis(decode_responses=True)
                     self.load_from_disk()
                 except Exception:
@@ -44,6 +45,7 @@ class RedisStore:
         except Exception as e:
             logger.warning(f"Could not connect to Redis at {settings.redis_url} ({e}); falling back to fakeredis")
             import fakeredis
+
             self._fake_client = fakeredis.FakeRedis(decode_responses=True)
             self.load_from_disk()
             return self._fake_client

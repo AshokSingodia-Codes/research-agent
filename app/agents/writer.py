@@ -1,5 +1,6 @@
 from typing import Any
 
+from app.config import settings
 from app.llm.client import llm_client
 from app.models.schemas import (
     CitationKey,
@@ -80,6 +81,7 @@ def write_report(
         run_id=run_id,
         parent_step_id=parent_step_id,
         budget_guard=budget_guard,
+        model=settings.writer_model,
     )
 
     report.topic = topic

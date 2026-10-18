@@ -17,7 +17,7 @@ async def test_citation_validator_filters_hallucinated_sources():
             claim="Multi-Raft shards data into consensus partitions.",
             source_url="https://arxiv.org/abs/2401.0001",
             domain="arxiv.org",
-            snippet="Partitions reduce write bottlenecks."
+            snippet="Partitions reduce write bottlenecks.",
         )
     ]
 
@@ -31,16 +31,16 @@ async def test_citation_validator_filters_hallucinated_sources():
                 source_url="https://arxiv.org/abs/2401.0001",
                 domain="arxiv.org",
                 claim_supported="Multi-Raft shards data",
-                snippet_reference="Partitions reduce write bottlenecks"
+                snippet_reference="Partitions reduce write bottlenecks",
             ),
             Citation(
                 citation_id="[2]",
                 source_url="https://fake-hallucinated-source.com/paper",
                 domain="fake-hallucinated-source.com",
                 claim_supported="Hallucinated claim",
-                snippet_reference="Fake snippet"
-            )
-        ]
+                snippet_reference="Fake snippet",
+            ),
+        ],
     )
 
     validated_report, warnings = validate_report_citations(report, real_evidence)
@@ -68,10 +68,7 @@ async def test_fastapi_research_lifecycle_and_trace_endpoints():
         assert health_resp.json()["status"] == "healthy"
 
         # 2. POST /research (returns run_id immediately)
-        post_resp = await client.post(
-            "/research",
-            json={"topic": "Consensus in Distributed Databases"}
-        )
+        post_resp = await client.post("/research", json={"topic": "Consensus in Distributed Databases"})
         assert post_resp.status_code == 202
         body = post_resp.json()
         assert "run_id" in body

@@ -224,7 +224,9 @@ def test_property_style_graph_termination_with_random_agent_outputs(setup_fake_l
                             content_hash=f"hash_{random.randint(1, 100)}",
                             confidence=random.uniform(0.5, 1.0),
                         )
-                    ] if random.random() > 0.3 else [],
+                    ]
+                    if random.random() > 0.3
+                    else [],
                 )
             )
             # Queue random review decision

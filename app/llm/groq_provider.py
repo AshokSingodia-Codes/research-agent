@@ -39,6 +39,7 @@ class GroqProvider(LLMProvider):
                 raise AuthError("GROQ_API_KEY is missing or empty.")
             try:
                 import groq
+
                 self._client = groq.Groq(api_key=self.api_key)
             except Exception as e:
                 raise AuthError(f"Failed to initialize Groq client: {e}")

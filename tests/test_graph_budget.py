@@ -22,12 +22,12 @@ def test_supervisor_allows_work_back_exactly_once():
         id="sq_retry",
         question="What are the specific benchmarks?",
         rationale="Needs quantitative data.",
-        expected_evidence="Numbers and graphs."
+        expected_evidence="Numbers and graphs.",
     )
     deficient_output = ResearcherOutput(
         sub_question_id="sq_retry",
         findings=[],  # Empty findings = deficient
-        search_status=SearchStatus(status="no_results", result_count=0)
+        search_status=SearchStatus(status="no_results", result_count=0),
     )
 
     # First inspection: attempt 0 -> should allow retry exactly once
@@ -37,7 +37,7 @@ def test_supervisor_allows_work_back_exactly_once():
         current_retry_count=0,
         total_tokens=100,
         elapsed_seconds=10.0,
-        is_last_subquestion=False
+        is_last_subquestion=False,
     )
     assert review1.allow_retry is True
     assert review1.next_action == "retry_subquestion"
@@ -49,7 +49,7 @@ def test_supervisor_allows_work_back_exactly_once():
         current_retry_count=1,
         total_tokens=200,
         elapsed_seconds=20.0,
-        is_last_subquestion=False
+        is_last_subquestion=False,
     )
     assert review2.allow_retry is False
     assert review2.next_action == "continue_research"  # moves on instead of infinite loop
@@ -60,19 +60,14 @@ def test_supervisor_allows_work_back_exactly_once():
 def test_supervisor_enforces_wall_clock_ceiling():
     """Validates that supervisor forces termination when wall-clock ceiling is exceeded."""
     sub_q = SubQuestion(
-        id="sq_timeout",
-        question="Long running query",
-        rationale="Timeout test",
-        expected_evidence="Data"
+        id="sq_timeout", question="Long running query", rationale="Timeout test", expected_evidence="Data"
     )
     valid_output = ResearcherOutput(
         sub_question_id="sq_timeout",
         findings=[
-            EvidenceRecord(
-                claim="Claim", source_url="https://example.com", domain="example.com", snippet="Snip"
-            )
+            EvidenceRecord(claim="Claim", source_url="https://example.com", domain="example.com", snippet="Snip")
         ],
-        search_status=SearchStatus(status="success", result_count=1)
+        search_status=SearchStatus(status="success", result_count=1),
     )
 
     review, trace = review_research_output(
@@ -81,7 +76,7 @@ def test_supervisor_enforces_wall_clock_ceiling():
         current_retry_count=0,
         total_tokens=500,
         elapsed_seconds=settings.wall_clock_timeout_seconds + 5.0,  # exceeds ceiling
-        is_last_subquestion=False
+        is_last_subquestion=False,
     )
 
     assert review.next_action == "synthesize_report"
@@ -92,20 +87,13 @@ def test_supervisor_enforces_wall_clock_ceiling():
 @pytest.mark.integration
 def test_supervisor_enforces_token_budget_cap():
     """Validates that supervisor halts iteration when token budget is exhausted."""
-    sub_q = SubQuestion(
-        id="sq_token",
-        question="Query",
-        rationale="Token test",
-        expected_evidence="Data"
-    )
+    sub_q = SubQuestion(id="sq_token", question="Query", rationale="Token test", expected_evidence="Data")
     valid_output = ResearcherOutput(
         sub_question_id="sq_token",
         findings=[
-            EvidenceRecord(
-                claim="Claim", source_url="https://example.com", domain="example.com", snippet="Snip"
-            )
+            EvidenceRecord(claim="Claim", source_url="https://example.com", domain="example.com", snippet="Snip")
         ],
-        search_status=SearchStatus(status="success", result_count=1)
+        search_status=SearchStatus(status="success", result_count=1),
     )
 
     review, trace = review_research_output(
@@ -114,7 +102,7 @@ def test_supervisor_enforces_token_budget_cap():
         current_retry_count=0,
         total_tokens=settings.max_total_tokens + 1000,  # exceeds token limit
         elapsed_seconds=10.0,
-        is_last_subquestion=False
+        is_last_subquestion=False,
     )
 
     assert review.next_action == "synthesize_report"
