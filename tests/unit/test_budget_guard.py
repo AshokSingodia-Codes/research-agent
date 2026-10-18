@@ -254,3 +254,207 @@ def test_property_style_graph_termination_with_random_agent_outputs(setup_fake_l
         assert final_state is not None
         assert final_state.get("status") in [RunStatus.COMPLETED, RunStatus.NEEDS_REVIEW, RunStatus.FAILED]
         assert final_state.get("final_report") is not None
+
+
+@pytest.mark.asyncio
+async def test_twenty_concurrent_charges_never_exceed_cap():
+    """Validates that 20 concurrent charges never exceed the token or USD budget cap."""
+    import asyncio
+
+    from app.persistence.redis_store import redis_store
+
+    client = redis_store.get_client()
+    run_id = f"test_concurrent_20_{time.time()}"
+    client.delete(f"budget:{run_id}:tokens")
+    client.delete(f"budget:{run_id}:usd_micros")
+    client.delete(f"budget:{run_id}:start_time")
+
+    # Limit: 1000 tokens, $0.50 USD
+    guard = BudgetGuard(
+        run_id=run_id,
+        max_total_tokens=1000,
+        max_usd_cost=0.50,
+        redis_client=client,
+    )
+
+    successful_charges = 0
+    failed_charges = 0
+
+    async def charge_attempt():
+        nonlocal successful_charges, failed_charges
+        try:
+            # Each worker attempts 100 tokens and $0.05 spend
+            guard.reserve(estimated_tokens=100)
+            guard.settle(actual_tokens=100, usd_cost=0.05, reserved_tokens=100)
+            successful_charges += 1
+        except BudgetExceededError:
+            failed_charges += 1
+
+    # 20 concurrent workers attempting 2000 tokens total (cap is 1000)
+    await asyncio.gather(*[charge_attempt() for _ in range(20)])
+
+    final_tokens = int(client.get(f"budget:{run_id}:tokens") or 0)
+    final_micros = int(client.get(f"budget:{run_id}:usd_micros") or 0)
+
+    assert final_tokens <= 1000, f"Token cap exceeded: {final_tokens} > 1000"
+    assert final_micros <= 500_000, f"USD micro cap exceeded: {final_micros} > 500000"
+    assert successful_charges <= 10
+    assert failed_charges >= 10
+
+
+def test_two_simulated_processes_sharing_redis_never_exceed_cap():
+    """Validates that two simulated processes sharing one Redis never exceed the budget cap."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    from app.persistence.redis_store import redis_store
+
+    client = redis_store.get_client()
+    run_id = f"test_shared_proc_{time.time()}"
+    client.delete(f"budget:{run_id}:tokens")
+    client.delete(f"budget:{run_id}:usd_micros")
+
+    # Max tokens = 500
+    # Process 1 and Process 2 both try to reserve and charge 350 tokens
+    def proc_charge(proc_id: str):
+        p_guard = BudgetGuard(
+            run_id=run_id,
+            max_total_tokens=500,
+            max_usd_cost=1.00,
+            redis_client=client,
+        )
+        try:
+            p_guard.reserve(estimated_tokens=350)
+            p_guard.settle(actual_tokens=350, usd_cost=0.01, reserved_tokens=350)
+            return True
+        except BudgetExceededError:
+            return False
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        f1 = executor.submit(proc_charge, "proc_1")
+        f2 = executor.submit(proc_charge, "proc_2")
+        r1 = f1.result()
+        r2 = f2.result()
+
+    # Exactly one process should succeed, the other must be rejected
+    assert (r1 and not r2) or (r2 and not r1)
+
+    final_tokens = int(client.get(f"budget:{run_id}:tokens") or 0)
+    assert final_tokens == 350
+    assert final_tokens <= 500
+
+
+def test_resumed_run_does_not_double_count_earlier_spend():
+    """Validates that a resumed run preserves earlier spend and receives no fresh clock."""
+    from app.persistence.redis_store import redis_store
+
+    client = redis_store.get_client()
+    run_id = f"test_resume_spend_{time.time()}"
+    client.delete(f"budget:{run_id}:tokens")
+    client.delete(f"budget:{run_id}:usd_micros")
+    client.delete(f"budget:{run_id}:start_time")
+
+    past_time = time.time() - 50.0
+    guard1 = BudgetGuard(
+        run_id=run_id,
+        max_total_tokens=2000,
+        max_usd_cost=1.00,
+        start_time=past_time,
+        redis_client=client,
+    )
+    guard1.reserve(400)
+    guard1.settle(actual_tokens=400, usd_cost=0.02, reserved_tokens=400)
+
+    assert int(client.get(f"budget:{run_id}:tokens")) == 400
+
+    # Resumed process initializes BudgetGuard with same run_id later
+    guard2 = BudgetGuard(
+        run_id=run_id,
+        max_total_tokens=2000,
+        max_usd_cost=1.00,
+        start_time=time.time(),  # attempts to provide new start time
+        redis_client=client,
+    )
+
+    # Must retain original persisted start time
+    assert abs(guard2.start_time - past_time) < 1.0, "Resumed run received fresh clock instead of persisted start_time"
+
+    # Must retain earlier spend
+    assert guard2.current_tokens == 400
+    assert abs(guard2.current_usd_cost - 0.02) < 0.001
+
+    # Additional spend increments on top of earlier spend without double-counting
+    guard2.reserve(300)
+    guard2.settle(actual_tokens=300, usd_cost=0.01, reserved_tokens=300)
+
+    final_tokens = int(client.get(f"budget:{run_id}:tokens"))
+    assert final_tokens == 700
+    final_micros = int(client.get(f"budget:{run_id}:usd_micros"))
+    assert final_micros == 30_000  # $0.03
+
+
+def test_failed_or_cancelled_call_releases_budget_reservation_and_rejected_produces_partial():
+    """
+    Validates that:
+    1. A failed or cancelled LLM call releases its budget reservation so no tokens are leaked.
+    2. A rejected reservation produces a typed BudgetExceededError which routes to a partial report.
+    """
+    from app.persistence.redis_store import redis_store
+
+    client = redis_store.get_client()
+    run_id = f"test_res_rel_{time.time()}"
+    client.delete(f"budget:{run_id}:tokens")
+    client.delete(f"budget:{run_id}:usd_micros")
+    client.delete(f"budget:{run_id}:start_time")
+
+    guard = BudgetGuard(
+        run_id=run_id,
+        max_total_tokens=1000,
+        max_usd_cost=1.00,
+        redis_client=client,
+    )
+
+    # 1. Reserve 400 tokens
+    guard.reserve(400)
+    assert int(client.get(f"budget:{run_id}:tokens")) == 400
+
+    # Simulate failure or cancellation: release the reservation without recording spend
+    guard.release_reservation(reserved_tokens=400)
+    assert int(client.get(f"budget:{run_id}:tokens")) == 0
+    assert guard.current_tokens == 0
+    assert guard.current_usd_cost == 0.0
+
+    # 2. Next call can use full budget without leak
+    guard.reserve(950)
+    assert int(client.get(f"budget:{run_id}:tokens")) == 950
+    guard.settle(actual_tokens=900, usd_cost=0.01, reserved_tokens=950)
+    assert int(client.get(f"budget:{run_id}:tokens")) == 900
+
+    # 3. Attempting to reserve 200 tokens when cap is 1000 (900 + 200 > 1000) is rejected
+    with pytest.raises(BudgetExceededError) as exc_info:
+        guard.reserve(200)
+    assert "Token budget exceeded" in exc_info.value.reason
+    assert exc_info.value.budget_type == "tokens"
+
+    # 4. In a graph execution, rejected reservation leads to partial report
+    graph = build_research_graph()
+    initial_state = {
+        "run_id": f"test_graph_rej_{time.time()}",
+        "question": "Quantum Memory Coherence Benchmarks",
+        "start_time": time.time(),
+        "total_tokens": 980,  # Near 1000 token cap
+        "total_usd_cost": 0.0,
+        "step_index": 0,
+    }
+    # monkeypatch max_total_tokens to 1000
+    from app.config import settings
+    orig_cap = settings.max_total_tokens
+    settings.max_total_tokens = 1000
+    try:
+        final_state = graph.invoke(initial_state)
+        assert final_state["partial"] is True
+        assert final_state["final_report"] is not None
+        assert final_state["final_report"].partial is True
+        assert "budget" in final_state["degradation_reason"].lower()
+    finally:
+        settings.max_total_tokens = orig_cap
+

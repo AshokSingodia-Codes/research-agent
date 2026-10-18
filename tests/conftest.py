@@ -76,7 +76,7 @@ def reset_rate_limiter_and_fake_llm(monkeypatch):
 
     client = redis_store.get_client()
     try:
-        keys = client.keys("research:ratelimit:*")
+        keys = list(client.keys("research:ratelimit:*")) + list(client.keys("budget:*"))
         if keys:
             client.delete(*keys)
     except Exception:

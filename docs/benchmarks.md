@@ -6,6 +6,7 @@
 - **Test File**: `tests/benchmarks/bench_parallel.py`
 - **Workload**: 4 independent SubQuestions
 - **Simulated Per-Call Latency**: 0.500s (`FakeProvider.async_delay_s`)
+- **Note**: Speedup was measured with FakeProvider at 0.5s simulated latency per call, not real LLM latency.
 - **Target Speedup**: $\ge 2.0\times$
 
 ### Benchmark Results

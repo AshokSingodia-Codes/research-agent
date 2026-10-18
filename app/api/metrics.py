@@ -55,6 +55,10 @@ research_tokens_total 128500
 # TYPE research_cost_usd_total counter
 research_cost_usd_total 0.4285
 
+# HELP http_requests_total Total HTTP requests handled
+# TYPE http_requests_total counter
+http_requests_total 42
+
 # HELP research_circuit_breaker_tripped Whether domain circuit breaker is tripped
 # TYPE research_circuit_breaker_tripped gauge
 research_circuit_breaker_tripped 0

@@ -27,7 +27,8 @@ def _get_or_create_guard(state: dict[str, Any]) -> BudgetGuard:
         max_usd_cost=settings.max_usd_cost,
         wall_clock_timeout_seconds=settings.wall_clock_timeout_seconds,
         max_repair_attempts=settings.max_repair_attempts,
-        start_time=state.get("start_time", time.time()),
+        start_time=state.get("start_time") or time.time(),
+        run_id=state.get("run_id", "run_default"),
     )
     guard.current_tokens = state.get("total_tokens", 0)
     guard.current_usd_cost = state.get("total_usd_cost", 0.0)

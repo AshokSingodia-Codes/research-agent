@@ -246,11 +246,10 @@ async def _execute_research_workflow(run_id: str, question: str, require_approva
             "cancelled": False,
         }
 
-        loop = asyncio.get_running_loop()
-        final_state = await loop.run_in_executor(None, lambda: graph.invoke(initial_state, config=config))
+        final_state = await graph.ainvoke(initial_state, config=config)
 
         # Check if paused before write
-        curr_state = graph.get_state(config)
+        curr_state = await graph.aget_state(config)
         if curr_state.next and "write" in curr_state.next:
             redis_store.save_run_state(
                 run_id,
@@ -293,8 +292,7 @@ async def _resume_approved_workflow(run_id: str) -> None:
         graph = build_research_graph(checkpointer=checkpointer, interrupt_before_write=False)
         config = {"configurable": {"thread_id": run_id}}
 
-        loop = asyncio.get_running_loop()
-        final_state = await loop.run_in_executor(None, lambda: graph.invoke(None, config=config))
+        final_state = await graph.ainvoke(None, config=config)
 
         await _finalize_completed_state(run_id, final_state)
 
