@@ -1,4 +1,5 @@
 import asyncio
+import os
 import time
 from typing import Any
 
@@ -8,6 +9,38 @@ from app.config import settings
 from app.llm.client import llm_client
 from app.llm.fake_provider import FakeProvider
 from app.persistence.redis_store import redis_store
+
+_REDIS_REACHABLE: bool | None = None
+
+
+def is_redis_reachable() -> bool:
+    global _REDIS_REACHABLE
+    if _REDIS_REACHABLE is not None:
+        return _REDIS_REACHABLE
+
+    redis_url = os.environ.get("REDIS_URL")
+    if not redis_url or os.environ.get("USE_FAKE_REDIS", "").lower() in ("true", "1", "yes"):
+        _REDIS_REACHABLE = False
+        return False
+
+    try:
+        import redis
+
+        client = redis.Redis.from_url(redis_url, socket_timeout=1.0, decode_responses=True)
+        client.ping()
+        _REDIS_REACHABLE = True
+    except Exception:
+        _REDIS_REACHABLE = False
+    return _REDIS_REACHABLE
+
+
+def pytest_runtest_setup(item):
+    if "redis_real" in item.keywords:
+        if not is_redis_reachable():
+            pytest.skip(
+                "Skipping redis_real test: Real Redis instance is not available at REDIS_URL. "
+                "Set REDIS_URL to a running Redis server or run in CI to execute this test."
+            )
 
 
 def pytest_collection_modifyitems(items):

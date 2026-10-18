@@ -33,3 +33,12 @@ ignore = ["E501"]
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-v --strict-markers -m 'unit or integration'"
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "chaos: Chaos resilience tests",
+    "e2e: End-to-end full tests",
+    "slow: Slow tests",
+    "live: Live API tests",
+    "redis_real: Tests requiring real Redis instance",
+]
