@@ -208,8 +208,14 @@ class ResearchStreamWorker:
             logger.warning(f"Global concurrency cap reached ({settings.max_concurrent_runs}); deferring job {entry_id}")
             return False
 
-        # Acquire owner-checked distributed run lock
-        owner_token = redis_store.acquire_lock(run_id, timeout_seconds=settings.worker_visibility_timeout)
+        # Acquire owner-checked distributed run lock (with short retry for immediate resume transitions)
+        owner_token = None
+        for _ in range(5):
+            owner_token = redis_store.acquire_lock(run_id, timeout_seconds=settings.worker_visibility_timeout)
+            if owner_token:
+                break
+            await asyncio.sleep(0.1)
+
         if not owner_token:
             logger.info(f"Another worker currently holds lock for run {run_id}; leaving job unacked for retry.")
             self._concurrency_limiter.release()

@@ -55,21 +55,22 @@ async def test_double_approve_starts_exactly_one_resume():
         {"run_id": run_id, "status": RunStatus.AWAITING_APPROVAL, "topic": "Consensus"},
     )
 
-    with patch("app.api.routes._resume_approved_workflow", new_callable=AsyncMock) as mock_resume:
-        mock_resume.return_value = None
-        async with AsyncClient(transport=transport, base_url="http://test") as client:
-            # 1. First approval: transitions awaiting_approval -> running
-            resp1 = await client.post(f"/research/{run_id}/approve", headers=headers)
-            assert resp1.status_code == 200
-            assert resp1.json()["status"] == "approved"
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # 1. First approval: transitions awaiting_approval -> running
+        resp1 = await client.post(f"/research/{run_id}/approve", headers=headers)
+        assert resp1.status_code == 200
+        assert resp1.json()["status"] == "approved"
 
-            # 2. Second approval: state is already running
-            resp2 = await client.post(f"/research/{run_id}/approve", headers=headers)
-            assert resp2.status_code == 200
-            assert resp2.json()["status"] == "running"
+        # 2. Second approval: state is already running
+        resp2 = await client.post(f"/research/{run_id}/approve", headers=headers)
+        assert resp2.status_code == 200
+        assert resp2.json()["status"] == "running"
 
-            # Exactly one resume was dispatched
-            assert mock_resume.call_count == 1
+        # Exactly one resume was dispatched to stream
+        redis_client = redis_store.get_client()
+        entries = redis_client.xrange("research:jobs", "-", "+")
+        resume_entries = [e for e in entries if e[1].get("run_id") == run_id and e[1].get("type") == "resume"]
+        assert len(resume_entries) == 1
 
 
 @pytest.mark.asyncio

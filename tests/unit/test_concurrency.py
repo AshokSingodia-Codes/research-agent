@@ -29,13 +29,19 @@ async def test_in_process_concurrency_limiter():
 @pytest.mark.unit
 def test_cross_process_concurrency_limiter_fakeredis_notice():
     """
-    Validates that CrossProcessConcurrencyLimiter identifies fakeredis's lack of Lua support
-    and raises NotImplementedError explaining the limitation.
+    Validates that CrossProcessConcurrencyLimiter identifies lack of Lua support
+    when ResponseError("unknown command 'eval'") occurs and raises NotImplementedError.
     """
-    client = redis_store.get_client()
-    limiter = CrossProcessConcurrencyLimiter(key="test:cap:fakeredis", max_concurrent=2, client=client)
+    from unittest.mock import MagicMock
+    from redis.exceptions import ResponseError
 
-    # In fakeredis without lupa, Lua eval raises ResponseError unknown command 'eval'
+    mock_client = MagicMock()
+    mock_client.eval.side_effect = ResponseError("unknown command 'eval'")
+
+    limiter = CrossProcessConcurrencyLimiter(
+        key="test:cap:fakeredis", max_concurrent=2, client=mock_client, fallback_on_unsupported=False
+    )
+
     with pytest.raises(NotImplementedError) as exc_info:
         limiter.acquire()
 

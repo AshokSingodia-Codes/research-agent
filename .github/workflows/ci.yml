@@ -45,14 +45,14 @@ jobs:
         run: |
           pytest
 
-      - name: Run Chaos and E2E Tests (Real Redis Service)
+      - name: Run Real Redis, Chaos, and E2E Tests (Real Redis Service)
         env:
           USE_FAKE_REDIS: "false"
           REDIS_URL: "redis://localhost:6379/0"
           MOCK_LLM: "true"
           MOCK_SEARCH: "true"
         run: |
-          pytest -m "chaos or e2e"
+          pytest -m "chaos or e2e or redis_real"
 
       - name: Upload Test Coverage Artifact
         uses: actions/upload-artifact@v4
