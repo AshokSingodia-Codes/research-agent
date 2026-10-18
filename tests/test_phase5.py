@@ -217,3 +217,32 @@ async def test_api_auth_and_metrics():
         metrics_resp = await client.get("/metrics")
         assert metrics_resp.status_code == 200
         assert "research_runs_total" in metrics_resp.text
+
+
+@pytest.mark.asyncio
+async def test_post_research_request_schema_alignment():
+    """Validates POST /research with question, topic, both, and neither (422)."""
+    transport = ASGITransport(app=app)
+    headers = {"X-API-Key": settings.api_key}
+
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # 1. POST with question
+        r1 = await client.post("/research", json={"question": "Valid Question One"}, headers=headers)
+        assert r1.status_code == 202
+        assert r1.json()["run_id"].startswith("run_")
+
+        # 2. POST with topic
+        r2 = await client.post("/research", json={"topic": "Valid Topic Two"}, headers=headers)
+        assert r2.status_code == 202
+        assert r2.json()["run_id"].startswith("run_")
+
+        # 3. POST with both
+        r3 = await client.post(
+            "/research", json={"question": "Question Three", "topic": "Topic Three"}, headers=headers
+        )
+        assert r3.status_code == 202
+        assert r3.json()["run_id"].startswith("run_")
+
+        # 4. POST with neither -> 422
+        r4 = await client.post("/research", json={}, headers=headers)
+        assert r4.status_code == 422

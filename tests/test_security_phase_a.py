@@ -134,6 +134,25 @@ def test_research_request_sanitization_and_length_limits():
     assert len(req_valid.question) == 500
 
 
+def test_research_request_accepts_question_and_topic_aliases():
+    """Validates that ResearchRequest accepts 'question', 'topic', both, and rejects neither."""
+    # 1. With question
+    r1 = ResearchRequest.model_validate({"question": "Consensus in Raft"})
+    assert r1.question == "Consensus in Raft"
+
+    # 2. With topic
+    r2 = ResearchRequest.model_validate({"topic": "Consensus in Raft"})
+    assert r2.question == "Consensus in Raft"
+
+    # 3. With both
+    r3 = ResearchRequest.model_validate({"question": "Question Q", "topic": "Topic T"})
+    assert r3.question in ("Question Q", "Topic T")
+
+    # 4. With neither
+    with pytest.raises(ValidationError):
+        ResearchRequest.model_validate({})
+
+
 def test_research_rate_limiter_blocks_excessive_submissions():
     """Validates that research submission rate limiter trips after 10 requests per minute."""
     caller_id = "test_rate_limited_caller"

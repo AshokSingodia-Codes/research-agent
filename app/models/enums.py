@@ -10,6 +10,10 @@ class ToolStatus(StrEnum):
     BLOCKED = "blocked"
     PARSE_ERROR = "parse_error"
 
+    @property
+    def status(self) -> str:
+        return "success" if self == ToolStatus.OK else str(self.value)
+
 
 class ReviewAction(StrEnum):
     ACCEPT = "accept"

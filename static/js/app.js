@@ -96,7 +96,7 @@ async function startResearch() {
         const resp = await fetch('/research', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic: topic })
+            body: JSON.stringify({ question: topic })
         });
 
         if (!resp.ok) {

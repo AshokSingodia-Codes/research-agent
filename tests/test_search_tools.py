@@ -1,8 +1,8 @@
 import httpx
 import pytest
 
-from src.tools.extractor import extract_page_content
-from src.tools.search import _extract_domain, search_and_extract
+from app.tools.fetch_extract import extract_page_content
+from app.tools.search import _extract_domain, search_and_extract
 
 
 @pytest.mark.unit
@@ -15,7 +15,7 @@ def test_domain_extraction():
 @pytest.mark.unit
 def test_url_deduplication_and_domain_capping(monkeypatch):
     """Validates that search deduplicates identical URLs and caps domains to max_per_domain."""
-    import src.tools.search as search_module
+    import app.tools.search as search_module
 
     # Mock raw search response with duplicate URLs and 4 items from the same domain
     class MockTavilyClient:
@@ -53,7 +53,8 @@ def test_url_deduplication_and_domain_capping(monkeypatch):
     monkeypatch.setitem(sys.modules, "tavily", mock_tavily)
 
     # Disable network extraction for pure deduplication test
-    findings, status = search_and_extract(query="test query", max_results=5, max_per_domain=2, fetch_full_page=False)
+    res = search_and_extract(query="test query", max_results=5, max_per_domain=2, fetch_full_page=False)
+    findings, status = res[0], res[-1]
 
     assert status.status == "success"
     # Should only have 3: 2 from domainA, 1 from domainB

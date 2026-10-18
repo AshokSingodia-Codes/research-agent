@@ -94,18 +94,30 @@ class RedisStore:
 
     # --- Run State Operations ---
 
-    def save_run_state(self, run_id: str, state_data: dict[str, Any], ttl: int | None = None) -> None:
+    def save_run_state(
+        self,
+        run_id: str,
+        state_data: dict[str, Any] | None = None,
+        ttl: int | None = None,
+        **kwargs,
+    ) -> None:
         client = self.get_client()
         key = f"research:state:{run_id}"
-        serialized = json.dumps(state_data, default=str)
+        merged = dict(state_data or {})
+        merged.update(kwargs)
+        if "run_id" not in merged:
+            merged["run_id"] = run_id
+        serialized = json.dumps(merged, default=str)
         if ttl:
             client.set(key, serialized, ex=ttl)
         else:
             client.set(key, serialized)
 
         # Track status in running runs index if in-progress
-        status = state_data.get("status", "")
-        if status in ("queued", "planning", "researching", "reviewing", "writing", "awaiting_approval"):
+        status = merged.get("status", "")
+        if hasattr(status, "value"):
+            status = status.value
+        if status in ("queued", "planning", "researching", "reviewing", "writing", "awaiting_approval", "in_progress"):
             client.sadd("research:running_runs", run_id)
         else:
             client.srem("research:running_runs", run_id)
@@ -124,6 +136,29 @@ class RedisStore:
             return json.loads(raw)
         except Exception:
             return None
+
+    def get_run_status(self, run_id: str) -> Any | None:
+        st = self.get_run_state(run_id)
+        if not st:
+            return None
+        from types import SimpleNamespace
+
+        completed = len(st.get("completed_subquestion_ids", st.get("completed_sq_ids", [])))
+        total_sq = st.get("total_subquestions", 0)
+        progress = st.get("progress_percentage", 0.0)
+        if total_sq > 0 and progress == 0.0:
+            progress = round((completed / total_sq) * 100.0, 1)
+
+        return SimpleNamespace(
+            run_id=st.get("run_id", run_id),
+            status=st.get("status", "unknown"),
+            progress_percentage=progress,
+            completed_subquestions=completed,
+            total_subquestions=total_sq,
+            total_tokens=st.get("total_tokens", 0),
+            current_node=st.get("current_node"),
+            error=st.get("error"),
+        )
 
     def list_running_runs(self) -> list[str]:
         client = self.get_client()

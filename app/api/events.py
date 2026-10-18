@@ -73,29 +73,74 @@ class EventBroker:
         if already_completed:
             return
 
-        # 2. Register live subscriber queue
-        queue: asyncio.Queue = asyncio.Queue()
-        if run_id not in self._subscribers:
-            self._subscribers[run_id] = []
-        self._subscribers[run_id].append(queue)
+        if not historical_raw and last_event_id is None:
+            state = redis_store.get_run_state(run_id)
+            if state:
+                yield f"data: {json.dumps({'type': 'init', 'status': state.get('status', 'in_progress'), 'progress': 0})}\n\n"
+
+        # 2. Use existing registered queue or create a new live subscriber queue
+        created_queue = False
+        if run_id in self._subscribers and self._subscribers[run_id]:
+            queue = self._subscribers[run_id][0]
+        else:
+            queue = asyncio.Queue()
+            if run_id not in self._subscribers:
+                self._subscribers[run_id] = []
+            self._subscribers[run_id].append(queue)
+            created_queue = True
 
         try:
             while True:
                 try:
                     evt = await asyncio.wait_for(queue.get(), timeout=25.0)
-                    if evt.get("id", 0) > last_id_seen:
-                        last_id_seen = evt["id"]
-                        yield f"id: {evt['id']}\nevent: {evt['event']}\ndata: {json.dumps(evt['data'])}\n\n"
-
-                    # If final completion or failure event received, exit stream
-                    if evt.get("event") in ("completed", "failed", "cancelled"):
+                    if evt is None:
+                        yield f"data: {json.dumps({'type': 'stream_end', 'message': 'Run execution finished'})}\n\n"
                         break
+
+                    if isinstance(evt, dict):
+                        if "event" in evt:
+                            if evt.get("id", 0) > last_id_seen:
+                                last_id_seen = evt["id"]
+                                yield f"id: {evt['id']}\nevent: {evt['event']}\ndata: {json.dumps(evt['data'])}\n\n"
+                            if evt.get("event") in ("completed", "failed", "cancelled"):
+                                break
+                        elif "type" in evt:
+                            yield f"data: {json.dumps(evt)}\n\n"
+                            if evt.get("type") in ("complete", "failed", "cancelled"):
+                                break
                 except TimeoutError:
                     # Keep-alive heartbeat comment
                     yield ": keep-alive\n\n"
         finally:
-            if run_id in self._subscribers and queue in self._subscribers[run_id]:
+            if created_queue and run_id in self._subscribers and queue in self._subscribers[run_id]:
                 self._subscribers[run_id].remove(queue)
+
+    def register_queue(self, run_id: str) -> asyncio.Queue:
+        """Registers a queue for a run and returns it."""
+        q = asyncio.Queue()
+        if run_id not in self._subscribers:
+            self._subscribers[run_id] = []
+        self._subscribers[run_id].append(q)
+        return q
+
+    def unregister_queue(self, run_id: str, queue: asyncio.Queue | None = None) -> None:
+        """Unregisters queue or all queues for run_id."""
+        if run_id in self._subscribers:
+            if queue:
+                if queue in self._subscribers[run_id]:
+                    self._subscribers[run_id].remove(queue)
+            else:
+                self._subscribers.pop(run_id, None)
 
 
 event_broker = EventBroker()
+
+
+def register_stream_queue(run_id: str) -> asyncio.Queue:
+    """Ported from src/services/runner.py: Registers an event queue for live progress streaming."""
+    return event_broker.register_queue(run_id)
+
+
+def unregister_stream_queue(run_id: str, queue: asyncio.Queue | None = None) -> None:
+    """Ported from src/services/runner.py: Cleans up the event queue for live progress streaming."""
+    event_broker.unregister_queue(run_id, queue)

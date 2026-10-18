@@ -1,5 +1,6 @@
 import ipaddress
 import logging
+import re
 import socket
 from typing import Any
 from urllib.parse import urlparse
@@ -23,6 +24,10 @@ PAYWALL_KEYWORDS = [
 MAX_RESPONSE_BYTES = 2 * 1024 * 1024  # 2 MB response size cap
 MAX_REDIRECTS = 3
 DEFAULT_TIMEOUT_SECONDS = 10.0
+DEFAULT_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+}
 
 
 def is_safe_url(url: str) -> tuple[bool, str]:
@@ -252,7 +257,7 @@ def extract_full_page(
             from bs4 import BeautifulSoup
 
             soup = BeautifulSoup(html_content, "html.parser")
-            for tag in soup(["script", "style", "nav", "footer", "header", "noscript"]):
+            for tag in soup(["script", "style", "nav", "footer", "header", "noscript", "svg", "aside"]):
                 tag.decompose()
             extracted = soup.get_text(separator="\n", strip=True)
         except Exception:
@@ -267,3 +272,58 @@ def extract_full_page(
         extracted = extracted[:char_limit] + "\n...[truncated to token cap]"
 
     return extracted, ToolStatus.OK
+
+
+def extract_page_content(
+    url: str,
+    timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
+    max_length: int = 4000,
+) -> tuple[str | None, str | None]:
+    """
+    Fetches and extracts clean, readable text from a target URL with BeautifulSoup.
+    Ported from src/tools/extractor.py.
+    Returns: (extracted_text, error_reason)
+    Never raises an uncaught exception.
+    """
+    try:
+        from bs4 import BeautifulSoup
+
+        safe, _ = is_safe_url(url)
+        if not safe:
+            return None, "blocked"
+
+        with httpx.Client(
+            headers=DEFAULT_HEADERS,
+            follow_redirects=True,
+            timeout=timeout_seconds,
+            verify=True,
+        ) as client:
+            resp = client.get(url)
+
+            if resp.status_code in (401, 403):
+                return None, f"paywalled_or_forbidden (HTTP {resp.status_code})"
+            if resp.status_code == 429:
+                return None, "rate_limited"
+            if resp.status_code >= 400:
+                return None, f"http_error_{resp.status_code}"
+
+            html = resp.text
+            soup = BeautifulSoup(html, "html.parser")
+
+            for tag in soup(["script", "style", "nav", "footer", "header", "noscript", "svg", "aside"]):
+                tag.decompose()
+
+            text = soup.get_text(separator=" ", strip=True)
+            text = re.sub(r"\s+", " ", text).strip()
+
+            if not text:
+                return None, "empty_content"
+
+            return text[:max_length], None
+
+    except httpx.TimeoutException:
+        return None, "timeout"
+    except httpx.RequestError as e:
+        return None, f"network_error: {type(e).__name__}"
+    except Exception as e:
+        return None, f"extraction_error: {e}"

@@ -105,6 +105,7 @@ async def get_research_status(
 
 
 @router.get("/{run_id}/events")
+@router.get("/{run_id}/stream")
 async def stream_research_events(
     run_id: str,
     last_event_id: str | None = Header(None, alias="Last-Event-ID"),
@@ -113,6 +114,7 @@ async def stream_research_events(
     """
     Server-Sent Events (SSE) live progress stream.
     Supports reconnection playback via the Last-Event-ID header.
+    Accessible via both /events and /stream (for frontend compatibility).
     """
     last_id_num = None
     if last_event_id:

@@ -1,7 +1,7 @@
 import uuid
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import AliasChoices, BaseModel, Field, field_validator
 
 from app.models.enums import ReviewAction, RunStatus, ToolStatus
 
@@ -55,6 +55,12 @@ class ToolResult(BaseModel):
     error_message: str | None = None
     query: str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
+
+    def __iter__(self):
+        return iter((self.findings, self.status))
+
+    def __getitem__(self, item: int):
+        return (self.findings, self.status)[item]
 
 
 class ReviewDecision(BaseModel):
@@ -128,7 +134,13 @@ class StepTrace(BaseModel):
 
 
 class ResearchRequest(BaseModel):
-    question: str = Field(..., min_length=3, max_length=500, description="Research topic or question")
+    question: str = Field(
+        ...,
+        validation_alias=AliasChoices("question", "topic"),
+        min_length=3,
+        max_length=500,
+        description="Research topic or question",
+    )
     require_approval: bool = Field(default=False, description="Whether to pause for human approval before writing")
     budget_overrides: dict[str, Any] | None = Field(default=None, description="Optional overrides for BudgetGuard")
 

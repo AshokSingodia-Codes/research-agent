@@ -4,9 +4,10 @@ import json
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from src.api.main import app
-from src.graph.redis_store import redis_store
-from src.services.runner import register_stream_queue
+from app.api.events import register_stream_queue
+from app.config import settings
+from app.main import app
+from app.persistence.redis_store import redis_store
 
 
 @pytest.mark.e2e
@@ -38,7 +39,9 @@ async def test_sse_progress_streaming_lifecycle():
 
         # Read stream
         events_received = []
-        async with client.stream("GET", f"/research/{run_id}/stream") as response:
+        async with client.stream(
+            "GET", f"/research/{run_id}/stream", headers={"X-API-Key": settings.api_key}
+        ) as response:
             assert response.status_code == 200
             assert "text/event-stream" in response.headers["content-type"]
 
