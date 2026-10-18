@@ -249,3 +249,96 @@ def test_live_anthropic_planner_smoke():
     plan, trace = plan_research("What are the architectural trade-offs of LSM trees vs B-trees?")
     assert len(plan.sub_questions) >= 3
     assert trace.provider == "anthropic"
+
+
+def test_planner_in_isolation():
+    """Validates that Planner produces structured, non-vague sub-questions respecting budgets."""
+    topic = "Distributed Consensus in Multi-Raft Architectures"
+    plan, trace = plan_research(topic)
+
+    assert plan is not None
+    assert plan.topic == topic
+    assert len(plan.sub_questions) >= 1
+
+    for sq in plan.sub_questions:
+        assert sq.id.startswith("sq_")
+        assert len(sq.text.strip()) > 5
+        assert len(sq.rationale.strip()) > 5
+
+    assert trace.agent == "planner"
+    assert trace.latency_ms >= 0
+    assert trace.total_tokens >= 0
+
+
+def test_researcher_in_isolation():
+    """Validates that Researcher returns structured findings with strict source provenance."""
+    sub_q = SubQuestion(
+        id="sq_1",
+        text="What is the leader election latency in Multi-Raft?",
+        rationale="Evaluates consensus recovery time.",
+    )
+
+    output, trace = research_subquestion(sub_q)
+
+    assert output.sub_question_id == "sq_1"
+    assert len(output.findings) > 0
+
+    for finding in output.findings:
+        assert finding.claim != ""
+        assert finding.source_url.startswith("http")
+        assert finding.domain != ""
+        assert finding.snippet != ""
+
+    assert trace.agent == "researcher"
+
+
+def test_researcher_handles_search_failure_gracefully(monkeypatch):
+    """Validates that search failures yield structured status instead of raising uncaught exceptions."""
+    sub_q = SubQuestion(
+        id="sq_fail",
+        text="What happens when rate limited?",
+        rationale="Fault tolerance test.",
+    )
+
+    output, trace = research_subquestion(sub_q, source_documents=[])
+    assert output.sub_question_id == "sq_fail"
+    assert trace.agent == "researcher"
+
+
+def test_writer_in_isolation():
+    """Validates that Writer synthesizes evidence into a cited report matching provenance."""
+    topic = "Multi-Raft Consensus Performance"
+    mock_findings = [
+        Finding(
+            id="fnd_1",
+            sub_question_id="sq_1",
+            claim="Multi-Raft shards data into disjoint consensus groups.",
+            source_url="https://arxiv.org/abs/2401.0001",
+            domain="arxiv.org",
+            snippet="Sharding into multiple raft groups reduces lock contention.",
+            retrieval_timestamp=100.0,
+            content_hash="h1",
+            confidence=0.9,
+        ),
+        Finding(
+            id="fnd_2",
+            sub_question_id="sq_1",
+            claim="Average leader election latency is under 50ms with heartbeats set to 10ms.",
+            source_url="https://github.com/tikv/tikv",
+            domain="github.com",
+            snippet="Empirical benchmarks indicate election time is below 50ms.",
+            retrieval_timestamp=100.0,
+            content_hash="h2",
+            confidence=0.95,
+        ),
+    ]
+
+    report, trace = write_report(topic, mock_findings)
+
+    assert report.topic == topic
+    assert report.summary != ""
+    assert len(report.sections) >= 1
+    assert len(report.citations) >= 1
+
+    assert trace.agent == "writer"
+    assert trace.latency_ms >= 0

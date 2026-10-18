@@ -205,6 +205,10 @@ async def _execute_research_workflow(run_id: str, question: str, require_approva
     try:
         import time
 
+        curr = redis_store.get_run_state(run_id)
+        if curr and curr.get("status") == RunStatus.CANCELLED:
+            return
+
         graph = build_research_graph(checkpointer=checkpointer, interrupt_before_write=require_approval)
         config = {"configurable": {"thread_id": run_id}}
 
@@ -237,6 +241,7 @@ async def _execute_research_workflow(run_id: str, question: str, require_approva
                 },
             )
             event_broker.publish_event(run_id, "approval_requested", {"run_id": run_id})
+            redis_store.release_lock(run_id)
             return
 
         # Complete run
@@ -252,8 +257,10 @@ async def _execute_research_workflow(run_id: str, question: str, require_approva
 
 async def _resume_approved_workflow(run_id: str) -> None:
     """Resumes an approved workflow from the write interrupt."""
+    redis_store.release_lock(run_id)
     locked = redis_store.acquire_lock(run_id, timeout_seconds=60.0)
     if not locked:
+        logger.warning(f"Could not acquire lock to resume run {run_id}")
         return
 
     try:

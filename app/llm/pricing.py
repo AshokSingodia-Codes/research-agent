@@ -33,7 +33,7 @@ def calculate_cost(provider: str, model: str, tokens_in: int, tokens_out: int) -
                 break
         if not matched:
             # Default fallback for unknown models
-            in_price, out_price = (0.50, 1.50)
+            in_price, out_price = (0.0, 0.0)
 
     cost = (tokens_in / 1_000_000.0) * in_price + (tokens_out / 1_000_000.0) * out_price
     return round(cost, 6)

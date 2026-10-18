@@ -253,3 +253,157 @@ def test_ready_subquestions_dependency_resolution():
     # When sq_1 and sq_2 complete, sq_3 becomes ready
     ready3 = get_ready_subquestions(all_sqs, completed_ids={"sq_1", "sq_2"}, in_flight_ids=set())
     assert [sq.id for sq in ready3] == ["sq_3"]
+
+
+def test_domain_extraction():
+    from app.tools.search import _extract_domain
+
+    assert _extract_domain("https://www.example.com/path?q=1") == "example.com"
+    assert _extract_domain("https://sub.docs.redis.io/item") == "sub.docs.redis.io"
+    assert _extract_domain("invalid-url") == "unknown"
+
+
+def test_url_deduplication_and_domain_capping(monkeypatch):
+    """Validates that search deduplicates identical URLs and caps domains to max_per_domain."""
+    import sys
+    from unittest.mock import MagicMock
+
+    import app.tools.search as search_module
+    from app.tools.search import search_and_extract
+
+    class MockTavilyClient:
+        def __init__(self, api_key):
+            pass
+
+        def search(self, **kwargs):
+            return {
+                "results": [
+                    {"url": "https://domainA.com/page1", "title": "A1", "content": "Content A1"},
+                    {
+                        "url": "https://domainA.com/page1",
+                        "title": "A1 Duplicate",
+                        "content": "Content A1",
+                    },
+                    {"url": "https://domainA.com/page2", "title": "A2", "content": "Content A2"},
+                    {
+                        "url": "https://domainA.com/page3",
+                        "title": "A3",
+                        "content": "Content A3",
+                    },
+                    {"url": "https://domainB.com/page1", "title": "B1", "content": "Content B1"},
+                ]
+            }
+
+    monkeypatch.setattr(search_module.settings, "mock_search", "false")
+    monkeypatch.setattr(search_module.settings, "tavily_api_key", "dummy_key")
+
+    mock_tavily = MagicMock()
+    mock_tavily.TavilyClient = MockTavilyClient
+    monkeypatch.setitem(sys.modules, "tavily", mock_tavily)
+
+    res = search_and_extract(query="test query", max_results=5, max_per_domain=2, fetch_full_page=False)
+    findings, status = res[0], res[-1]
+
+    assert status.status == "success"
+    assert len(findings) == 3
+    urls = [f.source_url for f in findings]
+    assert len(urls) == len(set(urls))
+
+    domainA_count = sum(1 for f in findings if f.domain == "domaina.com")
+    assert domainA_count <= 2
+
+
+def test_page_extractor_html_cleaning(monkeypatch):
+    """Validates that page extractor strips scripts, styles, and headers and extracts clean text."""
+    import httpx
+
+    from app.tools.fetch_extract import extract_page_content
+
+    sample_html = """
+    <html>
+        <head><style>body { color: red; }</style></head>
+        <body>
+            <nav><a href="/">Home</a></nav>
+            <script>alert("hack");</script>
+            <main>
+                <h1>System Scalability</h1>
+                <p>Distributed key-value checkpoints guarantee state persistence.</p>
+            </main>
+            <footer>Copyright 2026</footer>
+        </body>
+    </html>
+    """
+
+    class MockResponse:
+        status_code = 200
+        text = sample_html
+
+    class MockClient:
+        def __init__(self, **kwargs):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def get(self, url):
+            return MockResponse()
+
+    monkeypatch.setattr(httpx, "Client", MockClient)
+
+    text, error = extract_page_content("https://test.example.com/benchmarks")
+    assert error is None
+    assert text is not None
+    assert "System Scalability" in text
+    assert "Distributed key-value checkpoints guarantee state persistence." in text
+    assert "alert" not in text
+    assert "color: red" not in text
+    assert "Copyright" not in text
+
+
+def test_page_extractor_failure_paths(monkeypatch):
+    """Validates structured classification of extractor HTTP failure paths."""
+    import httpx
+
+    from app.tools.fetch_extract import extract_page_content
+
+    class FailingClient:
+        def __init__(self, status_code=403, raise_timeout=False, **kwargs):
+            self.status_code = status_code
+            self.raise_timeout = raise_timeout
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def get(self, url):
+            if self.raise_timeout:
+                raise httpx.TimeoutException("Connection timed out")
+
+            class Resp:
+                status_code = self.status_code
+                text = "Access Denied"
+
+            return Resp()
+
+    # 1. Paywalled / Forbidden (403)
+    monkeypatch.setattr(httpx, "Client", lambda **kw: FailingClient(status_code=403))
+    text, err = extract_page_content("https://paywalled.com/article")
+    assert text is None
+    assert "paywalled" in err
+
+    # 2. Rate Limited (429)
+    monkeypatch.setattr(httpx, "Client", lambda **kw: FailingClient(status_code=429))
+    text, err = extract_page_content("https://ratelimited.com/resource")
+    assert text is None
+    assert err == "rate_limited"
+
+    # 3. Timeout
+    monkeypatch.setattr(httpx, "Client", lambda **kw: FailingClient(raise_timeout=True))
+    text, err = extract_page_content("https://slowserver.com/delay")
+    assert text is None
+    assert err == "timeout"

@@ -73,7 +73,6 @@ class RedisCheckpointSaver(BaseCheckpointSaver):
         return self._serializer.loads_typed((t, b))
 
     def get_tuple(self, config: RunnableConfig) -> CheckpointTuple | None:
-        redis_store.load_from_disk()
         client = redis_store.get_client()
         thread_id = config["configurable"]["thread_id"]
         checkpoint_ns = config["configurable"].get("checkpoint_ns", "")
@@ -82,6 +81,9 @@ class RedisCheckpointSaver(BaseCheckpointSaver):
         if not checkpoint_id:
             # Get latest checkpoint_id for this thread
             latest_id = client.get(self._redis_key("latest", thread_id, checkpoint_ns))
+            if not latest_id and settings.use_fake_redis:
+                redis_store.load_from_disk()
+                latest_id = client.get(self._redis_key("latest", thread_id, checkpoint_ns))
             if not latest_id:
                 return None
             checkpoint_id = latest_id

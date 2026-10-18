@@ -1,5 +1,7 @@
+import atexit
 import json
 import logging
+import time
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +24,10 @@ class RedisStore:
     def __init__(self):
         self._client: redis.Redis | None = None
         self._fake_client: Any | None = None
+        self._last_sync_time: float = 0.0
+        self._dirty: bool = False
+        self._sync_debounce_seconds: float = 1.0
+        self.write_count: int = 0
 
     def get_client(self) -> redis.Redis:
         if self._client is not None:
@@ -52,9 +58,13 @@ class RedisStore:
 
         return self._client
 
-    def sync_to_disk(self) -> None:
-        """Flushes in-memory fake redis state to disk for subprocess durability."""
+    def sync_to_disk(self, force: bool = False) -> None:
+        """Flushes in-memory fake redis state to disk for subprocess durability with debounce."""
         if not settings.use_fake_redis or self._fake_client is None:
+            return
+        now = time.time()
+        self._dirty = True
+        if not force and (now - self._last_sync_time) < self._sync_debounce_seconds:
             return
         try:
             data = {}
@@ -67,8 +77,16 @@ class RedisStore:
                 elif t == "list":
                     data[k] = ("list", self._fake_client.lrange(k, 0, -1))
             FAKEDB_FILE.write_text(json.dumps(data), encoding="utf-8")
+            self._last_sync_time = now
+            self._dirty = False
+            self.write_count += 1
         except Exception as e:
             logger.warning(f"Failed to sync fake redis to disk: {e}")
+
+    def flush(self) -> None:
+        """Forced synchronous flush on shutdown or lifecycle termination."""
+        if self._dirty:
+            self.sync_to_disk(force=True)
 
     def load_from_disk(self) -> None:
         """Restores in-memory fake redis state from disk snapshot."""
@@ -195,10 +213,11 @@ class RedisStore:
 
     # --- Tracing Storage ---
 
-    def append_trace_step(self, run_id: str, step_data: dict[str, Any]) -> None:
+    def append_trace_step(self, run_id: str, step_data: Any) -> None:
         client = self.get_client()
         key = f"research:trace:{run_id}"
-        client.rpush(key, json.dumps(step_data, default=str))
+        data = step_data.model_dump() if hasattr(step_data, "model_dump") else step_data
+        client.rpush(key, json.dumps(data, default=str))
         self.sync_to_disk()
 
     def get_trace_steps(self, run_id: str) -> list[dict[str, Any]]:
@@ -236,3 +255,4 @@ class RedisStore:
 
 
 redis_store = RedisStore()
+atexit.register(redis_store.flush)

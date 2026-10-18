@@ -29,6 +29,11 @@ def review_findings(
     Enforces that retry_once is permitted at most once per sub-question.
     """
     # 1. Immediate budget circuit breaker check
+    if budget_guard is not None:
+        try:
+            budget_guard.check_before_call(estimated_tokens=0)
+        except Exception:
+            pass
     if budget_guard is not None and budget_guard.is_exhausted:
         decision = ReviewDecision(
             sub_question_id=sub_question.id,

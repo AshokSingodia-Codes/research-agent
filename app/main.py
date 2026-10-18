@@ -9,6 +9,7 @@ from starlette.staticfiles import StaticFiles
 from app.api.metrics import router as metrics_router
 from app.api.routes import router as research_router
 from app.config import settings
+from app.persistence.redis_store import redis_store
 from app.persistence.worker import worker
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
@@ -25,6 +26,7 @@ async def lifespan(app: FastAPI):
     await worker.resume_interrupted_runs()
     yield
     # Shutdown
+    redis_store.flush()
 
 
 app = FastAPI(

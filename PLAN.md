@@ -121,6 +121,7 @@ class SubQuestion(BaseModel):
     expected_source_types: List[str] = Field(default_factory=list)
     depends_on: List[str] = Field(default_factory=list, description="IDs of dependent sub-questions")
 
+
 class ResearchPlan(BaseModel):
     topic: str
     sub_questions: List[SubQuestion] = Field(min_length=1, max_length=8)
@@ -137,6 +138,7 @@ class ToolStatus(str, Enum):
     BLOCKED = "blocked"
     PARSE_ERROR = "parse_error"
 
+
 class Finding(BaseModel):
     id: str = Field(default_factory=lambda: f"fnd_{uuid.uuid4().hex[:8]}")
     sub_question_id: str
@@ -149,6 +151,7 @@ class Finding(BaseModel):
     content_hash: str
     confidence: float = Field(ge=0.0, le=1.0)
     source_quality_score: float = Field(default=0.5, ge=0.0, le=1.0)
+
 
 class ResearchFindings(BaseModel):
     sub_question_id: str
@@ -165,11 +168,13 @@ class ReviewAction(str, Enum):
     SKIP = "skip"
     ABORT = "abort"
 
+
 class ReviewDecision(BaseModel):
     sub_question_id: str
     action: ReviewAction
     reason: str
     follow_up_query: Optional[str] = None
+
 
 class Contradiction(BaseModel):
     id: str = Field(default_factory=lambda: f"contra_{uuid.uuid4().hex[:8]}")
@@ -179,17 +184,20 @@ class Contradiction(BaseModel):
     severity: Literal["low", "medium", "high"]
     explanation: str
 
+
 class CitationKey(BaseModel):
-    key: str # e.g. "[1]"
+    key: str  # e.g. "[1]"
     finding_id: str
     source_url: str
     domain: str
     claim: str
 
+
 class ReportSection(BaseModel):
     title: str
     content: str
     citations: List[str] = Field(default_factory=list)
+
 
 class Report(BaseModel):
     topic: str

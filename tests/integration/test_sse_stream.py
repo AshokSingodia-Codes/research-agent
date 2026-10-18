@@ -1,17 +1,16 @@
 import asyncio
 import json
+import time
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from app.api.events import register_stream_queue
+from app.api.events import event_broker, register_stream_queue
 from app.config import settings
 from app.main import app
 from app.persistence.redis_store import redis_store
 
 
-@pytest.mark.e2e
-@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_sse_progress_streaming_lifecycle():
     """Validates real-time Server-Sent Events (SSE) streaming endpoint."""
@@ -57,3 +56,29 @@ async def test_sse_progress_streaming_lifecycle():
         types = [e.get("type") for e in events_received]
         assert "init" in types
         assert "status" in types
+
+
+@pytest.mark.asyncio
+async def test_sse_ordering_and_reconnection_playback():
+    """Validates SSE event ordering and historical event replay via Last-Event-ID."""
+    run_id = f"test_sse_recon_{int(time.time() * 1000)}"
+
+    # Publish 3 sequential events to Redis
+    event_broker.publish_event(run_id, "node_started", {"node": "planner"})
+    event_broker.publish_event(run_id, "finding_added", {"claim": "Claim 1"})
+    event_broker.publish_event(run_id, "completed", {"status": "completed"})
+
+    transport = ASGITransport(app=app)
+    headers = {"X-API-Key": settings.api_key, "Last-Event-ID": "1"}
+
+    # Connect to SSE stream starting after event ID 1
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get(f"/research/{run_id}/events", headers=headers)
+        assert resp.status_code == 200
+        text = resp.text
+        # Event 1 was skipped; Events 2 and 3 must be present in exact order
+        assert "event: finding_added" in text
+        assert "event: completed" in text
+        idx2 = text.find("event: finding_added")
+        idx3 = text.find("event: completed")
+        assert idx2 < idx3, "SSE events must be ordered chronologically"

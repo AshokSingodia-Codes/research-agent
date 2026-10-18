@@ -12,9 +12,9 @@ Usage:
     python run_tests.py --durability    # Redis crash-resumption tests
 """
 
-import sys
 import argparse
 import subprocess
+import sys
 import time
 
 

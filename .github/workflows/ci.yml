@@ -37,13 +37,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Test Automation Suite with Coverage
+      - name: Run Unit and Integration Tests (FakeRedis)
         env:
           USE_FAKE_REDIS: "true"
           MOCK_LLM: "true"
           MOCK_SEARCH: "true"
         run: |
-          python run_tests.py
+          pytest
+
+      - name: Run Chaos and E2E Tests (Real Redis Service)
+        env:
+          USE_FAKE_REDIS: "false"
+          REDIS_URL: "redis://localhost:6379/0"
+          MOCK_LLM: "true"
+          MOCK_SEARCH: "true"
+        run: |
+          pytest -m "chaos or e2e"
 
       - name: Upload Test Coverage Artifact
         uses: actions/upload-artifact@v4

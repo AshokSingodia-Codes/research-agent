@@ -51,7 +51,8 @@ def plan_research(
         model=settings.planner_model,
     )
 
-    # Enforce limit clamp
+    # Enforce topic and limit clamp
+    plan.topic = topic
     if len(plan.sub_questions) > limit:
         plan.sub_questions = plan.sub_questions[:limit]
 
