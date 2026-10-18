@@ -165,6 +165,26 @@ async def approve_research_run(
     if not state:
         raise HTTPException(status_code=404, detail="Run not found")
 
+    curr_status = state.get("status")
+    if hasattr(curr_status, "value"):
+        curr_status = curr_status.value
+
+    # If already running or completed, return idempotent 200 without starting a second resume
+    if curr_status in (RunStatus.RUNNING.value, "running", RunStatus.COMPLETED.value, "completed"):
+        return {"status": str(curr_status), "message": f"Run '{run_id}' is already {curr_status}."}
+
+    # Atomic compare-and-set from awaiting_approval to running
+    transitioned = redis_store.transition_run_status(
+        run_id,
+        from_status=RunStatus.AWAITING_APPROVAL,
+        to_status=RunStatus.RUNNING,
+    )
+    if not transitioned:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Cannot approve run with status '{curr_status}'. Run must be in 'awaiting_approval'.",
+        )
+
     event_broker.publish_event(run_id, "approved", {"message": "Human approval granted; resuming synthesis."})
     asyncio.create_task(_resume_approved_workflow(run_id))
 
@@ -198,8 +218,9 @@ async def cancel_research_run(
 
 async def _execute_research_workflow(run_id: str, question: str, require_approval: bool) -> None:
     """Executes the workflow graph, records events, validates citations, and persists reports."""
-    locked = redis_store.acquire_lock(run_id, timeout_seconds=60.0)
-    if not locked:
+    token = redis_store.acquire_lock(run_id, timeout_seconds=120.0)
+    if not token:
+        logger.warning(f"Could not acquire lock for run {run_id}; already running.")
         return
 
     try:
@@ -241,7 +262,7 @@ async def _execute_research_workflow(run_id: str, question: str, require_approva
                 },
             )
             event_broker.publish_event(run_id, "approval_requested", {"run_id": run_id})
-            redis_store.release_lock(run_id)
+            redis_store.release_lock(run_id, token)
             return
 
         # Complete run
@@ -252,15 +273,20 @@ async def _execute_research_workflow(run_id: str, question: str, require_approva
         redis_store.save_run_state(run_id, {"status": RunStatus.FAILED, "error": str(e)})
         event_broker.publish_event(run_id, "failed", {"error": str(e)})
     finally:
-        redis_store.release_lock(run_id)
+        redis_store.release_lock(run_id, token)
 
 
 async def _resume_approved_workflow(run_id: str) -> None:
     """Resumes an approved workflow from the write interrupt."""
-    redis_store.release_lock(run_id)
-    locked = redis_store.acquire_lock(run_id, timeout_seconds=60.0)
-    if not locked:
-        logger.warning(f"Could not acquire lock to resume run {run_id}")
+    token = None
+    for attempt in range(5):
+        token = redis_store.acquire_lock(run_id, timeout_seconds=60.0)
+        if token:
+            break
+        await asyncio.sleep(0.05 * (2**attempt))
+
+    if not token:
+        logger.warning(f"Could not acquire lock to resume run {run_id}; another worker holds the lock.")
         return
 
     try:
@@ -276,7 +302,7 @@ async def _resume_approved_workflow(run_id: str) -> None:
         logger.exception(f"Error resuming run {run_id}: {e}")
         redis_store.save_run_state(run_id, {"status": RunStatus.FAILED, "error": str(e)})
     finally:
-        redis_store.release_lock(run_id)
+        redis_store.release_lock(run_id, token)
 
 
 async def _finalize_completed_state(run_id: str, final_state: dict[str, Any]) -> None:

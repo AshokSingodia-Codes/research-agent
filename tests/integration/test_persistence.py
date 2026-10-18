@@ -31,16 +31,16 @@ def test_redis_store_state_and_locks():
     assert run_id in redis_store.list_running_runs()
 
     # Worker 1 acquires lock
-    assert redis_store.acquire_lock(run_id, timeout_seconds=10.0) is True
+    assert bool(redis_store.acquire_lock(run_id, timeout_seconds=10.0)) is True
 
     # Worker 2 attempts to acquire lock on same run -> denied
-    assert redis_store.acquire_lock(run_id, timeout_seconds=10.0) is False
+    assert redis_store.acquire_lock(run_id, timeout_seconds=10.0) is None
 
     # Worker 1 releases lock
     redis_store.release_lock(run_id)
 
     # Worker 2 can now acquire lock
-    assert redis_store.acquire_lock(run_id, timeout_seconds=10.0) is True
+    assert bool(redis_store.acquire_lock(run_id, timeout_seconds=10.0)) is True
     redis_store.release_lock(run_id)
 
 

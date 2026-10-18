@@ -28,6 +28,7 @@ class RunStatus(StrEnum):
     RESEARCHING = "researching"
     REVIEWING = "reviewing"
     AWAITING_APPROVAL = "awaiting_approval"
+    RUNNING = "running"
     WRITING = "writing"
     CRITIQUING = "critiquing"
     COMPLETED = "completed"

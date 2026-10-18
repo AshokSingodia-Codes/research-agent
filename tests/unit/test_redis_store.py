@@ -106,12 +106,12 @@ def test_redis_store_locks():
     store = RedisStore()
     lock_id = "test_resource_lock"
 
-    assert store.acquire_lock(lock_id, timeout_seconds=10.0) is True
+    assert bool(store.acquire_lock(lock_id, timeout_seconds=10.0)) is True
     # Re-acquisition fails while locked
-    assert store.acquire_lock(lock_id, timeout_seconds=10.0) is False
+    assert store.acquire_lock(lock_id, timeout_seconds=10.0) is None
 
     # Release
     store.release_lock(lock_id)
     # Now acquisition succeeds again
-    assert store.acquire_lock(lock_id, timeout_seconds=10.0) is True
+    assert bool(store.acquire_lock(lock_id, timeout_seconds=10.0)) is True
     store.release_lock(lock_id)

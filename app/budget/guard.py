@@ -11,6 +11,9 @@ class BudgetExceededError(Exception):
         self.budget_type = budget_type
 
 
+BudgetExceeded = BudgetExceededError
+
+
 class BudgetGuard:
     """
     Hard Budget Circuit Breaker enforced inside graph logic before every LLM or tool call.
@@ -109,6 +112,16 @@ class BudgetGuard:
     def record_spend(self, tokens: int, usd_cost: float) -> None:
         self.current_tokens += tokens
         self.current_usd_cost = round(self.current_usd_cost + usd_cost, 6)
+        if self.current_usd_cost >= self.max_usd_cost:
+            self.is_exhausted = True
+            self.exhaustion_reason = (
+                f"USD cost limit exceeded: ${self.current_usd_cost:.4f} >= limit ${self.max_usd_cost:.2f}"
+            )
+            self.exhausted_budget_type = "cost"
+        elif self.current_tokens >= self.max_total_tokens:
+            self.is_exhausted = True
+            self.exhaustion_reason = f"Token budget exceeded: {self.current_tokens} >= limit {self.max_total_tokens}"
+            self.exhausted_budget_type = "tokens"
 
     def record_repair_attempt(self) -> None:
         self.current_repairs += 1

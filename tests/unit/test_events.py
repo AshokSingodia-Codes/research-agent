@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 
 from app.api.events import EventBroker, register_stream_queue, unregister_stream_queue
@@ -50,7 +52,7 @@ def test_event_broker_publish_event():
 async def test_event_generator_replay_and_stream():
     """Validates historical event replay with Last-Event-ID and live completion."""
     broker = EventBroker()
-    run_id = "test_run_replay_stream"
+    run_id = f"test_run_replay_stream_{uuid.uuid4().hex[:6]}"
 
     # Pre-populate history
     broker.publish_event(run_id, "node_start", {"node": "planner"})

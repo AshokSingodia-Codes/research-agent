@@ -2,6 +2,7 @@ import atexit
 import json
 import logging
 import time
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +13,14 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 FAKEDB_FILE = Path(".fake_redis.json")
+
+LUA_RELEASE_LOCK = """
+if redis.call('GET', KEYS[1]) == ARGV[1] then
+    return redis.call('DEL', KEYS[1])
+else
+    return 0
+end
+"""
 
 
 class RedisStore:
@@ -28,6 +37,7 @@ class RedisStore:
         self._dirty: bool = False
         self._sync_debounce_seconds: float = 1.0
         self.write_count: int = 0
+        self._owned_locks: dict[str, str] = {}
 
     def get_client(self) -> redis.Redis:
         if self._client is not None:
@@ -92,12 +102,17 @@ class RedisStore:
         """Restores in-memory fake redis state from disk snapshot."""
         if not settings.use_fake_redis or self._fake_client is None or not FAKEDB_FILE.exists():
             return
+        if self._dirty:
+            # In-memory changes exist that have not been written to disk yet; don't clobber
+            return
         try:
             content = FAKEDB_FILE.read_text(encoding="utf-8")
             if not content.strip():
                 return
             data = json.loads(content)
             for k, (t, val) in data.items():
+                if k.startswith("research:lock:"):
+                    continue
                 if t == "string":
                     self._fake_client.set(k, val)
                 elif t == "set":
@@ -135,7 +150,16 @@ class RedisStore:
         status = merged.get("status", "")
         if hasattr(status, "value"):
             status = status.value
-        if status in ("queued", "planning", "researching", "reviewing", "writing", "awaiting_approval", "in_progress"):
+        if status in (
+            "queued",
+            "planning",
+            "researching",
+            "reviewing",
+            "writing",
+            "awaiting_approval",
+            "in_progress",
+            "running",
+        ):
             client.sadd("research:running_runs", run_id)
         else:
             client.srem("research:running_runs", run_id)
@@ -185,20 +209,107 @@ class RedisStore:
 
     # --- Distributed Locks ---
 
-    def acquire_lock(self, run_id: str, timeout_seconds: float = 30.0) -> bool:
-        """Acquires a distributed lock for the specified run_id using SET NX PX."""
+    def acquire_lock(self, run_id: str, timeout_seconds: float = 30.0, token: str | None = None) -> str | None:
+        """
+        Acquires an owner-checked distributed lock for the specified run_id using SET NX PX.
+        Stores a random token (or specified token).
+        Returns the ownership token string if acquired, or None if already locked.
+        """
         client = self.get_client()
         lock_key = f"research:lock:{run_id}"
+        owner_token = token or uuid.uuid4().hex
         px_ms = int(timeout_seconds * 1000)
-        acquired = client.set(lock_key, "locked", nx=True, px=px_ms)
+        acquired = client.set(lock_key, owner_token, nx=True, px=px_ms)
+        if acquired:
+            self._owned_locks[run_id] = owner_token
         self.sync_to_disk()
-        return bool(acquired)
+        return owner_token if acquired else None
 
-    def release_lock(self, run_id: str) -> None:
+    def release_lock(self, run_id: str, token: str | None = None) -> bool:
+        """
+        Releases the distributed lock ONLY if the token matches the lock's current owner.
+        Uses Lua compare-and-delete when available, with an in-memory fallback for fakeredis.
+        Returns True if released, False if token did not match or lock did not exist.
+        """
+        if token is None:
+            token = self._owned_locks.get(run_id)
+
+        if token is None:
+            logger.warning(f"Unsafe lock release attempted for run_id '{run_id}' without token; ignored.")
+            return False
+
         client = self.get_client()
         lock_key = f"research:lock:{run_id}"
-        client.delete(lock_key)
+        released = False
+        try:
+            res = client.eval(LUA_RELEASE_LOCK, 1, lock_key, token)
+            released = bool(res == 1)
+        except Exception:
+            # Fallback for clients without Lua eval (e.g., fakeredis without lupa)
+            current = client.get(lock_key)
+            if current == token:
+                client.delete(lock_key)
+                released = True
+            else:
+                released = False
+
+        if released:
+            self._owned_locks.pop(run_id, None)
+
         self.sync_to_disk()
+        return released
+
+    def transition_run_status(
+        self,
+        run_id: str,
+        from_status: Any,
+        to_status: Any,
+    ) -> bool:
+        """
+        Performs an atomic compare-and-set status transition.
+        Updates state['status'] from from_status to to_status only if current status matches.
+        Returns True if transitioned, False otherwise.
+        """
+        client = self.get_client()
+        key = f"research:state:{run_id}"
+        from_val = from_status.value if hasattr(from_status, "value") else str(from_status)
+        to_val = to_status.value if hasattr(to_status, "value") else str(to_status)
+
+        raw = client.get(key)
+        if not raw and settings.use_fake_redis:
+            self.load_from_disk()
+            raw = client.get(key)
+        if not raw:
+            return False
+
+        try:
+            st = json.loads(raw)
+        except Exception:
+            return False
+
+        curr_status = st.get("status")
+        if hasattr(curr_status, "value"):
+            curr_status = curr_status.value
+        if curr_status != from_val:
+            return False
+
+        st["status"] = to_val
+        client.set(key, json.dumps(st, default=str))
+        if to_val in (
+            "queued",
+            "planning",
+            "researching",
+            "reviewing",
+            "writing",
+            "awaiting_approval",
+            "in_progress",
+            "running",
+        ):
+            client.sadd("research:running_runs", run_id)
+        else:
+            client.srem("research:running_runs", run_id)
+        self.sync_to_disk()
+        return True
 
     # --- TTL Management ---
 
