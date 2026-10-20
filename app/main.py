@@ -30,6 +30,7 @@ async def lifespan(app: FastAPI):
     inprocess_worker = None
     if settings.run_worker_inprocess:
         import asyncio
+
         from app.worker import ResearchStreamWorker
 
         inprocess_worker = ResearchStreamWorker()

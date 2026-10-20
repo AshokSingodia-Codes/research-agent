@@ -2,6 +2,18 @@
 
 All notable changes to the `research-agent` platform will be documented in this file.
 
+## [Phase 6 / C4] - Offline Benchmark & Evaluation Harness
+- Created curated dataset of 16 research benchmarks across technical deep dives, adversarial edge cases, and contradiction detection (`app/evals/datasets/core.jsonl`).
+- Implemented quantitative scorers for citation validity, plan-to-report coverage, source domain diversity, budget adherence, and contradiction detection.
+- Built naive single-prompt baseline runner measuring empirical statistical lift.
+- Created `app/evals/cli.py` generating Markdown (`docs/eval_report.md`) and JSON (`docs/eval_report.json`) benchmark telemetry.
+- Added comprehensive unit tests in `tests/unit/test_evals.py`.
+
+## [Phase 7 / C5] - Production Packaging, Docker & Polish
+- Created multi-stage production `Dockerfile` with non-root security context and built-in healthchecks.
+- Created production `docker-compose.yml` orchestrating API, Redis Stream Worker, and Redis 7 container with health checks.
+- Documented evaluation results, statistical lift, and deployment architecture in `README.md`.
+
 ## [Phase 4] - Durable State in Redis & Chaos Resilience
 - Implemented `RedisCheckpointSaver` extending LangGraph `BaseCheckpointSaver` to persist state checkpoints after every node.
 - Added automatic disk snapshot synchronization for fake Redis mode to guarantee cross-process durability.

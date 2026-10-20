@@ -1,0 +1,1513 @@
+{
+  "summary": {
+    "total_evaluations": 16,
+    "agent": {
+      "mean_citation_validity": 1.0,
+      "mean_plan_coverage": 0.25,
+      "mean_domain_diversity": 1.0,
+      "contradiction_accuracy": 0.8125,
+      "budget_compliance_ratio": 1.0
+    },
+    "baseline": {
+      "mean_citation_validity": 0.0,
+      "mean_plan_coverage": 0.0,
+      "mean_domain_diversity": 1.0,
+      "contradiction_accuracy": 0.8125
+    },
+    "statistical_lift": {
+      "citation_validity_lift": 1.0,
+      "plan_coverage_lift": 0.25,
+      "contradiction_lift": 0.0
+    }
+  },
+  "results": [
+    {
+      "id": "eval_01",
+      "category": "technical",
+      "topic": "Raft vs Paxos log compaction under high write throughput",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.25,
+          "total_subquestions": 4,
+          "covered_subquestions": 1,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 6400,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 2.25,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 6.25,
+          "total_citations_referenced": 3,
+          "valid_citations": 0,
+          "hallucinated_citations": 3
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 1250,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0025,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 0.05,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      }
+    },
+    {
+      "id": "eval_02",
+      "category": "technical",
+      "topic": "Zero-Knowledge rollup throughput bottlenecks in EVM architectures",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.25,
+          "total_subquestions": 4,
+          "covered_subquestions": 1,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 6400,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 1.78,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 6.82,
+          "total_citations_referenced": 3,
+          "valid_citations": 0,
+          "hallucinated_citations": 3
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 1250,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0025,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 0.05,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      }
+    },
+    {
+      "id": "eval_03",
+      "category": "technical",
+      "topic": "LSM-tree read amplification mitigation via Bloom filters and prefix tries",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.25,
+          "total_subquestions": 4,
+          "covered_subquestions": 1,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 6400,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 1.94,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 6.0,
+          "total_citations_referenced": 3,
+          "valid_citations": 0,
+          "hallucinated_citations": 3
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 1250,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0025,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 0.05,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      }
+    },
+    {
+      "id": "eval_04",
+      "category": "technical",
+      "topic": "Multi-version concurrency control in distributed PostgreSQL: CockroachDB vs YugabyteDB",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.25,
+          "total_subquestions": 4,
+          "covered_subquestions": 1,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 6400,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 1.85,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 6.25,
+          "total_citations_referenced": 3,
+          "valid_citations": 0,
+          "hallucinated_citations": 3
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 1250,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0025,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 0.05,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      }
+    },
+    {
+      "id": "eval_05",
+      "category": "technical",
+      "topic": "eBPF-based packet processing overhead compared to Linux iptables and nftables",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.25,
+          "total_subquestions": 4,
+          "covered_subquestions": 1,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 6400,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 2.04,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 6.0,
+          "total_citations_referenced": 3,
+          "valid_citations": 0,
+          "hallucinated_citations": 3
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 1250,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0025,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 0.05,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      }
+    },
+    {
+      "id": "eval_06",
+      "category": "technical",
+      "topic": "Cache coherence protocols in distributed GPU memory fabrics: NVLink vs CXL",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.25,
+          "total_subquestions": 4,
+          "covered_subquestions": 1,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 6400,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 2.0,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 5.77,
+          "total_citations_referenced": 3,
+          "valid_citations": 0,
+          "hallucinated_citations": 3
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 1250,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0025,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 0.05,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      }
+    },
+    {
+      "id": "eval_07",
+      "category": "adversarial",
+      "topic": "FlurbleGlock-9000 quantum hypervisor kernel architecture",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.25,
+          "total_subquestions": 4,
+          "covered_subquestions": 1,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 6400,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 2.17,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 7.5,
+          "total_citations_referenced": 3,
+          "valid_citations": 0,
+          "hallucinated_citations": 3
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 1250,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0025,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 0.05,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      }
+    },
+    {
+      "id": "eval_08",
+      "category": "adversarial",
+      "topic": "Consensus",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.25,
+          "total_subquestions": 4,
+          "covered_subquestions": 1,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 6400,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 2.23,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 9.38,
+          "total_citations_referenced": 3,
+          "valid_citations": 0,
+          "hallucinated_citations": 3
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 1250,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0025,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 0.05,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      }
+    },
+    {
+      "id": "eval_09",
+      "category": "adversarial",
+      "topic": "Exhaustive historical analysis of every cryptographic hash function constructed between 1975 and 2025",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.25,
+          "total_subquestions": 4,
+          "covered_subquestions": 1,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 6400,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 2.24,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 5.36,
+          "total_citations_referenced": 3,
+          "valid_citations": 0,
+          "hallucinated_citations": 3
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 1250,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0025,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 0.05,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      }
+    },
+    {
+      "id": "eval_10",
+      "category": "adversarial",
+      "topic": "SQL vs NoSQL databases in enterprise applications",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.25,
+          "total_subquestions": 4,
+          "covered_subquestions": 1,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 6400,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 2.26,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 6.82,
+          "total_citations_referenced": 3,
+          "valid_citations": 0,
+          "hallucinated_citations": 3
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 1250,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0025,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 0.05,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      }
+    },
+    {
+      "id": "eval_11",
+      "category": "contradiction",
+      "topic": "Impact of synchronous multi-datacenter replication on tail commit latencies",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.25,
+          "total_subquestions": 4,
+          "covered_subquestions": 1,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 6400,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 2.33,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": true,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 0.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 6.25,
+          "total_citations_referenced": 3,
+          "valid_citations": 0,
+          "hallucinated_citations": 3
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 1250,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0025,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 0.05,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": true,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 0.0
+        }
+      }
+    },
+    {
+      "id": "eval_12",
+      "category": "contradiction",
+      "topic": "Optimal garbage collection strategies for high-throughput JVM memory heaps",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.25,
+          "total_subquestions": 4,
+          "covered_subquestions": 1,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 6400,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 2.48,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": true,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 0.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 6.25,
+          "total_citations_referenced": 3,
+          "valid_citations": 0,
+          "hallucinated_citations": 3
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 1250,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0025,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 0.05,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": true,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 0.0
+        }
+      }
+    },
+    {
+      "id": "eval_13",
+      "category": "contradiction",
+      "topic": "Performance and security trade-offs of kernel-bypass networking via DPDK",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.25,
+          "total_subquestions": 4,
+          "covered_subquestions": 1,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 6400,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 2.51,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": true,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 0.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 6.25,
+          "total_citations_referenced": 3,
+          "valid_citations": 0,
+          "hallucinated_citations": 3
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 1250,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0025,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 0.05,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": true,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 0.0
+        }
+      }
+    },
+    {
+      "id": "eval_14",
+      "category": "architecture",
+      "topic": "Vector database approximate nearest neighbor search: HNSW vs DiskANN vs IVF",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.25,
+          "total_subquestions": 4,
+          "covered_subquestions": 1,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 6400,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 2.59,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 5.77,
+          "total_citations_referenced": 3,
+          "valid_citations": 0,
+          "hallucinated_citations": 3
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 1250,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0025,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 0.05,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      }
+    },
+    {
+      "id": "eval_15",
+      "category": "architecture",
+      "topic": "Microservices vs Modular Monolith latency profiles at 100k requests per second",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.25,
+          "total_subquestions": 4,
+          "covered_subquestions": 1,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 6400,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 2.84,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 5.77,
+          "total_citations_referenced": 3,
+          "valid_citations": 0,
+          "hallucinated_citations": 3
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 1250,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0025,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 0.05,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      }
+    },
+    {
+      "id": "eval_16",
+      "category": "architecture",
+      "topic": "Distributed tracing instrumentation overhead: OpenTelemetry tail-based sampling vs head-based sampling",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.25,
+          "total_subquestions": 4,
+          "covered_subquestions": 1,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 6400,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 2.9,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 6.0,
+          "total_citations_referenced": 3,
+          "valid_citations": 0,
+          "hallucinated_citations": 3
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 1250,
+          "token_limit": 50000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0025,
+          "usd_limit": 1.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 0.05,
+          "wall_clock_limit": 240.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      }
+    }
+  ]
+}

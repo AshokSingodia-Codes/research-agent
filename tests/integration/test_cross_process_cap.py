@@ -72,7 +72,9 @@ def test_lua_check_and_incr_concurrent_two_clients_real_redis():
     LUA_CHECK_AND_INCR script never exceed the specified ceiling.
     """
     import concurrent.futures
+
     import redis
+
     from app.budget.guard import LUA_CHECK_AND_INCR
     from app.config import settings
 

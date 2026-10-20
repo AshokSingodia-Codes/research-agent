@@ -1,0 +1,36 @@
+Checkpoint accepted, continue with C3. Before writing app/worker.py, confirm or fix:
+
+1. Run `git log --oneline -8` and print it. C1 (parallel fan-out) and the F1/F2 fix must
+   each be in their own commit, and docs/REDIS_SCHEMA.md (F4) must exist. If any of those
+   files are uncommitted, commit them now with the messages from my spec.
+2. In docs/benchmarks.md, label the speedup as measured with FakeProvider at 0.5s
+   simulated latency per call, not real LLM latency.
+3. Tell me which tests exercise the Lua check-and-increment path (versus the in-memory
+   fallback). Add a `redis_real` test that runs the actual Lua script, with the cap
+   asserted under 20 concurrent charges from 2 clients.
+4. Add a test that a failed or cancelled LLM call releases its budget reservation (no
+   leaked reservation), and that a rejected reservation produces a partial report.
+
+C3 design requirements (in addition to my spec):
+a. Job lifecycle: save the initial state BEFORE XADD; if XADD fails, return 503 and mark
+   the run failed. ACK rules: ACK on terminal status (completed, needs_review, partial,
+   failed, cancelled) AND ACK when the run pauses at awaiting_approval. POST /approve
+   does the atomic awaiting_approval -> running transition from F2, then XADDs a
+   {type: "resume"} job. A graceful SIGINT/SIGTERM leaves the job UNACKED so it is reclaimed.
+b. Delivery count comes from the pending list (times_delivered); after 3, move to
+   research:jobs:dlq with the error trace and mark the run failed.
+c. Lock heartbeat renewal must be owner-token checked. If renewal fails, the worker stops
+   the run at the next node boundary and does not ACK.
+d. XREADGROUP must not block the event loop: run blocking calls via asyncio.to_thread
+   with a short BLOCK (<= 1000 ms) and check the stop flag between reads.
+e. Cancel: a cancelled flag in Redis; nodes check it between steps. Cancelling a job that
+   is still queued must also work (the worker sees the flag on pickup, marks cancelled,
+   ACKs).
+f. Existing API/approval/e2e tests must keep working without weakened assertions: set
+   RUN_WORKER_INPROCESS=true for them in tests/conftest.py and poll with wait_for_status.
+g. Add MAX_CONCURRENT_RUNS, WORKER_VISIBILITY_TIMEOUT, RUN_WORKER_INPROCESS to
+   app/config.py and .env.example (placeholders only), and document them in the README.
+h. Extend the C3 test file list with: approve-after-pause enqueues exactly one resume job;
+   cancel of a queued job; heartbeat loss stops the run; SIGINT leaves the job unacked.
+
+Then continue C3 and C4 per my spec, and stop at the end with the full report.

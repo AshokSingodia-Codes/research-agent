@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import threading
 from types import TracebackType
 from typing import Any
 
@@ -56,8 +57,6 @@ class InProcessConcurrencyLimiter:
     def current_available(self) -> int:
         return self._semaphore._value
 
-
-import threading
 
 _fallback_limiter_lock = threading.Lock()
 

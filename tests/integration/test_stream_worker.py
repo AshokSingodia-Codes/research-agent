@@ -1,5 +1,4 @@
 import asyncio
-import json
 import time
 from unittest.mock import patch
 
@@ -96,7 +95,7 @@ async def test_cancel_of_queued_job():
         assert cancel_resp.json()["status"] == "cancelled"
 
     # Enqueue job to stream
-    entry_id = adapter.publish_job(
+    adapter.publish_job(
         "research:jobs",
         {"run_id": run_id, "question": "Cancelled Queued Test", "type": "initial"},
     )
@@ -177,7 +176,7 @@ async def test_in_process_crash_simulation_reclaim_and_resume():
     run_id = f"test_reclaim_resume_{time.time()}"
     redis_store.save_run_state(run_id, {"run_id": run_id, "status": RunStatus.QUEUED})
 
-    entry_id = adapter.publish_job(
+    adapter.publish_job(
         "research:jobs",
         {"run_id": run_id, "question": "Log Compaction Resilience", "type": "initial"},
     )
@@ -326,7 +325,7 @@ async def test_heartbeat_loss_stops_the_run():
     run_id = f"test_hb_loss_{time.time()}"
     redis_store.save_run_state(run_id, {"run_id": run_id, "status": RunStatus.QUEUED})
 
-    entry_id = adapter.publish_job(
+    adapter.publish_job(
         "research:jobs",
         {"run_id": run_id, "question": "Heartbeat loss test", "type": "initial"},
     )
@@ -359,7 +358,7 @@ async def test_sigint_leaves_job_unacked():
     run_id = f"test_sigint_unacked_{time.time()}"
     redis_store.save_run_state(run_id, {"run_id": run_id, "status": RunStatus.QUEUED})
 
-    entry_id = adapter.publish_job(
+    adapter.publish_job(
         "research:jobs",
         {"run_id": run_id, "question": "SIGINT unacked test", "type": "initial"},
     )
@@ -393,7 +392,7 @@ async def test_lock_released_strictly_prior_to_ack_at_awaiting_approval():
     run_id = f"test_lock_order_{time.time()}"
     redis_store.save_run_state(run_id, {"run_id": run_id, "status": RunStatus.QUEUED})
 
-    entry_id = adapter.publish_job(
+    adapter.publish_job(
         "research:jobs",
         {"run_id": run_id, "question": "Lock order test", "require_approval": "true", "type": "initial"},
     )

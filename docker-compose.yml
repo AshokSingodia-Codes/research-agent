@@ -3,13 +3,49 @@ version: '3.8'
 services:
   redis:
     image: redis:7.2-alpine
-    container_name: multiagent_redis
+    container_name: research_agent_redis
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped
     command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: research_agent_api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - USE_FAKE_REDIS=false
+      - RUN_WORKER_INPROCESS=false
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: research_agent_worker
+    command: python app/worker.py
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - USE_FAKE_REDIS=false
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   redis_data:

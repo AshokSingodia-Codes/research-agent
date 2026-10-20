@@ -3,7 +3,6 @@ import asyncio
 import pytest
 
 from app.persistence.concurrency import CrossProcessConcurrencyLimiter, InProcessConcurrencyLimiter
-from app.persistence.redis_store import redis_store
 
 
 @pytest.mark.asyncio
@@ -33,6 +32,7 @@ def test_cross_process_concurrency_limiter_fakeredis_notice():
     when ResponseError("unknown command 'eval'") occurs and raises NotImplementedError.
     """
     from unittest.mock import MagicMock
+
     from redis.exceptions import ResponseError
 
     mock_client = MagicMock()

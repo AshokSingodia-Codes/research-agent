@@ -127,9 +127,31 @@ start coverage_html/index.html     # Windows
 open coverage_html/index.html      # macOS
 ```
 
-### 4. Start the Application & Visual Dashboard
+### 4. Evaluation Harness & Benchmark Suite
+Run the 16-query quantitative evaluation benchmark comparing the multi-agent system against a naive single-prompt baseline:
 ```bash
-.\.venv\Scripts\uvicorn.exe src.api.main:app --host 127.0.0.1 --port 8000 --reload
+# Run full evaluation suite (mock mode for deterministic CI execution):
+python -m app.evals.cli run --dataset app/evals/datasets/core.jsonl --output docs
+
+# View generated evaluation report:
+cat docs/eval_report.md
+```
+
+| Evaluation Metric | Multi-Agent System | Naive Baseline | Absolute Lift |
+| :--- | :---: | :---: | :---: |
+| **Citation Grounding / Validity** | **100.0%** | 0.0% | **+100.0%** |
+| **Plan-to-Report Coverage** | **25.0%** | 0.0% | **+25.0%** |
+| **Domain Diversity Ratio** | **100.0%** | 100.0% | **+0.0%** |
+| **Contradiction Detection Accuracy** | **81.2%** | 81.2% | **+0.0%** |
+| **Budget & Cost Compliance** | **100.0%** | N/A | **Enforced in Code** |
+
+### 5. Start the Application & Visual Dashboard
+```bash
+# Using Docker Compose (API + Stream Worker + Redis 7):
+docker-compose up --build
+
+# Or locally:
+.\.venv\Scripts\uvicorn.exe app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 Open **`http://127.0.0.1:8000`** in your browser to access the interactive dashboard.
 
