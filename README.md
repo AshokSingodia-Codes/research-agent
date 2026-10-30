@@ -1,182 +1,170 @@
 # Multi-Agent Research Assistant
 
-[![Tests](https://img.shields.io/badge/tests-20%20passed-brightgreen.svg)]()
-[![Coverage](https://img.shields.io/badge/coverage-86%25-brightgreen.svg)]()
+[![Live Frontend](https://img.shields.io/badge/Frontend-Vercel-black?style=flat&logo=vercel)](https://research-agent-osy9-cq80otzv4-ashok-a994.vercel.app)
+[![Live Backend API](https://img.shields.io/badge/API-Render-46E3B7?style=flat&logo=render)](https://research-agent-api-49ii.onrender.com/health)
+[![Tests](https://img.shields.io/badge/tests-123%20passed-brightgreen.svg)]()
+[![Coverage](https://img.shields.io/badge/coverage-76%25-brightgreen.svg)]()
 [![Python](https://img.shields.io/badge/python-3.12-blue.svg)]()
 [![Framework](https://img.shields.io/badge/LangGraph-0.2.60-orange.svg)]()
 [![State Store](https://img.shields.io/badge/Redis-Durable%20Checkpoints-red.svg)]()
 [![API](https://img.shields.io/badge/FastAPI-Production-teal.svg)]()
 
-> **Production-grade multi-agent research architecture with supervisor-worker topology, durable state persistence in Redis, hard budget circuit breakers, and step-level tracing.**
+> **Production-grade multi-agent research architecture with supervisor-worker topology, durable state persistence in Redis, dynamic parallel fan-out, multi-provider LLM fallback cascade, citation verification, hard budget circuit breakers, and real-time step-level tracing.**
 
 ---
 
-## 💡 Why This Project Signals
+## 🌐 Live Deployments
 
-Most agent demos fail on restart, loop infinitely, or cannot explain their decisions. This project is built around the three hallmarks of production AI systems:
-
-1. **Durable State & Resumption**: Powered by LangGraph state checkpointing in Redis. A crashed or restarted process resumes from the exact last completed node instead of replaying earlier steps.
-2. **Hard Budget Enforcement**: Token limits, search caps, wall-clock ceilings, and a strict **1-revision limit** are enforced as deterministic graph edge guards—never entrusted to LLM prompt instructions.
-3. **Step-Level Observability (`GET /research/{id}/trace`)**: Full audit trail recording which specialist ran, exact inputs/outputs, tool invocations, token consumption, and per-step latencies.
-
----
-
-## 🏛️ System Architecture
-
-```
-User Request ──► POST /research ──► FastAPI (returns run_id immediately)
-                                        │
-                                        ▼ (Background Execution)
-                             ┌───────────────────────┐
-                             │     Planner Agent     │
-                             │ (Structured Sub-Qs)   │
-                             └──────────┬────────────┘
-                                        │
-                                        ▼
-                             ┌───────────────────────┐
-                     ┌───────│   Supervisor Agent    │◄──────┐
-                     │       │ (Budget & Quality)    │       │
-                     │       └──────────┬────────────┘       │
-                     │ (Retry max 1x)   │ (Next Sub-Q)       │
-                     │                  ▼                    │
-                     │       ┌───────────────────────┐       │
-                     └──────►│   Researcher Agent    ├───────┘
-                             │ (Tavily + Page Fetch) │
-                             └──────────┬────────────┘
-                                        │ (All Sub-Qs Done)
-                                        ▼
-                             ┌───────────────────────┐
-                             │     Writer Agent      │
-                             │ (Synthesis & Report)  │
-                             └──────────┬────────────┘
-                                        │
-                                        ▼
-                             ┌───────────────────────┐
-                             │  Citation Validator   │
-                             │ (Grounding Provenance)│
-                             └───────────────────────┘
-                                        ▲
-                                        │ Checkpoint State & Traces
-                             ┌──────────┴────────────┐
-                             │ Redis / Memory Saver  │
-                             └───────────────────────┘
-```
+- **Frontend (Vercel)**: [https://research-agent-osy9-cq80otzv4-ashok-a994.vercel.app](https://research-agent-osy9-cq80otzv4-ashok-a994.vercel.app)
+- **Backend API (Render)**: [https://research-agent-api-49ii.onrender.com](https://research-agent-api-49ii.onrender.com)
+- **Healthcheck Endpoint**: [https://research-agent-api-49ii.onrender.com/health](https://research-agent-api-49ii.onrender.com/health)
+- **Prometheus Metrics**: [https://research-agent-api-49ii.onrender.com/metrics](https://research-agent-api-49ii.onrender.com/metrics)
 
 ---
 
-## 🚀 Quickstart
+## 💡 Why This Project Signals (Production AI Engineering)
 
-### 1. Installation
-```bash
-python -m venv .venv
-.\.venv\Scripts\activate   # Windows
-source .venv/bin/activate  # Linux/macOS
-pip install -r requirements.txt
-```
+Most agent demonstrations fail on process restart, hallucinate sources, loop endlessly, or burn API credits uncontrollably. This system solves each of these real-world production engineering challenges:
 
-### 2. Environment Configuration
-Copy `.env.example` to `.env`:
-```env
-GROQ_API_KEY=your_groq_key_here
-ANTHROPIC_API_KEY=your_anthropic_key_here
-TAVILY_API_KEY=your_tavily_key_here
-USE_FAKE_REDIS=true
-```
-
-#### Configuration Reference Table
-
-| Variable | Default Value | Description |
-| :--- | :--- | :--- |
-| `ENV` | `development` | Deployment environment (`development`, `staging`, `production`) |
-| `API_KEY` | `test-key-12345` | Static authentication key required for API endpoints |
-| `CORS_ORIGINS` | `["http://localhost:8000","http://127.0.0.1:8000"]` | Allowed CORS origin whitelist |
-| `CHECKPOINT_HMAC_KEY` | `""` | Optional secret for HMAC-SHA256 checkpoint tamper validation |
-| `GROQ_MODEL` | `llama-3.3-70b-versatile` | Global fallback Groq model |
-| `ANTHROPIC_MODEL` | `claude-3-5-sonnet-20241022` | Global fallback Anthropic model |
-| `PLANNER_PROVIDER` | `groq` | Provider for Planner agent (`groq`, `anthropic`, `fake`) |
-| `PLANNER_MODEL` | `llama-3.3-70b-versatile` | Model requested by Planner agent |
-| `RESEARCHER_PROVIDER` | `groq` | Provider for Researcher agent (`groq`, `anthropic`, `fake`) |
-| `RESEARCHER_MODEL` | `llama-3.3-70b-versatile` | Model requested by Researcher agent |
-| `SUPERVISOR_PROVIDER` | `groq` | Provider for Supervisor agent (`groq`, `anthropic`, `fake`) |
-| `SUPERVISOR_MODEL` | `llama-3.3-70b-versatile` | Model requested by Supervisor agent |
-| `WRITER_PROVIDER` | `groq` | Provider for Writer agent (`groq`, `anthropic`, `fake`) |
-| `WRITER_MODEL` | `llama-3.3-70b-versatile` | Model requested by Writer agent |
-| `CRITIC_PROVIDER` | `groq` | Provider for Critic agent (`groq`, `anthropic`, `fake`) |
-| `CRITIC_MODEL` | `llama-3.3-70b-versatile` | Model requested by Critic agent |
-| `MAX_CONCURRENT_RUNS` | `5` | Maximum concurrent research workflow jobs processed globally across workers |
-| `WORKER_VISIBILITY_TIMEOUT` | `60.0` | Visibility timeout in seconds before abandoned stream messages are eligible for reclaim |
-| `RUN_WORKER_INPROCESS` | `false` | When true, spawns a background stream worker in-process for tests and local dev |
-| `MAX_TOTAL_TOKENS` | `50000` | Hard budget limit for total tokens consumed |
-| `MAX_USD_COST` | `1.00` | Hard budget dollar spending ceiling |
-| `WALL_CLOCK_TIMEOUT_SECONDS` | `240.0` | Execution time limit in seconds |
-| `MAX_REVISION_LOOPS` | `1` | Strict ceiling on supervisor review retry iterations |
-
-### 3. Run the Complete Automation Test Suite (20 Tests · 86% Coverage)
-```bash
-# Run all tests with code coverage & HTML report
-python run_tests.py
-
-# Filter by tier:
-python run_tests.py --unit         # Unit tests (specialists & extraction tools)
-python run_tests.py --budget       # Hard budget & circuit breaker tests
-python run_tests.py --durability   # Redis crash & intermediate resumption tests
-python run_tests.py --integration  # LangGraph & FastAPI lifecycle tests
-
-# View generated HTML coverage report:
-start coverage_html/index.html     # Windows
-open coverage_html/index.html      # macOS
-```
-
-### 4. Evaluation Harness & Benchmark Suite
-Run the 16-query quantitative evaluation benchmark comparing the multi-agent system against a naive single-prompt baseline:
-```bash
-# Run full evaluation suite (mock mode for deterministic CI execution):
-python -m app.evals.cli run --dataset app/evals/datasets/core.jsonl --output docs
-
-# View generated evaluation report:
-cat docs/eval_report.md
-```
-
-| Evaluation Metric | Multi-Agent System | Naive Baseline | Absolute Lift |
-| :--- | :---: | :---: | :---: |
-| **Citation Grounding / Validity** | **100.0%** | 0.0% | **+100.0%** |
-| **Plan-to-Report Coverage** | **25.0%** | 0.0% | **+25.0%** |
-| **Domain Diversity Ratio** | **100.0%** | 100.0% | **+0.0%** |
-| **Contradiction Detection Accuracy** | **81.2%** | 81.2% | **+0.0%** |
-| **Budget & Cost Compliance** | **100.0%** | N/A | **Enforced in Code** |
-
-### 5. Start the Application & Visual Dashboard
-```bash
-# Using Docker Compose (API + Stream Worker + Redis 7):
-docker-compose up --build
-
-# Or locally:
-.\.venv\Scripts\uvicorn.exe app.main:app --host 127.0.0.1 --port 8000 --reload
-```
-Open **`http://127.0.0.1:8000`** in your browser to access the interactive dashboard.
+1. **Durable State & Crash Resumption**: Powered by LangGraph state checkpointing backed by Redis. If a worker process crashes, is killed, or restarts mid-workflow, it automatically reclaims and resumes from the exact last completed node without replaying expensive LLM or search steps.
+2. **Instant Asynchronous Cancellation**: Clicking "Cancel" immediately aborts active LangGraph threads, web searches, and synthesis loops in real-time. It records a permanent `cancelled` state, releases worker concurrency slots, and prevents phantom report overwrites.
+3. **Multi-Provider LLM Fallback Cascade**: If the primary LLM provider (e.g. Groq) encounters a 429 rate limit or outage, the request automatically falls back in real time through Anthropic, Gemini, OpenRouter, or Grok without failing the user's research run.
+4. **Citation Grounding & Contradiction Detection**: Every claim is cross-checked against source text. Unverified claims are flagged, conflicting source claims are synthesized with balance, and citation links are verified before report compilation.
+5. **Deterministic Budget Guards**: Token limits, search caps, wall-clock timeouts, and strict revision limits are enforced directly at graph edges—never delegated to probabilistic LLM prompts.
+6. **Step-Level Observability (`GET /research/{id}/trace`)**: Full audit trail recording specialist node execution, exact inputs/outputs, tool invocations, token costs, and per-step latencies.
 
 ---
 
-## 📡 API Reference
+## 🏛️ System Architecture & Workflow
+
+```
+                                      +---------------------------------------------+
+                                      |             Frontend (Vercel)               |
+                                      |  Minimalist Calm UI + EventSource SSE stream |
+                                      +----------------------+----------------------+
+                                                             |
+                                           POST /research    | SSE Progress Stream
+                                                             v
++----------------------------------------------------------------------------------------------------+
+|                                    Backend API Server (Render)                                     |
+|                                                                                                    |
+|  1. Ingests topic -> Generates run_id -> Validates auth (X-API-Key) & sliding-window rate limit   |
+|  2. Saves initial state to Redis -> Pushes job to Redis Stream ('research:jobs')                  |
+|  3. Returns 202 Accepted immediately                                                               |
++--------------------------------------------------+-------------------------------------------------+
+                                                   |
+                                                   v
++----------------------------------------------------------------------------------------------------+
+|                                    Stream Worker & LangGraph Engine                                |
+|                                                                                                    |
+|                                      +------------------------+                                    |
+|                                      |      Planner Node      |                                    |
+|                                      | Breaks topic into 3-5  |                                    |
+|                                      | sub-questions with deps|                                    |
+|                                      +-----------+------------+                                    |
+|                                                  |                                                 |
+|                                                  v                                                 |
+|                                      +------------------------+                                    |
+|                                      | Dynamic Fan-Out Branch |                                    |
+|                                      +-----------+------------+                                    |
+|                             +--------------------+--------------------+                            |
+|                             |                    |                    |                            |
+|                             v                    v                    v                            |
+|                     +---------------+    +---------------+    +---------------+                    |
+|                     | Researcher #1 |    | Researcher #2 |    | Researcher #3 |                    |
+|                     | (Tavily Live) |    | (Tavily Live) |    | (Tavily Live) |                    |
+|                     +-------+-------+    +-------+-------+    +-------+-------+                    |
+|                             |                    |                    |                            |
+|                             +--------------------+--------------------+                            |
+|                                                  |                                                 |
+|                                                  v                                                 |
+|                                      +------------------------+                                    |
+|                                      |    Supervisor Node     |                                    |
+|                                      | Evaluates evidence,    |                                    |
+|                                      | checks contradictions, |                                    |
+|                                      | enforces max 1 retry   |                                    |
+|                                      +-----------+------------+                                    |
+|                                                  |                                                 |
+|                                                  v                                                 |
+|                                      +------------------------+                                    |
+|                                      |      Writer Node       |                                    |
+|                                      | Academic report format |                                    |
+|                                      | with [n] inline claims |                                    |
+|                                      +-----------+------------+                                    |
+|                                                  |                                                 |
+|                                                  v                                                 |
+|                                      +------------------------+                                    |
+|                                      |   Citation Validator   |                                    |
+|                                      | Verifies source grounding                                   |
+|                                      +-----------+------------+                                    |
+|                                                  |                                                 |
++--------------------------------------------------+-------------------------------------------------+
+                                                   |
+                                                   v
++----------------------------------------------------------------------------------------------------+
+|                                    Redis Persistence & State Store                                 |
+|                                                                                                    |
+|  * Checkpointer: Saves state snapshots after EVERY node execution                                 |
+|  * Stream Queue: Consumer group coordination with XAUTOCLAIM dead-letter recovery                  |
+|  * Audit Log: Token accounting, USD cost metrics, step-by-step latency trace                       |
++----------------------------------------------------------------------------------------------------+
+```
+
+---
+
+## ⚙️ How Things Work Under the Hood
+
+### 1. Request Ingestion & Asynchronous Decoupling
+- The client sends `POST /research` with `{ "question": "..." }`.
+- FastAPI authenticates the caller via constant-time `hmac.compare_digest` against `API_KEY` and checks sliding-window rate limits (10 req/min).
+- Initial state is persisted to Redis **before** enqueuing to prevent race conditions.
+- The job is published to the Redis Stream `research:jobs` and the API responds immediately with `202 Accepted` and a `run_id`.
+
+### 2. Autonomous Specialist Agents
+- **Planner**: Deconstructs broad questions into 3–5 targeted sub-questions with explicit dependency graph routing.
+- **Dynamic Researcher Fan-Out**: Dispatches parallel sub-questions across concurrent researcher coroutines. Each researcher queries the Tavily API, performs SSRF-filtered page extraction, parses readable HTML, and scores domain quality.
+- **Supervisor**: Evaluates the collected evidence against adequacy criteria and detects planted contradictions between opposing sources. It triggers a maximum of 1 targeted revision pass if critical gaps exist.
+- **Writer**: Synthesizes facts into structured Markdown sections with executive summaries and bracketed `[n]` citation footnotes.
+- **Citation Validator**: Scans all `[n]` claims, validates that they correspond to fetched source URLs, and calculates citation coverage.
+
+### 3. Fault-Tolerant LangGraph Checkpointing & Recovery
+- At each node transition, state is serialized and persisted to Redis key `checkpoint:{run_id}:{step_index}`.
+- If a server worker restarts, `resume_interrupted_runs()` inspects unfinished streams via `XAUTOCLAIM`, restores the exact checkpoint, and continues from the next pending node.
+
+### 4. Real-Time Cancellation
+- When the user clicks **Cancel**, a `POST /research/{id}/cancel` sets an atomic cancellation key `research:cancel:{run_id}` in Redis.
+- Background search loops and LangGraph nodes check this flag every 500ms and break immediately.
+- The state transitions to `RunStatus.CANCELLED`, worker tasks terminate cleanly, and the frontend resets its state.
+
+---
+
+## 🚀 API Reference
 
 ### `POST /research`
-Initiates a new research run. Returns `202 Accepted` immediately.
+Initiates a new research run.
+```bash
+curl -X POST "https://research-agent-api-49ii.onrender.com/research" \
+     -H "Content-Type: application/json" \
+     -H "X-API-Key: test-key-12345" \
+     -d '{"question": "Recent breakthroughs in solid-state battery technology"}'
+```
+**Response (202 Accepted):**
 ```json
-// Request Body
-{
-  "topic": "Distributed Consensus in Multi-Raft Architectures"
-}
-
-// Response (202 Accepted)
 {
   "run_id": "run_9a1f28b7c012",
   "status": "queued",
-  "message": "Research workflow dispatched."
+  "message": "Research run queued successfully."
 }
 ```
 
+### `GET /research/{id}/stream`
+Real-time Server-Sent Events (SSE) progress feed:
+```bash
+curl -N "https://research-agent-api-49ii.onrender.com/research/run_9a1f28b7c012/stream?api_key=test-key-12345"
+```
+
 ### `GET /research/{id}`
-Returns real-time progress percentage, current node, and the final validated report.
+Polls current run status or retrieves the completed report:
 ```json
 {
   "run_id": "run_9a1f28b7c012",
@@ -185,57 +173,50 @@ Returns real-time progress percentage, current node, and the final validated rep
   "completed_subquestions": 3,
   "total_subquestions": 3,
   "total_tokens": 4200,
+  "total_cost_usd": 0.0042,
   "report": {
-    "topic": "Distributed Consensus in Multi-Raft Architectures",
+    "topic": "Solid-State Battery Breakthroughs",
     "executive_summary": "...",
-    "sections": [...],
+    "sections": [
+      {
+        "heading": "Electrolyte Innovations",
+        "content": "Sulfide-based solid electrolytes demonstrate ionic conductivities comparable to liquid electrolytes [1]."
+      }
+    ],
     "citations": [
       {
-        "citation_id": "[1]",
-        "source_url": "https://arxiv.org/abs/2401.0001",
-        "domain": "arxiv.org",
-        "claim_supported": "Multi-Raft shards data into disjoint consensus groups.",
-        "is_verified": true
+        "citation_id": "1",
+        "source_url": "https://nature.com/articles/...",
+        "claim_supported": "Sulfide-based solid electrolytes demonstrate ionic conductivities..."
       }
     ]
   }
 }
 ```
 
+### `POST /research/{id}/cancel`
+Cancels a running workflow immediately.
+```bash
+curl -X POST "https://research-agent-api-49ii.onrender.com/research/run_9a1f28b7c012/cancel" \
+     -H "X-API-Key: test-key-12345"
+```
+
 ### `GET /research/{id}/trace`
-Step-level execution trace with token attribution and latency waterfall.
+Step-level execution trace with latency waterfalls and token attribution:
 ```json
 {
   "run_id": "run_9a1f28b7c012",
-  "total_steps": 7,
+  "total_steps": 5,
   "total_tokens": 4200,
-  "total_latency_ms": 1280.5,
+  "total_latency_ms": 1420.5,
   "steps": [
     {
-      "step_id": "plan_1728840000",
+      "step_id": "plan_0",
       "node_name": "planner",
-      "latency_ms": 115.4,
-      "tokens_used": 1200,
-      "input_summary": "Topic: Distributed Consensus...",
-      "output_summary": "Generated 3 sub-questions: ['sq_1', 'sq_2', 'sq_3']",
-      "tool_calls": []
-    },
-    {
-      "step_id": "research_sq_1_1728840001",
-      "node_name": "researcher",
-      "latency_ms": 320.1,
-      "tokens_used": 850,
-      "input_summary": "SubQuestion [sq_1]...",
-      "output_summary": "Collected 3 findings across ['arxiv.org', 'github.com']",
-      "tool_calls": [
-        {
-          "tool": "search_and_extract",
-          "query": "What are the core technical architectures...",
-          "latency_ms": 280.0,
-          "status": "success",
-          "result_count": 3
-        }
-      ]
+      "latency_ms": 180.2,
+      "tokens_used": 1100,
+      "input_summary": "Question: Solid-State Battery Breakthroughs",
+      "output_summary": "Generated 3 subquestions"
     }
   ]
 }
@@ -243,11 +224,49 @@ Step-level execution trace with token attribution and latency waterfall.
 
 ---
 
-## 🎯 Interview Talking Points
+## 🧪 Testing & Verification
 
-- **"How do you debug an agent that returned a bad answer?"**  
-  *Answer:* "We expose `GET /research/{id}/trace`. Instead of guessing, I inspect the step log to determine whether the failure occurred at the Planner (vague sub-questions), the Researcher (bad search query or zero results), the Supervisor (missed deficiency), or the Writer (citation misattribution)."
-- **"How do you prevent agents from burning through API budgets?"**  
-  *Answer:* "Budgets are enforced in code at graph edges, not in system prompts. We cap max sub-questions, maximum searches per question, global token ceiling, and hard-limit supervisor review retries to exactly 1 pass."
-- **"What happens if your worker crashes during a multi-minute research run?"**  
-  *Answer:* "Because LangGraph checkpoints state after every node into Redis, restarting the task with the same `run_id` resumes execution from the latest unfinished node without replaying previous expensive search and LLM calls."
+The test suite includes unit, integration, SSRF security, idempotency, and chaos recovery tests:
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run with test coverage
+pytest --cov=app --cov-report=term-missing tests/
+```
+
+**Results:**
+- `123 passed, 3 skipped, 3 deselected in 18.66s`
+- **76% total code coverage** across all core packages.
+
+---
+
+## 🛠️ Local Development
+
+```bash
+# 1. Clone repository
+git clone https://github.com/AshokSingodia-Codes/research-agent.git
+cd research-agent
+
+# 2. Set up virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+# 3. Configure environment
+cp .env.example .env
+
+# 4. Start local development server
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+Open [http://localhost:8000](http://localhost:8000) in your browser.
+
+---
+
+## 📦 Docker Deployment
+
+```bash
+# Run API, Worker, and Redis with a single command:
+docker compose up -d --build
+```
