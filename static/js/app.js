@@ -349,7 +349,15 @@ function renderReport(report) {
     if (!reportContainer) return;
 
     if (reportTitle) reportTitle.innerText = report.topic || 'Research Findings';
-    if (reportSummary) reportSummary.innerText = report.executive_summary || '';
+    const summaryText = report.summary || report.executive_summary || '';
+    if (reportSummary) {
+        if (summaryText.trim()) {
+            reportSummary.innerText = summaryText;
+            reportSummary.style.display = 'block';
+        } else {
+            reportSummary.style.display = 'none';
+        }
+    }
 
     // Sections
     let sectionsHtml = '';
@@ -361,9 +369,11 @@ function renderReport(report) {
                 return `<a href="#source-${p1}" class="citation-ref">${p1}</a>`;
             });
 
+            const headingTitle = sec.title || sec.heading || '';
+
             sectionsHtml += `
                 <section class="report-section">
-                    <h3>${escapeHtml(sec.heading || '')}</h3>
+                    <h3>${escapeHtml(headingTitle)}</h3>
                     <p>${sectionContent}</p>
                 </section>
             `;
@@ -371,11 +381,23 @@ function renderReport(report) {
     }
     if (reportSections) reportSections.innerHTML = sectionsHtml;
 
-    // Sources
-    if (report.citations && report.citations.length) {
+    // Sources: handles both array or dict formats
+    let citationsList = [];
+    if (Array.isArray(report.citations)) {
+        citationsList = report.citations;
+    } else if (report.citations && typeof report.citations === 'object') {
+        citationsList = Object.entries(report.citations).map(([key, val]) => ({
+            citation_id: key.replace(/[\[\]]/g, ''),
+            source_url: val.source_url || val.url || '',
+            claim_supported: val.claim || val.claim_supported || '',
+            domain: val.domain || ''
+        }));
+    }
+
+    if (citationsList.length) {
         if (sourcesSection) sourcesSection.style.display = 'block';
         if (sourcesList) {
-            sourcesList.innerHTML = report.citations.map(c => `
+            sourcesList.innerHTML = citationsList.map(c => `
                 <li class="source-item" id="source-${escapeHtml(c.citation_id)}">
                     <span class="source-number">[${escapeHtml(c.citation_id)}]</span>
                     <div class="source-content">
