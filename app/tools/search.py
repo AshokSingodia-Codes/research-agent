@@ -59,6 +59,7 @@ def search_and_extract(
     max_per_domain: int = 2,
     fetch_full_page: bool = True,
     token_cap: int = 2500,
+    run_id: str | None = None,
 ) -> ToolResult:
     """
     Executes web search (Tavily or mock), extracts full pages with trafilatura,
@@ -66,48 +67,73 @@ def search_and_extract(
     and returns a structured ToolResult.
     """
     if settings.is_mock_search:
-        return _mock_search(query, sub_question_id, max_results, max_per_domain)
+        return _mock_search(query, sub_question_id, max_results, max_per_domain, run_id=run_id)
 
-    # Real Tavily Search
+    # 1. Real Tavily Search (if key provided)
     raw_results = []
-    try:
-        from tavily import TavilyClient
+    if settings.tavily_api_key:
+        try:
+            from tavily import TavilyClient
 
-        client = TavilyClient(api_key=settings.tavily_api_key)
+            client = TavilyClient(api_key=settings.tavily_api_key)
 
-        # Retry with exponential backoff on rate limits
-        retries = 0
-        while retries <= 2:
-            try:
-                response = client.search(
-                    query=query,
-                    search_depth="advanced",
-                    max_results=max_results + 4,  # Extra to allow domain filtering
-                )
-                raw_results = response.get("results", [])
-                break
-            except Exception as e:
-                err_str = str(e).lower()
-                if "rate limit" in err_str or "429" in err_str:
-                    retries += 1
-                    sleep_time = (2**retries) + random.uniform(0.1, 0.5)
-                    time.sleep(sleep_time)
-                else:
-                    return ToolResult(
-                        status=ToolStatus.BLOCKED if "blocked" in err_str else ToolStatus.PARSE_ERROR,
-                        error_message=str(e),
+            # Retry with exponential backoff on rate limits
+            retries = 0
+            while retries <= 2:
+                try:
+                    response = client.search(
                         query=query,
+                        search_depth="advanced",
+                        max_results=max_results + 4,  # Extra to allow domain filtering
                     )
-    except Exception as e:
-        logger.warning(f"Tavily search failed ({e}); falling back to mock search")
-        return _mock_search(query, sub_question_id, max_results, max_per_domain)
+                    raw_results = response.get("results", [])
+                    break
+                except Exception as e:
+                    err_str = str(e).lower()
+                    if "rate limit" in err_str or "429" in err_str:
+                        retries += 1
+                        sleep_time = (2**retries) + random.uniform(0.1, 0.5)
+                        time.sleep(sleep_time)
+                    else:
+                        break
+        except Exception as e:
+            logger.warning(f"Tavily search failed ({e}); checking DuckDuckGo fallback...")
 
+    # 2. DuckDuckGo Free Search Fallback (no API key required)
     if not raw_results:
-        return ToolResult(
-            status=ToolStatus.NO_RESULTS,
-            query=query,
-            error_message="No matching results found for query",
-        )
+        try:
+            try:
+                from ddgs import DDGS
+            except ImportError:
+                from duckduckgo_search import DDGS
+
+            ddgs = DDGS()
+            ddg_hits = list(ddgs.text(query, max_results=max_results + 4))
+            
+            # If 0 hits, try query relaxation (strip quotation marks, punctuation, and narrow sub-phrases)
+            if not ddg_hits:
+                simplified_query = " ".join([w for w in query.replace('"', '').replace("'", "").split() if len(w) > 3][:6])
+                if simplified_query and simplified_query != query:
+                    logger.info(f"Relaxing search query from '{query}' to '{simplified_query}'")
+                    ddg_hits = list(ddgs.text(simplified_query, max_results=max_results + 4))
+
+            if ddg_hits:
+                raw_results = [
+                    {
+                        "url": hit.get("href") or hit.get("url"),
+                        "title": hit.get("title", ""),
+                        "content": hit.get("body") or hit.get("snippet", ""),
+                    }
+                    for hit in ddg_hits
+                    if hit.get("href") or hit.get("url")
+                ]
+        except Exception as e:
+            logger.warning(f"DuckDuckGo search fallback encountered ({e}); falling back to mock search")
+
+    # 3. Deterministic Mock Search Fallback
+    if not raw_results:
+        logger.info(f"Using mock search for query '{query}'")
+        return _mock_search(query, sub_question_id, max_results, max_per_domain, run_id=run_id)
 
     return _process_raw_results(
         raw_results=raw_results,
@@ -117,6 +143,7 @@ def search_and_extract(
         max_per_domain=max_per_domain,
         fetch_full_page=fetch_full_page,
         token_cap=token_cap,
+        run_id=run_id,
     )
 
 
@@ -128,6 +155,7 @@ def _process_raw_results(
     max_per_domain: int,
     fetch_full_page: bool,
     token_cap: int,
+    run_id: str | None = None,
 ) -> ToolResult:
     """Processes search hits: deduplication, domain capping, full page extraction, and provenance."""
     seen_urls: set[str] = set()
@@ -136,6 +164,17 @@ def _process_raw_results(
     findings: list[Finding] = []
 
     for item in raw_results:
+        # Check cancellation between fetches
+        if run_id:
+            try:
+                from app.persistence.redis_store import redis_store
+                client = redis_store.get_client()
+                if client and client.get(f"research:cancel:{run_id}"):
+                    logger.info(f"Search fetch aborted early due to cancellation for {run_id}")
+                    break
+            except Exception:
+                pass
+
         if len(findings) >= max_results:
             break
 
@@ -164,7 +203,7 @@ def _process_raw_results(
         fetch_status = ToolStatus.OK
 
         if fetch_full_page:
-            extracted_text, fetch_status = extract_full_page(canon_url, token_cap=token_cap)
+            extracted_text, fetch_status = extract_full_page(canon_url, timeout_seconds=4.0, token_cap=token_cap)
             if fetch_status != ToolStatus.OK:
                 circuit_breaker.record_failure(domain)
                 # If extraction fails, use snippet as fallback if available
@@ -222,6 +261,7 @@ def _mock_search(
     sub_question_id: str,
     max_results: int,
     max_per_domain: int,
+    run_id: str | None = None,
 ) -> ToolResult:
     """Deterministic mock search results for testing without external network calls."""
     domains = ["raft.github.io", "etcd.io", "cs.stanford.edu", "aws.amazon.com"]
@@ -244,4 +284,5 @@ def _mock_search(
         max_per_domain=max_per_domain,
         fetch_full_page=False,
         token_cap=2500,
+        run_id=run_id,
     )

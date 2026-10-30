@@ -90,20 +90,60 @@ class LLMClient:
         if provider_name in self._providers:
             return self._providers[provider_name]
 
-        if provider_name == "anthropic":
-            if not settings.anthropic_api_key:
-                logger.warning("Anthropic key missing; falling back to FakeProvider")
-                return self._get_fake_provider()
-            self._providers["anthropic"] = AnthropicProvider(api_key=settings.anthropic_api_key)
-        elif provider_name == "groq":
-            if not settings.groq_api_key:
-                logger.warning("Groq key missing; falling back to FakeProvider")
-                return self._get_fake_provider()
-            self._providers["groq"] = GroqProvider(api_key=settings.groq_api_key)
-        else:
-            self._providers["fake"] = self._get_fake_provider()
+        from app.llm.openai_provider import OpenAICompatibleProvider
 
-        return self._providers[provider_name]
+        if provider_name == "anthropic":
+            if settings.anthropic_api_key:
+                self._providers["anthropic"] = AnthropicProvider(api_key=settings.anthropic_api_key)
+                return self._providers["anthropic"]
+            logger.warning("Anthropic key missing; falling back...")
+        elif provider_name == "groq":
+            if settings.groq_api_key:
+                self._providers["groq"] = GroqProvider(api_key=settings.groq_api_key)
+                return self._providers["groq"]
+            logger.warning("Groq key missing; falling back...")
+        elif provider_name == "gemini":
+            if settings.gemini_api_key:
+                self._providers["gemini"] = OpenAICompatibleProvider(
+                    api_key=settings.gemini_api_key,
+                    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+                    provider_name="gemini",
+                )
+                return self._providers["gemini"]
+            logger.warning("Gemini key missing; falling back...")
+        elif provider_name == "openrouter":
+            if settings.openrouter_api_key:
+                self._providers["openrouter"] = OpenAICompatibleProvider(
+                    api_key=settings.openrouter_api_key,
+                    base_url="https://openrouter.ai/api/v1",
+                    provider_name="openrouter",
+                )
+                return self._providers["openrouter"]
+            logger.warning("OpenRouter key missing; falling back...")
+        elif provider_name == "grok":
+            if settings.grok_api_key:
+                self._providers["grok"] = OpenAICompatibleProvider(
+                    api_key=settings.grok_api_key,
+                    base_url="https://api.x.ai/v1",
+                    provider_name="grok",
+                )
+                return self._providers["grok"]
+            logger.warning("Grok key missing; falling back...")
+
+        # Fallback cascade: try any available configured real provider before FakeProvider
+        if settings.groq_api_key:
+            return self._get_or_create_provider("groq")
+        if settings.gemini_api_key:
+            return self._get_or_create_provider("gemini")
+        if settings.openrouter_api_key:
+            return self._get_or_create_provider("openrouter")
+        if settings.anthropic_api_key:
+            return self._get_or_create_provider("anthropic")
+        if settings.grok_api_key:
+            return self._get_or_create_provider("grok")
+
+        self._providers["fake"] = self._get_fake_provider()
+        return self._providers["fake"]
 
     def generate_with_repair(
         self,
@@ -131,13 +171,26 @@ class LLMClient:
         start_time = time.time()
         last_error_msg = ""
 
+        # Build provider fallback chain
+        provider_chain: list[tuple[LLMProvider, str]] = [(provider, chosen_model)]
+        
+        # Add fallback providers based on available verified keys (only in non-override production mode)
+        if self._override_provider is None:
+            if provider.provider_name != "openrouter" and settings.openrouter_api_key:
+                provider_chain.append((self._get_or_create_provider("openrouter"), settings.openrouter_model))
+            if provider.provider_name != "groq" and settings.groq_api_key:
+                provider_chain.append((self._get_or_create_provider("groq"), settings.groq_model))
+
+        chain_idx = 0
+        current_provider, current_model = provider_chain[0]
+
         while True:
             # Check BudgetGuard before invocation if provided
             if budget_guard is not None:
                 budget_guard.check_before_call(estimated_tokens=500)
 
             try:
-                response = self._call_with_backoff(provider, current_messages, output_schema, chosen_model)
+                response = self._call_with_backoff(current_provider, current_messages, output_schema, current_model)
                 total_tokens_in += response.tokens_in
                 total_tokens_out += response.tokens_out
                 total_cost_usd += response.cost_usd
@@ -150,8 +203,8 @@ class LLMClient:
                     run_id=run_id,
                     parent_step_id=parent_step_id,
                     agent=agent_name,
-                    provider=provider.provider_name,
-                    model=chosen_model,
+                    provider=current_provider.provider_name,
+                    model=current_model,
                     input_data={"messages": self._redact_secrets(current_messages)},
                     output_data=response.parsed.model_dump() if hasattr(response.parsed, "model_dump") else {},
                     tokens_in=total_tokens_in,
@@ -164,6 +217,18 @@ class LLMClient:
                 )
                 return response.parsed, trace
 
+            except RateLimitedError as rle:
+                # Quota or rate limit error: try failing over to next provider in chain
+                chain_idx += 1
+                if chain_idx < len(provider_chain):
+                    current_provider, current_model = provider_chain[chain_idx]
+                    logger.warning(
+                        f"Agent {agent_name} rate limit on {provider_chain[chain_idx - 1][0].provider_name}; "
+                        f"failing over to {current_provider.provider_name} ({current_model})..."
+                    )
+                    continue
+                raise rle
+
             except (InvalidOutputError, Exception) as e:
                 repair_attempts += 1
                 last_error_msg = str(e)
@@ -175,6 +240,17 @@ class LLMClient:
                     budget_guard.record_repair_attempt()
 
                 if repair_attempts > max_repairs:
+                    # Check if another provider in chain can succeed before aborting
+                    chain_idx += 1
+                    if chain_idx < len(provider_chain):
+                        current_provider, current_model = provider_chain[chain_idx]
+                        logger.warning(
+                            f"Agent {agent_name} repair attempts exceeded on {provider_chain[chain_idx - 1][0].provider_name}; "
+                            f"failing over to {current_provider.provider_name} ({current_model})..."
+                        )
+                        repair_attempts = 0
+                        continue
+
                     latency_ms = (time.time() - start_time) * 1000.0
                     logger.error(
                         f"Agent {agent_name} failed after {max_repairs} repair attempts ({latency_ms:.1f}ms): {last_error_msg}"
@@ -209,11 +285,17 @@ class LLMClient:
             try:
                 return provider.generate_structured(messages=messages, output_schema=output_schema, model=model)
             except RateLimitedError as rle:
+                # If daily quota limit (TPD) was reached, fail over immediately to next provider
+                if "tpd" in str(rle).lower() or "tokens per day" in str(rle).lower():
+                    raise rle
+
                 retries += 1
                 if retries > retries_limit:
                     raise rle
                 jitter = random.uniform(0.1, 0.5)
-                sleep_dur = ((rle.retry_after or 1.0) * (2 ** (retries - 1))) + jitter
+                # Cap backoff sleep to max 10.0 seconds to prevent multi-minute blocking on daily quotas
+                base_sleep = min(rle.retry_after or 1.0, 10.0)
+                sleep_dur = (base_sleep * (2 ** (retries - 1))) + jitter
                 logger.info(f"Rate limited. Backing off for {sleep_dur:.2f}s (attempt {retries}/{retries_limit})...")
                 time.sleep(sleep_dur)
             except Exception as e:

@@ -43,3 +43,4 @@ dump.rdb
 .fake_redis.json
 coverage_html/
 .ruff_cache/
+scratch/

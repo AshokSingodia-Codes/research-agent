@@ -16,8 +16,10 @@ from app.models.schemas import (
     ResearchRunResponse,
     ResearchStatusResponse,
 )
+from app.config import settings
 from app.persistence.checkpointer import checkpointer
 from app.persistence.redis_store import redis_store
+from app.persistence.worker import worker
 from app.services.citation_validator import validate_citations
 
 logger = logging.getLogger(__name__)
@@ -65,6 +67,14 @@ async def create_research_run(
             "type": "initial",
         }
         client.xadd("research:jobs", job_data)
+        redis_store.sync_to_disk(force=True)
+        # In fake redis mode, start background worker task directly for instantaneous execution
+        if settings.use_fake_redis:
+            worker.start_research_task(
+                run_id=run_id,
+                question=request.question,
+                require_approval=request.require_approval,
+            )
     except Exception as e:
         logger.exception(f"Failed to enqueue research job for {run_id}: {e}")
         redis_store.save_run_state(run_id, {"status": RunStatus.FAILED, "error": f"Failed to enqueue to stream: {e}"})
@@ -354,6 +364,13 @@ async def _resume_approved_workflow(run_id: str) -> None:
 
 async def _finalize_completed_state(run_id: str, final_state: dict[str, Any]) -> None:
     """Validates citations, updates coverage, persists final report, and emits completion event."""
+    # Check if run was cancelled while workflow was executing
+    client = redis_store.get_client()
+    if client and client.get(f"research:cancel:{run_id}"):
+        logger.info(f"Run {run_id} was cancelled; skipping final report persistence.")
+        redis_store.save_run_state(run_id, {"status": RunStatus.CANCELLED, "cancelled": True})
+        return
+
     report: Report | None = final_state.get("final_report")
     findings = final_state.get("findings", [])
 

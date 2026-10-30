@@ -69,6 +69,14 @@ def reduce_findings_by_subquestion(
     return merged
 
 
+def reduce_bool(existing: bool | None, incoming: bool | None) -> bool:
+    return bool(existing or incoming)
+
+
+def reduce_last_str(existing: str | None, incoming: str | None) -> str | None:
+    return incoming if incoming is not None else existing
+
+
 class AgentState(TypedDict, total=False):
     run_id: str
     question: str
@@ -87,8 +95,8 @@ class AgentState(TypedDict, total=False):
     draft_report: Report | None
     final_report: Report | None
     critique: CritiqueResult | None
-    partial: bool
-    degradation_reason: str | None
+    partial: Annotated[bool, reduce_bool]
+    degradation_reason: Annotated[str | None, reduce_last_str]
     total_tokens: Annotated[int, operator.add]
     total_usd_cost: Annotated[float, reduce_spend_float]
     start_time: float
@@ -97,5 +105,5 @@ class AgentState(TypedDict, total=False):
     approved: bool
     cancelled: bool
     status: str
-    budget_summary: dict[str, Any]
+    budget_summary: Annotated[dict[str, Any], reduce_dict]
     trace_log: Annotated[list[StepTrace], reduce_step_logs]

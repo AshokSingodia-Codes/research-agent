@@ -194,6 +194,13 @@ async def test_in_process_crash_simulation_reclaim_and_resume():
     reclaimed = await consumer_b.reclaim_idle_jobs(min_idle_ms=0)
     assert reclaimed == 1
 
+    # Give async task time to execute to completion
+    for _ in range(50):
+        await asyncio.sleep(0.05)
+        state = redis_store.get_run_state(run_id)
+        if state and state.get("status") in (RunStatus.COMPLETED, RunStatus.NEEDS_REVIEW, "completed", "needs_review"):
+            break
+
     # Run completes
     state = redis_store.get_run_state(run_id)
     assert state is not None

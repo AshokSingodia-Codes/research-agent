@@ -1,0 +1,76 @@
+services:
+  # 1. FastAPI Web Server
+  - type: web
+    name: multiagent-research-api
+    env: python
+    region: oregon
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: ENV
+        value: production
+      - key: USE_FAKE_REDIS
+        value: "false"
+      - key: RUN_WORKER_INPROCESS
+        value: "false"
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: multiagent-research-redis
+          property: connectionString
+      - key: API_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: '["*"]' # Set to your Vercel domain e.g. ["https://your-frontend.vercel.app"]
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: MAX_SUBQUESTIONS
+        value: "5"
+      - key: MAX_SEARCHES_PER_SUBQUESTION
+        value: "3"
+
+  # 2. Background Stream Worker
+  - type: worker
+    name: multiagent-research-worker
+    env: python
+    region: oregon
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m app.worker
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: ENV
+        value: production
+      - key: USE_FAKE_REDIS
+        value: "false"
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: multiagent-research-redis
+          property: connectionString
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: MAX_SUBQUESTIONS
+        value: "5"
+      - key: MAX_SEARCHES_PER_SUBQUESTION
+        value: "3"
+
+  # 3. Redis Instance
+  - type: redis
+    name: multiagent-research-redis
+    region: oregon
+    plan: starter
+    maxmemoryPolicy: noeviction
+    ipAllowList: [] # internal access only

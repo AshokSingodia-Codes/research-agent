@@ -1,7 +1,7 @@
 import hmac
 import time
 
-from fastapi import HTTPException, Security, status
+from fastapi import HTTPException, Query, Security, status
 from fastapi.security import APIKeyHeader
 
 from app.config import settings
@@ -18,9 +18,17 @@ RESEARCH_RATE_LIMIT_MAX = 10
 RESEARCH_RATE_LIMIT_WINDOW = 60.0
 
 
-def verify_api_key(api_key: str = Security(api_key_header)) -> str:
+def verify_api_key(
+    header_key: str | None = Security(api_key_header),
+    query_key: str | None = Query(None, alias="api_key"),
+    api_key: str | None = None,
+) -> str:
     """Validates API Key using constant-time comparison and enforces per-key rate limiting."""
     configured_key = settings.api_key
+    # When invoked directly in tests, header_key/query_key may retain their FastAPI Security/Query default objects
+    resolved_header = header_key if isinstance(header_key, str) else None
+    resolved_query = query_key if isinstance(query_key, str) else None
+    resolved_key = api_key if isinstance(api_key, str) else (resolved_header or resolved_query)
 
     # Production safety: reject access if production environment lacks configured API key
     if settings.env.lower() == "production" and (not configured_key or configured_key == "test-key-12345"):
@@ -30,19 +38,19 @@ def verify_api_key(api_key: str = Security(api_key_header)) -> str:
         )
 
     if configured_key:
-        if not api_key:
+        if not resolved_key:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Missing X-API-Key authentication header.",
             )
         # Constant-time comparison to prevent timing side-channel attacks
-        if not hmac.compare_digest(api_key.encode("utf-8"), configured_key.encode("utf-8")):
+        if not hmac.compare_digest(resolved_key.encode("utf-8"), configured_key.encode("utf-8")):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Invalid API Key provided.",
             )
 
-    caller_id = api_key or "anonymous"
+    caller_id = resolved_key or "anonymous"
     _check_general_rate_limit(caller_id)
     return caller_id
 

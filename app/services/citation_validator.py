@@ -21,11 +21,16 @@ def validate_citations(
     warnings: list[str] = []
     referenced_keys = set()
 
-    # Extract all inline citation keys [n] across all sections
+    # Extract all inline citation keys [n] across all sections and section citation lists
     for sec in report.sections:
         found_keys = re.findall(r"\[\d+\]", sec.content)
-        referenced_keys.update(found_keys)
+        all_sec_keys = set(found_keys) | {k for k in sec.citations if re.match(r"^\[\d+\]$", str(k).strip())}
+        referenced_keys.update(all_sec_keys)
         sec.citations = sorted(list(set(sec.citations + found_keys)))
+
+    # If no inline citations were in text but section citations or report.citations exist
+    if not referenced_keys and report.citations:
+        referenced_keys = set(report.citations.keys())
 
     if not referenced_keys:
         report.citation_coverage = 1.0 if not verified_findings else 0.0

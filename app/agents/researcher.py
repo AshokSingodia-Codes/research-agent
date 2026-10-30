@@ -8,17 +8,18 @@ from app.models.schemas import ResearchFindings, StepTrace, SubQuestion
 RESEARCHER_SYSTEM_PROMPT = """Extract factual research findings strictly grounded in the provided source material for the assigned sub-question.
 
 Requirements:
-1. Every claim MUST be directly substantiated by the snippet or extracted text.
-2. Maintain provenance: preserve source_url, domain, and snippet.
-3. For each finding, provide:
-   - claim: factual assertion
+1. Extract 1 or 2 concise, high-quality factual findings ONLY.
+2. Every claim MUST be directly substantiated by the snippet or extracted text.
+3. Keep the snippet short (under 150 characters) and claim direct (under 25 words).
+4. For each finding, provide:
+   - claim: concise factual assertion
    - source_url: exact source URL
    - domain: source domain name
-   - snippet: direct quotation or close excerpt supporting claim
-   - retrieval_timestamp: current timestamp
-   - content_hash: hash of source content
+   - snippet: brief direct quote (max 150 characters)
+   - retrieval_timestamp: current timestamp (e.g. 1700000000)
+   - content_hash: 16-character alphanumeric string
    - confidence: float between 0.0 and 1.0
-4. If search material is contradictory or insufficient, set status accordingly.
+5. For the 'status' property, always output "ok" (or "no_results").
 """
 
 

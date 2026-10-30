@@ -1,9 +1,12 @@
 import asyncio
+import logging
 import threading
 import time
 from typing import Any
 
 from langchain_core.runnables import RunnableLambda
+
+logger = logging.getLogger(__name__)
 
 from app.agents.critic import critique_report
 from app.agents.planner import plan_research
@@ -67,7 +70,7 @@ def plan_node(state: AgentState) -> dict[str, Any]:
 
     try:
         guard.check_before_call(estimated_tokens=500)
-        plan, trace = plan_research(topic=question, run_id=run_id, budget_guard=guard)
+        plan, trace = plan_research(topic=question, run_id=run_id, parent_step_id=None, budget_guard=guard)
         return {
             "plan": plan,
             "current_subquestion_idx": 0,
@@ -166,8 +169,35 @@ def _execute_research_one_core(payload: dict[str, Any]) -> dict[str, Any]:
 
     try:
         guard.check_before_call(estimated_tokens=800)
+
+        # Retrieve real web evidence documents for this sub-question
+        from app.tools.search import search_and_extract
+
+        search_query = feedback if feedback and len(feedback) > 10 else sub_q.text
+        search_res = search_and_extract(
+            query=search_query,
+            sub_question_id=sub_q.id,
+            max_results=3,
+            max_per_domain=settings.max_results_per_domain,
+            run_id=run_id,
+        )
+
+        if _check_cancellation(payload):
+            return {
+                "status": RunStatus.CANCELLED,
+                "cancelled": True,
+                "partial": True,
+                "degradation_reason": "Workflow cancelled by user.",
+            }
+
+        doc_snippets = [
+            {"url": f.source_url, "domain": f.domain, "text": f.extracted_text or f.snippet}
+            for f in search_res.findings
+        ]
+
         findings_res, trace = research_subquestion(
             sub_question=sub_q,
+            source_documents=doc_snippets,
             feedback=feedback,
             run_id=run_id,
             budget_guard=guard,
@@ -190,28 +220,23 @@ def _execute_research_one_core(payload: dict[str, Any]) -> dict[str, Any]:
             "budget_summary": guard.get_summary(),
         }
     except Exception as e:
-        # Typed failure: allows other parallel branches to finish
+        logger.warning(f"Researcher LLM step encountered exception for {sub_q.id}: {e}; falling back to extracted search findings.")
+        fallback_findings = search_res.findings if 'search_res' in locals() and search_res.findings else []
         failed_trace = StepTrace(
             run_id=run_id,
             agent="researcher",
-            provider="system",
+            provider="search_fallback",
             model=settings.researcher_model,
             input_data={"sub_question_id": sub_q.id},
             error=str(e),
-            output_data={"status": "failed", "error": str(e)},
-        )
-        failed_findings = ResearchFindings(
-            sub_question_id=sub_q.id,
-            findings=[],
-            status=ToolStatus.TIMEOUT if "timeout" in str(e).lower() else ToolStatus.NO_RESULTS,
-            error_message=str(e),
+            output_data={"status": "degraded_fallback", "findings_count": len(fallback_findings)},
         )
         return {
-            "findings": [],
-            "findings_by_subquestion": {sub_q.id: []},
+            "findings": fallback_findings,
+            "findings_by_subquestion": {sub_q.id: fallback_findings},
             "trace_log": [failed_trace],
             "completed_branches": [branch_key] if branch_key else [],
-            "branch_findings": {sub_q.id: failed_findings},
+            "branch_findings": {sub_q.id: ResearchFindings(sub_question_id=sub_q.id, findings=fallback_findings, status=ToolStatus.OK if fallback_findings else ToolStatus.NO_RESULTS)},
         }
 
 
@@ -289,17 +314,23 @@ def review_all_node(state: AgentState) -> dict[str, Any]:
             degradation_reason = be.reason
             break
 
-        decision, trace = review_findings(
-            sub_question=sub_q,
-            findings=sq_findings,
-            current_retry_count=curr_retries,
-            budget_guard=guard,
-            run_id=run_id,
-        )
-        new_decisions.append(decision)
-        new_traces.append(trace)
-        total_tokens += trace.total_tokens
-        total_cost += trace.usd_cost
+        try:
+            decision, trace = review_findings(
+                sub_question=sub_q,
+                findings=sq_findings,
+                current_retry_count=curr_retries,
+                budget_guard=guard,
+                run_id=run_id,
+            )
+            new_decisions.append(decision)
+            new_traces.append(trace)
+            total_tokens += trace.total_tokens
+            total_cost += trace.usd_cost
+        except BudgetExceededError as be:
+            partial = True
+            degradation_reason = be.reason
+            completed_ids.append(sub_q.id)
+            break
 
         if decision.action == ReviewAction.RETRY_ONCE:
             if curr_retries >= 1:
@@ -337,6 +368,14 @@ def review_all_node(state: AgentState) -> dict[str, Any]:
 
 def write_node(state: AgentState) -> dict[str, Any]:
     """Write Node: Synthesizes findings and conflicting evidence into a report."""
+    if _check_cancellation(state):
+        return {
+            "status": RunStatus.CANCELLED,
+            "cancelled": True,
+            "partial": True,
+            "degradation_reason": "Workflow cancelled by user.",
+        }
+
     run_id = state.get("run_id", "run_default")
     question = state.get("question", "")
     findings = list(state.get("findings", []))
@@ -390,6 +429,14 @@ def write_node(state: AgentState) -> dict[str, Any]:
 
 def critic_node(state: AgentState) -> dict[str, Any]:
     """Critic Node: Checks draft report for unsupported claims and missing plan coverage."""
+    if _check_cancellation(state):
+        return {
+            "status": RunStatus.CANCELLED,
+            "cancelled": True,
+            "partial": True,
+            "degradation_reason": "Workflow cancelled by user.",
+        }
+
     plan = state.get("plan")
     draft_report = state.get("draft_report")
     if not plan or not draft_report:

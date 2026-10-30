@@ -23,6 +23,20 @@ end
 """
 
 
+_shared_fake_server = None
+
+
+def _get_shared_fake_server():
+    global _shared_fake_server
+    if _shared_fake_server is None:
+        try:
+            import fakeredis
+            _shared_fake_server = fakeredis.FakeServer()
+        except Exception:
+            pass
+    return _shared_fake_server
+
+
 class RedisStore:
     """
     Central Redis store manager supporting real Redis and fakeredis.
@@ -44,7 +58,8 @@ class RedisStore:
         """Resets the fake redis client to a fresh instance and configures disk persistence."""
         import fakeredis
 
-        self._fake_client = fresh_client or fakeredis.FakeRedis(decode_responses=True)
+        server = _get_shared_fake_server()
+        self._fake_client = fresh_client or fakeredis.FakeRedis(server=server, decode_responses=True)
         self.persist_disk = persist_disk
         self._dirty = False
         self._last_sync_time = 0.0
@@ -65,7 +80,8 @@ class RedisStore:
                 try:
                     import fakeredis
 
-                    self._fake_client = fakeredis.FakeRedis(decode_responses=True)
+                    server = _get_shared_fake_server()
+                    self._fake_client = fakeredis.FakeRedis(server=server, decode_responses=True)
                     if self.persist_disk:
                         self.load_from_disk()
                 except Exception:
@@ -98,11 +114,20 @@ class RedisStore:
         try:
             data = {}
             for k in self._fake_client.keys():
-                if k.startswith("research:lock:") or k == "research:worker:active_fake_worker" or k == "research:worker:semaphore":
+                if (
+                    k.startswith("research:lock:")
+                    or k.startswith("checkpoint:")
+                    or k == "research:worker:active_fake_worker"
+                    or k == "research:worker:semaphore"
+                ):
                     continue
                 t = self._fake_client.type(k)
                 if t == "string":
-                    data[k] = ("string", self._fake_client.get(k))
+                    val = self._fake_client.get(k)
+                    # Skip binary values or huge blobs
+                    if isinstance(val, (bytes, bytearray)):
+                        continue
+                    data[k] = ("string", val)
                 elif t == "set":
                     data[k] = ("set", list(self._fake_client.smembers(k)))
                 elif t == "list":
@@ -122,12 +147,20 @@ class RedisStore:
                         logger.debug(f"Failed to serialize stream {k}: {ex}")
             tmp_file = FAKEDB_FILE.with_suffix(".tmp")
             tmp_file.write_text(json.dumps(data), encoding="utf-8")
-            tmp_file.replace(FAKEDB_FILE)
+            try:
+                tmp_file.replace(FAKEDB_FILE)
+            except OSError:
+                if FAKEDB_FILE.exists():
+                    try:
+                        FAKEDB_FILE.unlink(missing_ok=True)
+                    except Exception:
+                        pass
+                tmp_file.replace(FAKEDB_FILE)
             self._last_sync_time = now
             self._dirty = False
             self.write_count += 1
         except Exception as e:
-            logger.warning(f"Failed to sync fake redis to disk: {e}")
+            logger.debug(f"Failed to sync fake redis to disk: {e}")
 
     def flush(self) -> None:
         """Forced synchronous flush on shutdown or lifecycle termination."""
@@ -172,7 +205,10 @@ class RedisStore:
                             try:
                                 self._fake_client.xgroup_create(k, g_name, id="0", mkstream=True)
                             except Exception:
-                                pass
+                                try:
+                                    self._fake_client.xgroup_setid(k, g_name, id="0")
+                                except Exception:
+                                    pass
                     except Exception as ex:
                         logger.debug(f"Failed to restore stream {k}: {ex}")
         except Exception as e:

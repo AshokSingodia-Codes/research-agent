@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     # API Keys & Auth
     anthropic_api_key: str = ""
     groq_api_key: str = ""
+    gemini_api_key: str = ""
+    openrouter_api_key: str = ""
+    grok_api_key: str = ""
     tavily_api_key: str = ""
     api_key: str = "test-key-12345"  # System API key for endpoint auth
     env: str = "development"  # "development", "staging", "production"
@@ -22,6 +25,9 @@ class Settings(BaseSettings):
     # Global LLM Model Defaults
     groq_model: str = "llama-3.3-70b-versatile"
     anthropic_model: str = "claude-3-5-sonnet-20241022"
+    gemini_model: str = "gemini-2.0-flash"
+    openrouter_model: str = "meta-llama/llama-3.3-70b-instruct:free"
+    grok_model: str = "grok-beta"
     llm_timeout_seconds: float = 30.0
     llm_max_retries: int = 2
 
@@ -50,8 +56,8 @@ class Settings(BaseSettings):
     concurrency_limit: int = 3
     max_parallel_researchers: int = 3
     max_concurrent_runs: int = 5
-    worker_visibility_timeout: float = 60.0
-    run_worker_inprocess: bool = False
+    worker_visibility_timeout: float = 300.0
+    run_worker_inprocess: bool = True
     request_timeout_seconds: float = 30.0
 
     # Hard Budgets
@@ -59,7 +65,7 @@ class Settings(BaseSettings):
     max_searches_per_subquestion: int = 3
     max_total_tokens: int = 50000
     max_usd_cost: float = 1.00
-    wall_clock_timeout_seconds: float = 240.0
+    wall_clock_timeout_seconds: float = 600.0
     max_repair_attempts: int = 2
     max_revision_loops: int = 1
     max_results_per_domain: int = 2
@@ -79,8 +85,14 @@ class Settings(BaseSettings):
             return True
         if val in ("false", "0", "no"):
             return False
-        # auto: mock if both Anthropic and Groq keys are absent
-        return not bool(self.anthropic_api_key or self.groq_api_key)
+        # auto: mock if no LLM keys are provided
+        return not bool(
+            self.anthropic_api_key
+            or self.groq_api_key
+            or self.gemini_api_key
+            or self.openrouter_api_key
+            or self.grok_api_key
+        )
 
     @property
     def is_mock_search(self) -> bool:
@@ -89,7 +101,7 @@ class Settings(BaseSettings):
             return True
         if val in ("false", "0", "no"):
             return False
-        return not bool(self.tavily_api_key)
+        return False  # Real search enabled (Tavily with DuckDuckGo fallback)
 
 
 settings = Settings()

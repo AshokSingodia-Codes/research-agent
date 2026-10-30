@@ -12,8 +12,9 @@ class SubQuestion(BaseModel):
     rationale: str = Field(description="Why this information is required for overall synthesis")
     priority: int = Field(default=1, ge=1, le=5, description="Priority ranking from 1 (highest) to 5")
     expected_source_types: list[str] = Field(
-        default_factory=lambda: ["technical_documentation", "academic_papers", "benchmarks"],
-        description="Types of sources expected to answer this question",
+        default_factory=lambda: ["academic_papers", "benchmarks"],
+        max_length=4,
+        description="1 to 3 concise source categories, e.g. ['academic_papers', 'benchmarks']",
     )
     depends_on: list[str] = Field(
         default_factory=list, description="List of other sub-question IDs that must finish before this can execute"
@@ -45,8 +46,17 @@ class ResearchFindings(BaseModel):
     sub_question_id: str
     findings: list[Finding] = Field(default_factory=list)
     search_queries_used: list[str] = Field(default_factory=list)
-    status: ToolStatus = ToolStatus.OK
+    status: ToolStatus | str | None = Field(default=ToolStatus.OK)
     error_message: str | None = None
+
+    def model_post_init(self, __context: Any) -> None:
+        if isinstance(self.status, str):
+            try:
+                self.status = ToolStatus(self.status)
+            except ValueError:
+                self.status = ToolStatus.OK
+        elif self.status is None:
+            self.status = ToolStatus.OK
 
 
 class ToolResult(BaseModel):

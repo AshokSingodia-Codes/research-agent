@@ -28,6 +28,8 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - USE_FAKE_REDIS=false
       - RUN_WORKER_INPROCESS=false
+    env_file:
+      - .env
     depends_on:
       redis:
         condition: service_healthy
@@ -42,6 +44,8 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379/0
       - USE_FAKE_REDIS=false
+    env_file:
+      - .env
     depends_on:
       redis:
         condition: service_healthy

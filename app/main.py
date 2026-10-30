@@ -34,7 +34,18 @@ async def lifespan(app: FastAPI):
         from app.worker import ResearchStreamWorker
 
         inprocess_worker = ResearchStreamWorker()
-        worker_task = asyncio.create_task(inprocess_worker.run_loop())
+
+        async def _safe_worker_loop():
+            import logging
+            log = logging.getLogger("app.main")
+            log.info("Starting in-process ResearchStreamWorker run_loop...")
+            try:
+                await inprocess_worker.run_loop()
+                log.info("In-process ResearchStreamWorker run_loop exited cleanly.")
+            except Exception as e:
+                log.exception(f"In-process stream worker crashed: {e}")
+
+        worker_task = asyncio.create_task(_safe_worker_loop())
 
     yield
 

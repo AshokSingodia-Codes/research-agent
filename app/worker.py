@@ -229,6 +229,31 @@ class ResearchStreamWorker:
         question = payload.get("question", "")
         require_approval = str(payload.get("require_approval", "false")).lower() in ("true", "1")
 
+        # Register this in-flight task so /cancel can immediately cancel it if desired
+        current_async_task = asyncio.current_task()
+        if not hasattr(self, "_active_job_tasks"):
+            self._active_job_tasks: dict[str, asyncio.Task] = {}
+        self._active_job_tasks[run_id] = current_async_task
+
+        # Run a background cancellation watcher task
+        cancel_watcher_stop = asyncio.Event()
+
+        async def _cancel_watcher():
+            while not cancel_watcher_stop.is_set():
+                await asyncio.sleep(0.5)
+                if cancel_watcher_stop.is_set():
+                    break
+                try:
+                    c = redis_store.get_client()
+                    if c and c.get(f"research:cancel:{run_id}"):
+                        logger.info(f"Cancellation detected by watcher for run {run_id}; interrupting in-flight execution.")
+                        current_async_task.cancel()
+                        break
+                except Exception:
+                    pass
+
+        watcher_task = asyncio.create_task(_cancel_watcher())
+
         try:
             if job_type == "resume":
                 await self._execute_resume(run_id=run_id)
@@ -257,15 +282,33 @@ class ResearchStreamWorker:
             return True
 
         except asyncio.CancelledError:
-            # Interrupted (e.g. graceful SIGINT / shutdown)
-            logger.info(f"Worker execution cancelled mid-flight for run {run_id}; leaving job UNACKED for recovery.")
-            raise
+            # Check if this cancellation was triggered by user /cancel endpoint
+            client = self.client
+            was_cancelled_by_user = bool(client.get(f"research:cancel:{run_id}"))
+            if was_cancelled_by_user:
+                logger.info(f"Worker task for run {run_id} cleanly cancelled by user request; acknowledging job {entry_id}.")
+                redis_store.save_run_state(run_id, {"status": RunStatus.CANCELLED, "cancelled": True})
+                self.stream_adapter.ack_job(self.stream, self.group, entry_id)
+                return True
+            else:
+                logger.info(f"Worker execution cancelled mid-flight for run {run_id}; leaving job UNACKED for recovery.")
+                raise
         except Exception as e:
             logger.exception(f"Unhandled exception processing job {entry_id} for run {run_id}: {e}")
             redis_store.save_run_state(run_id, {"status": RunStatus.FAILED, "error": str(e)})
             self.stream_adapter.ack_job(self.stream, self.group, entry_id)
             return True
         finally:
+            cancel_watcher_stop.set()
+            if not watcher_task.done():
+                watcher_task.cancel()
+                try:
+                    await watcher_task
+                except (asyncio.CancelledError, Exception):
+                    pass
+            if hasattr(self, "_active_job_tasks"):
+                self._active_job_tasks.pop(run_id, None)
+
             stop_hb.set()
             if not hb_task.done():
                 hb_task.cancel()
@@ -337,6 +380,13 @@ class ResearchStreamWorker:
     async def _finalize_completed_state(self, run_id: str, final_state: dict[str, Any]) -> None:
         """Validates citations, updates coverage, persists final report, and emits completion event."""
         if not final_state:
+            return
+
+        # Check if run was cancelled while graph was running
+        client = self.client
+        if client.get(f"research:cancel:{run_id}") or final_state.get("cancelled") or final_state.get("status") in (RunStatus.CANCELLED, "cancelled"):
+            logger.info(f"Run {run_id} was cancelled; skipping final completed state persistence.")
+            redis_store.save_run_state(run_id, {"status": RunStatus.CANCELLED, "cancelled": True})
             return
 
         status = final_state.get("status", RunStatus.COMPLETED)
@@ -428,9 +478,26 @@ class ResearchStreamWorker:
         if claimed:
             self.client.incrby("research:metrics:worker_reclaims_total", len(claimed))
             for entry_id, payload in claimed:
-                logger.info(f"Reclaimed idle job {entry_id} for run {payload.get('run_id')}")
+                run_id = payload.get("run_id")
+                # Do not reclaim if run is actively locked by a running worker
+                if run_id and self.client.get(f"research:lock:{run_id}"):
+                    logger.debug(f"Skipping reclaim for job {entry_id} (run_id: {run_id}); run is actively locked.")
+                    continue
+                # Do not reclaim if run has already reached terminal status
+                curr_state = redis_store.get_run_state(run_id) if run_id else None
+                if curr_state and curr_state.get("status") in (
+                    RunStatus.COMPLETED,
+                    RunStatus.FAILED,
+                    RunStatus.CANCELLED,
+                    RunStatus.NEEDS_REVIEW,
+                ):
+                    logger.debug(f"Acknowledging obsolete job {entry_id} for terminal run {run_id}")
+                    self.stream_adapter.ack_job(self.stream, self.group, entry_id)
+                    continue
+
+                logger.info(f"Reclaimed idle job {entry_id} for run {run_id}")
                 try:
-                    await self.process_job(entry_id, payload)
+                    asyncio.create_task(self.process_job(entry_id, payload))
                     reclaimed_count += 1
                 except Exception as e:
                     logger.warning(f"Error processing reclaimed job {entry_id}: {e}")
@@ -474,13 +541,14 @@ class ResearchStreamWorker:
                 # Read new jobs with short block <= 1000ms so stop_event is checked promptly
                 try:
                     read_count = max(1, min(5, settings.max_concurrent_runs - len(active_tasks)))
+                    block_ms = None if settings.use_fake_redis else 1000
                     jobs = await asyncio.to_thread(
                         self.stream_adapter.read_job,
                         self.stream,
                         self.group,
                         self.consumer_name,
                         count=read_count,
-                        block=1000,
+                        block=block_ms,
                     )
                 except Exception as e:
                     if self._stop_event.is_set():
@@ -509,7 +577,7 @@ class ResearchStreamWorker:
             reclaim_task.cancel()
             try:
                 await reclaim_task
-            except Exception:
+            except (asyncio.CancelledError, Exception):
                 pass
             if active_tasks:
                 await asyncio.gather(*active_tasks, return_exceptions=True)

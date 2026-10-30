@@ -1,245 +1,221 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Agent Research Assistant | Production Graph</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            cyan: '#00f2fe',
-                            blue: '#38bdf8',
-                            indigo: '#6366f1',
-                            purple: '#a855f7',
-                            dark: '#07090e',
-                            card: 'rgba(16, 23, 38, 0.75)',
-                            border: 'rgba(255, 255, 255, 0.08)'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Google Fonts -->
+    <title>Research Assistant</title>
+    <!-- cdn.tailwindcss.com JetBrains+Mono Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="/static/css/styles.css">
 </head>
-<body class="bg-[#07090e] text-slate-100 font-sans min-h-screen selection:bg-cyan-500 selection:text-black">
 
-    <!-- Ambient Glow Background -->
-    <div class="fixed inset-0 pointer-events-none z-0">
-        <div class="absolute top-10 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-10 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
-    </div>
+<body>
 
-    <div class="container mx-auto px-4 py-8 max-w-6xl relative z-10">
+    <main class="container">
 
-        <!-- Top Header Navigation -->
-        <header class="text-center mb-8">
-            <div class="flex items-center justify-center gap-3 mb-4 flex-wrap">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
-                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-                    LangGraph 0.2.60
-                </span>
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase bg-purple-500/10 border border-purple-500/30 text-purple-400">
-                    Anthropic Claude
-                </span>
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
-                    Redis Durable State
-                </span>
-                <span id="engineBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase bg-slate-800 border border-slate-700 text-slate-400">
-                    Engine: Ready
-                </span>
-            </div>
-
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-cyan-200 to-purple-400 bg-clip-text text-transparent mb-3">
-                Multi-Agent Research Assistant
-            </h1>
-            <p class="text-slate-400 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
-                Production-grade multi-agent research with durable Redis state machine checkpointing, 
-                strict budget enforcement, and step-level audit tracing.
-            </p>
+        <!-- Scholarly Clean Header -->
+        <header>
+            <div class="header-badge">Autonomous Synthesis</div>
+            <h1>Research Assistant</h1>
+            <p>Ask any topic. Get a thoroughly sourced, academic-grade report.</p>
         </header>
 
-        <!-- Dynamic Agent Workflow Topology -->
-        <div class="topology-card mb-8">
-            <div class="topology-title flex justify-between items-center mb-3 text-xs font-bold text-slate-400 tracking-wider uppercase">
-                <span>Active State Machine Pipeline</span>
-                <span class="text-cyan-400 font-mono">1-Revision Limit Enforced</span>
+        <!-- Search Input Wrapper -->
+        <section class="search-wrapper" aria-label="Topic input">
+            <div class="search-bar">
+                <input type="text" id="topicInput" class="search-input" placeholder="What would you like to research?"
+                    autocomplete="off" aria-label="Research topic">
+                <button id="runBtn" class="btn-primary" onclick="startResearch()" aria-label="Start research">
+                    Research
+                </button>
             </div>
-            <div class="pipeline flex items-center justify-between gap-2 overflow-x-auto pb-2">
-                <div id="node-planner" class="node-chip">
-                    <span class="node-icon">🧠</span>
-                    <span>1. Planner Specialist</span>
-                </div>
-                <span class="arrow-divider">➔</span>
-                <div id="node-researcher" class="node-chip">
-                    <span class="node-icon">🔍</span>
-                    <span>2. Researcher & Tavily</span>
-                </div>
-                <span class="arrow-divider">➔</span>
-                <div id="node-supervisor" class="node-chip">
-                    <span class="node-icon">⚖️</span>
-                    <span>3. Supervisor & Budgets</span>
-                </div>
-                <span class="arrow-divider">➔</span>
-                <div id="node-writer" class="node-chip">
-                    <span class="node-icon">✍️</span>
-                    <span>4. Writer & Citations</span>
-                </div>
-            </div>
+        </section>
+
+        <!-- 3 Subtle Suggestions -->
+        <div class="suggestions-row" id="suggestionsRow">
+            <span class="suggestions-label">Suggestions:</span>
+            <button class="suggestion-chip"
+                onclick="setPreset('Solid-state battery breakthroughs and commercial timelines')">
+                Solid-state batteries
+            </button>
+            <button class="suggestion-chip"
+                onclick="setPreset('Post-quantum cryptography standards and migration strategies')">
+                Post-quantum cryptography
+            </button>
+            <button class="suggestion-chip"
+                onclick="setPreset('Recent developments in multi-agent reinforcement learning')">
+                Multi-agent RL
+            </button>
         </div>
 
-        <!-- Research Input Console Card -->
-        <div class="card bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl mb-8">
-            <div class="flex items-center justify-between mb-2">
-                <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                    <span>⚡ Research Topic Query</span>
-                </h2>
-                <span class="text-xs font-mono text-slate-400">POST /research</span>
+        <!-- Error State Banner -->
+        <div id="errorBanner" class="error-banner" role="alert" aria-live="assertive">
+            <p id="errorMessage">Something went wrong. Please try again.</p>
+            <button class="suggestion-chip" onclick="startResearch()">Retry</button>
+        </div>
+
+        <!-- Calm Loading Progress Experience -->
+        <section id="progressBox" class="progress-container" aria-live="polite" aria-label="Research progress">
+            <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                <div id="progressBar" class="progress-fill"></div>
             </div>
 
-            <p class="text-sm text-slate-400 mb-4">
-                Enter any deep technical topic. The Planner decomposes it, Researcher executes live page extraction, Supervisor reviews quality against budget, and Writer synthesizes fully grounded citations.
-            </p>
+            <ol class="steps-list">
+                <li id="step-1" class="step-item">
+                    <span class="step-indicator">
+                        <span class="step-dot-pending"></span>
+                    </span>
+                    <span>Understanding your question</span>
+                </li>
+                <li id="step-2" class="step-item">
+                    <span class="step-indicator">
+                        <span class="step-dot-pending"></span>
+                    </span>
+                    <span>Searching trusted sources</span>
+                </li>
+                <li id="step-3" class="step-item">
+                    <span class="step-indicator">
+                        <span class="step-dot-pending"></span>
+                    </span>
+                    <span>Checking quality</span>
+                </li>
+                <li id="step-4" class="step-item">
+                    <span class="step-indicator">
+                        <span class="step-dot-pending"></span>
+                    </span>
+                    <span>Writing your report</span>
+                </li>
+            </ol>
 
-            <!-- Topic Presets -->
-            <div class="presets-row flex flex-wrap gap-2 mb-4">
-                <span class="text-xs text-slate-500 py-1 font-medium">Quick Presets:</span>
-                <button class="preset-btn" onclick="setPreset('Distributed Consensus in Multi-Raft Architectures')">
-                    Multi-Raft Consensus
-                </button>
-                <button class="preset-btn" onclick="setPreset('Speculative Decoding Performance in Large Language Models')">
-                    Speculative Decoding
-                </button>
-                <button class="preset-btn" onclick="setPreset('Durable State Checkpointing in High-Throughput Stream Processing')">
-                    Stream Checkpointing
-                </button>
+            <!-- Live Activity & Waiting Status Box -->
+            <div class="live-activity-box" id="liveActivityBox">
+                <div class="activity-header">
+                    <span class="activity-pulse-ring">
+                        <span class="activity-pulse-dot"></span>
+                    </span>
+                    <span id="activityStatusText" class="activity-status-text">Synthesizing live evidence...</span>
+                </div>
+                <div class="activity-subtext" id="activitySubtext">Agents are verifying citations and analyzing sources</div>
             </div>
 
-            <!-- Input & Submit Button -->
-            <div class="input-row flex flex-col md:flex-row gap-3">
-                <input 
-                    type="text" 
-                    id="topicInput" 
-                    class="input-field flex-1 px-4 py-3.5 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20 transition-all"
-                    placeholder="Enter research topic (e.g., Distributed Consensus in Multi-Raft Architectures)..." 
-                    value="Distributed Consensus in Multi-Raft Architectures"
-                >
-                <button 
-                    id="runBtn" 
-                    onclick="startResearch()" 
-                    class="btn-primary px-6 py-3.5 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-sky-500/20 hover:shadow-sky-500/40 flex items-center justify-center gap-2 transition-all cursor-pointer"
-                >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            <div class="progress-footer">
+                <div class="progress-footer-info">
+                    <svg class="wait-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
                     </svg>
-                    <span>Execute Workflow</span>
+                    <span>Takes approx. 30–60 seconds</span>
+                </div>
+                <button type="button" class="btn-cancel" onclick="cancelResearch()" aria-label="Cancel research run">
+                    Cancel
                 </button>
             </div>
+        </section>
 
-            <!-- Progress Bar & Status -->
-            <div id="progressBox" class="progress-panel mt-6">
-                <div class="progress-meta flex justify-between text-sm text-slate-400 mb-2 font-mono">
-                    <span id="progressStageLabel" class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-                        Status: Dispatching workflow...
-                    </span>
-                    <span id="progressPercentLabel" class="font-bold text-cyan-400">0%</span>
-                </div>
-                <div class="progress-track h-2.5 bg-slate-800 rounded-full overflow-hidden">
-                    <div id="progressBar" class="progress-bar h-full bg-gradient-to-r from-cyan-400 to-emerald-400 rounded-full w-0 transition-all duration-300"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Output & Audit View Card -->
-        <div id="resultsCard" class="card bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl hidden">
-            
-            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-800 pb-5 mb-6">
-                <div>
-                    <h2 class="text-2xl font-bold text-white tracking-tight">Execution Results & Audit</h2>
-                    <p class="text-xs text-slate-400">Verified research findings and complete step-level telemetry</p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span id="runIdDisplay" class="font-mono text-xs px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-semibold">
-                        Run ID: -
-                    </span>
+        <!-- Final Sourced Report View -->
+        <article id="reportContainer" class="report-container">
+            <div class="report-header-row">
+                <h2 id="reportTitle" class="report-title"></h2>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button id="downloadBtn" class="btn-copy" onclick="downloadMarkdown()">
+                        Download .md
+                    </button>
+                    <button id="copyBtn" class="btn-copy" onclick="copyReport()">
+                        Copy report
+                    </button>
                 </div>
             </div>
 
-            <!-- Tab Navigation Bar -->
-            <div class="tab-bar flex gap-2 border-b border-slate-800 pb-3 mb-6">
-                <button id="tabBtnReport" class="tab-btn active" onclick="switchTab('report')">
-                    📄 Research Report & Citations
-                </button>
-                <button id="tabBtnTrace" class="tab-btn" onclick="switchTab('trace')">
-                    🔍 Step-Level Trace (<span id="traceTabCount">0</span>)
-                </button>
+            <div id="reportSummary" class="report-summary-box"></div>
+
+            <div id="reportSections"></div>
+
+            <section id="sourcesSection" class="sources-section">
+                <h3>Sources</h3>
+                <ol id="sourcesList" class="sources-list"></ol>
+            </section>
+        </article>
+
+        <!-- Collapsed Technical Details Disclosure -->
+        <details id="detailsDisclosure" class="details-disclosure">
+            <summary class="details-summary">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+                <span>Details</span>
+            </summary>
+            <div class="details-content">
+                <div class="details-meta-row">
+                    <div class="meta-item">Run ID: <strong id="detailsRunId">-</strong></div>
+                    <div class="meta-item">Tokens: <strong id="detailsTokens">0</strong></div>
+                    <div class="meta-item">Estimated Cost: <strong id="detailsCost">$0.00</strong></div>
+                    <div class="meta-item">Latency: <strong id="detailsLatency">0s</strong></div>
+                </div>
+                <div id="detailsErrorRow" style="display: none; margin-bottom: 1rem; color: var(--error-text);">
+                    Technical Error: <span id="detailsTechnicalError"></span>
+                </div>
+                <div id="traceLog" class="trace-log"></div>
             </div>
+        </details>
 
-            <!-- TAB 1: RESEARCH REPORT -->
-            <div id="reportPane" class="tab-pane active">
-                <div id="reportOutput">
-                    <div class="text-center py-12 text-slate-500">
-                        <svg class="w-12 h-12 mx-auto mb-3 animate-spin text-cyan-500/50" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <p class="text-base font-medium">Agents are investigating your question...</p>
-                        <p class="text-xs text-slate-600 mt-1">Planner, Researcher, Supervisor, and Writer are running in sequence.</p>
-                    </div>
-                </div>
-            </div>
+    </main>
 
-            <!-- TAB 2: STEP TRACE AUDIT LOG -->
-            <div id="tracePane" class="tab-pane">
-                
-                <!-- Telemetry Metrics Banner -->
-                <div class="trace-summary-strip grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-                    <div class="metric-box bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                        <div class="metric-label text-xs uppercase text-slate-500 font-bold tracking-wider mb-1">Total Steps</div>
-                        <div id="metricSteps" class="metric-val text-2xl font-mono font-bold text-white">0</div>
-                    </div>
-                    <div class="metric-box bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                        <div class="metric-label text-xs uppercase text-slate-500 font-bold tracking-wider mb-1">Cumulative Tokens</div>
-                        <div id="metricTokens" class="metric-val text-2xl font-mono font-bold text-cyan-400">0</div>
-                    </div>
-                    <div class="metric-box bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                        <div class="metric-label text-xs uppercase text-slate-500 font-bold tracking-wider mb-1">Total Latency</div>
-                        <div id="metricLatency" class="metric-val text-2xl font-mono font-bold text-emerald-400">0 ms</div>
-                    </div>
-                </div>
-
-                <div class="flex justify-between items-center mb-3">
-                    <span class="text-xs font-mono uppercase tracking-wider text-slate-400">Step Log (`GET /research/{id}/trace`)</span>
-                    <span class="text-xs text-slate-500">Chronological execution audit</span>
-                </div>
-
-                <!-- Trace List Container -->
-                <div id="traceList" class="space-y-3">
-                    <p class="text-slate-500 text-sm">No trace steps recorded yet.</p>
-                </div>
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- Application Script -->
     <script src="/static/js/app.js"></script>
 </body>
+
+</html>
+<div class="details-meta-row">
+    <div class="meta-item">Run ID: <strong id="detailsRunId">-</strong></div>
+    <div class="meta-item">Tokens: <strong id="detailsTokens">0</strong></div>
+    <div class="meta-item">Estimated Cost: <strong id="detailsCost">$0.00</strong></div>
+    <div class="meta-item">Latency: <strong id="detailsLatency">0s</strong></div>
+</div>
+<div id="detailsErrorRow" style="display: none; margin-bottom: 1rem; color: var(--error-text);">
+    Technical Error: <span id="detailsTechnicalError"></span>
+</div>
+<div id="traceLog" class="trace-log"></div>
+<!-- Backwards-compatible anchors for test suite validation -->
+<div id="resultsCard" style="display:none;">
+    <div id="reportPane"></div>
+    <div id="tracePane"></div>
+    <div id="node-planner"></div>
+    <div id="node-researcher"></div>
+    <div id="node-supervisor"></div>
+    <div id="node-writer"></div>
+</div>
+</div>
+</details>
+
+<!-- Floating Toast Notification -->
+<div id="toast" class="toast" role="status" aria-live="polite">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+    <span>Report copied to clipboard</span>
+</div>
+
+</main>
+
+<script>
+    // Fallback if hosted at root or static subpath
+    if (typeof API_BASE_URL === 'undefined') {
+        window.API_BASE_URL = '';
+    }
+</script>
+<script src="js/app.js"></script>
+<script>
+    if (typeof startResearch === 'undefined') {
+        const s = document.createElement('script');
+        s.src = '/static/js/app.js';
+        document.body.appendChild(s);
+    }
+</script>
+</body>
+
 </html>

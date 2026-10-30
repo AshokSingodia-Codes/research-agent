@@ -26,6 +26,18 @@ MODEL_PRICING: dict[tuple[str, str], tuple[float, float]] = {
     ("groq", "gemma2-9b-it"): (0.20, 0.20),
     ("groq", "llama-3.2-1b-preview"): (0.04, 0.04),
     ("groq", "llama-3.2-3b-preview"): (0.06, 0.06),
+    ("groq", "qwen/qwen3.8-27b"): (0.20, 0.20),
+    ("groq", "openai/gpt-oss-120b"): (0.15, 0.60),
+    ("groq", "openai/gpt-oss-20b"): (0.05, 0.15),
+    # Gemini Rates
+    ("gemini", "gemini-2.0-flash"): (0.10, 0.40),
+    ("gemini", "gemini-1.5-flash"): (0.075, 0.30),
+    ("gemini", "gemini-1.5-pro"): (1.25, 5.00),
+    # OpenRouter & Grok Rates
+    ("openrouter", "meta-llama/llama-3.3-70b-instruct:free"): (0.0, 0.0),
+    ("openrouter", "nvidia/nemotron-3.5-lightning:free"): (0.0, 0.0),
+    ("openrouter", "google/gemini-2.0-flash-exp:free"): (0.0, 0.0),
+    ("grok", "grok-beta"): (5.00, 15.00),
     # Fake / Test Provider
     ("fake", "fake-model"): (0.0, 0.0),
 }

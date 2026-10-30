@@ -49,9 +49,13 @@ class BackgroundWorker:
         redis_store.save_run_state(run_id, initial_state)
 
         # Dispatch background execution
-        loop = asyncio.get_event_loop()
-        task = loop.create_task(self.run_workflow(run_id, initial_state, require_approval))
-        self._running_tasks[run_id] = task
+        try:
+            loop = asyncio.get_running_loop()
+            task = loop.create_task(self.run_workflow(run_id, initial_state, require_approval))
+            self._running_tasks[run_id] = task
+        except RuntimeError:
+            # Called from synchronous code outside an active async event loop
+            pass
 
     async def run_workflow(
         self,
@@ -61,8 +65,8 @@ class BackgroundWorker:
     ) -> AgentState | None:
         """Executes the research graph, acquiring a distributed lock and checkpointing state."""
         # 1. Acquire distributed lock
-        locked = redis_store.acquire_lock(run_id, timeout_seconds=60.0)
-        if not locked:
+        owner_token = redis_store.acquire_lock(run_id, timeout_seconds=120.0)
+        if not owner_token:
             logger.warning(f"Failed to acquire distributed lock for {run_id}; another worker is running it.")
             return None
 
@@ -80,7 +84,7 @@ class BackgroundWorker:
             final_state = await graph.ainvoke(state_input, config=config)
 
             # Check if execution paused for human approval
-            curr_state = graph.get_state(config)
+            curr_state = await graph.aget_state(config)
             if curr_state.next and "write" in curr_state.next:
                 redis_store.save_run_state(
                     run_id,
@@ -92,19 +96,59 @@ class BackgroundWorker:
                 )
                 return final_state
 
-            # If completed, persist final report and release lock
+            # Check if run was cancelled
+            client = redis_store.get_client()
+            if client and client.get(f"research:cancel:{run_id}"):
+                logger.info(f"Run {run_id} was cancelled; skipping final report persistence.")
+                redis_store.save_run_state(run_id, {"status": RunStatus.CANCELLED, "cancelled": True})
+                return final_state
+
+            # If completed, validate citations, persist final report, and update state
             if final_state and final_state.get("final_report"):
+                from app.services.citation_validator import validate_citations
                 report = final_state["final_report"]
-                redis_store.save_final_report(run_id, report.model_dump_json())
+                findings = final_state.get("findings", [])
+                validated_report, coverage, warnings = validate_citations(
+                    report=report,
+                    verified_findings=findings,
+                )
+                final_status = RunStatus.COMPLETED
+                if coverage < 0.70:
+                    final_status = RunStatus.NEEDS_REVIEW
+                if final_state.get("partial"):
+                    final_status = RunStatus.COMPLETED
+
+                redis_store.save_final_report(run_id, validated_report.model_dump_json())
                 redis_store.save_run_state(
                     run_id,
                     {
                         "run_id": run_id,
-                        "status": final_state.get("status", RunStatus.COMPLETED),
+                        "status": final_status,
+                        "final_report": validated_report.model_dump(),
                         "total_tokens": final_state.get("total_tokens", 0),
                         "total_usd_cost": final_state.get("total_usd_cost", 0.0),
+                        "completed_subquestion_ids": final_state.get("completed_subquestion_ids", []),
+                        "partial": final_state.get("partial", False),
+                        "degradation_reason": final_state.get("degradation_reason"),
                     },
                 )
+            else:
+                redis_store.save_run_state(
+                    run_id,
+                    {
+                        "run_id": run_id,
+                        "status": final_state.get("status", RunStatus.COMPLETED) if final_state else RunStatus.FAILED,
+                        "total_tokens": final_state.get("total_tokens", 0) if final_state else 0,
+                        "total_usd_cost": final_state.get("total_usd_cost", 0.0) if final_state else 0.0,
+                    },
+                )
+
+            # Store traces
+            for trace in (final_state.get("trace_log") or []):
+                if hasattr(trace, "model_dump"):
+                    redis_store.append_trace_step(run_id, trace.model_dump())
+                elif isinstance(trace, dict):
+                    redis_store.append_trace_step(run_id, trace)
 
             return final_state
 
@@ -116,7 +160,7 @@ class BackgroundWorker:
             )
             return None
         finally:
-            redis_store.release_lock(run_id)
+            redis_store.release_lock(run_id, owner_token)
             self._running_tasks.pop(run_id, None)
 
     async def resume_interrupted_runs(self) -> int:

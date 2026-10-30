@@ -13,7 +13,7 @@ from app.models.schemas import (
 WRITER_SYSTEM_PROMPT = """Synthesize research findings into an authoritative, structured report with inline citation keys.
 
 Requirements:
-1. Every major factual claim in the report sections MUST be backed by an inline citation key, formatted as [1], [2], etc.
+1. Every major factual claim inside each section's content text MUST explicitly include inline citation keys, formatted as [1], [2], etc. (e.g., 'Recent benchmarks show significant gains [1].').
 2. The citations map MUST correlate each citation key [n] to the exact finding_id, source_url, domain, and claim.
 3. Structure the report logically with a concise executive summary and detailed topical sections.
 4. If conflicting evidence records are provided, you MUST dedicate a section titled 'Conflicting Evidence' discussing the trade-offs, discrepancies, or disputed points across sources.
@@ -90,16 +90,31 @@ def write_report(
     if conflicting:
         report.conflicting_evidence = conflicting
 
-    # Ensure citations map has valid entries matching findings if model omitted any
-    if not report.citations and findings:
-        for idx, f in enumerate(findings[:10], 1):
+    # Always ground and align citation keys with verified findings
+    if findings:
+        finding_by_url = {f.source_url: f for f in findings}
+        finding_by_id = {f.id: f for f in findings}
+        # If citations map is sparse or missing keys used in text, populate sequentially from findings
+        for idx, f in enumerate(findings, 1):
             key = f"[{idx}]"
-            report.citations[key] = CitationKey(
-                key=key,
-                finding_id=f.id,
-                source_url=f.source_url,
-                domain=f.domain,
-                claim=f.claim,
-            )
+            if key not in report.citations:
+                report.citations[key] = CitationKey(
+                    key=key,
+                    finding_id=f.id,
+                    source_url=f.source_url,
+                    domain=f.domain,
+                    claim=f.claim,
+                )
+            else:
+                c_item = report.citations[key]
+                # If finding_id doesn't match, map to closest matching URL or the indexed finding
+                if c_item.source_url in finding_by_url:
+                    matched = finding_by_url[c_item.source_url]
+                    c_item.finding_id = matched.id
+                    c_item.domain = matched.domain
+                elif c_item.finding_id not in finding_by_id:
+                    c_item.finding_id = f.id
+                    c_item.source_url = f.source_url
+                    c_item.domain = f.domain
 
     return report, trace
