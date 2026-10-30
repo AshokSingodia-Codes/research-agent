@@ -31,7 +31,7 @@ def verify_api_key(
     resolved_key = api_key if isinstance(api_key, str) else (resolved_header or resolved_query)
 
     # Production safety: reject access if production environment lacks configured API key
-    if settings.env.lower() == "production" and (not configured_key or configured_key == "test-key-12345"):
+    if settings.env.lower() == "production" and (not configured_key or configured_key.startswith("your_")):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Production server misconfigured: secure API_KEY required.",

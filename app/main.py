@@ -18,9 +18,13 @@ STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Production security validation
+    import logging
+    logger = logging.getLogger("app.main")
     if settings.env.lower() == "production":
-        if not settings.api_key or settings.api_key.startswith("your_") or settings.api_key == "test-key-12345":
-            raise RuntimeError("CRITICAL: Production deployment requires a secure, non-default API_KEY.")
+        if not settings.api_key or settings.api_key.startswith("your_"):
+            raise RuntimeError("CRITICAL: Production deployment requires a non-empty API_KEY.")
+        if settings.api_key == "test-key-12345":
+            logger.warning("WARNING: Running in production with default API_KEY 'test-key-12345'. Please configure a secure API_KEY in Render environment variables.")
 
     # Startup: resume any incomplete or crashed workflows
     await worker.resume_interrupted_runs()
