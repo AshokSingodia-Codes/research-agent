@@ -203,9 +203,9 @@
 </main>
 
 <script>
-    // Fallback if hosted at root or static subpath
-    if (typeof API_BASE_URL === 'undefined') {
-        window.API_BASE_URL = '';
+    // Live Render backend API base
+    if (!window.API_BASE_URL) {
+        window.API_BASE_URL = 'https://research-agent-api-49ii.onrender.com';
     }
 </script>
 <script src="js/app.js"></script>
