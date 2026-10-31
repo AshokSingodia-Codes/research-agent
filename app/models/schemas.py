@@ -1,3 +1,4 @@
+import hashlib
 import uuid
 from typing import Any, Literal
 
@@ -28,18 +29,30 @@ class ResearchPlan(BaseModel):
     )
 
 
+def generate_finding_id(run_id: str | None, source_url: str, claim: str) -> str:
+    seed_parts = [run_id or "", source_url or "", claim or ""]
+    seed = ":".join(seed_parts)
+    digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()[:12]
+    return f"fnd_{digest}"
+
+
 class Finding(BaseModel):
-    id: str = Field(default_factory=lambda: f"fnd_{uuid.uuid4().hex[:8]}")
+    id: str = Field(default="")
+    run_id: str | None = Field(default=None, description="Workflow run ID for deterministic ID scoping")
     sub_question_id: str
     claim: str = Field(description="Specific factual claim or finding")
     source_url: str = Field(description="Canonical URL of the source")
     domain: str = Field(description="Domain name of the source")
     snippet: str = Field(description="Excerpt or snippet supporting the claim")
     extracted_text: str | None = Field(default=None, description="Full extracted readable page content if available")
-    retrieval_timestamp: float = Field(description="Unix epoch timestamp when finding was retrieved")
+    retrieval_timestamp: float = Field(default=0.0, description="Unix epoch timestamp when finding was retrieved")
     content_hash: str = Field(description="SHA-256 hash of the extracted content or snippet")
     confidence: float = Field(default=0.8, ge=0.0, le=1.0, description="Confidence score of the claim")
     source_quality_score: float = Field(default=0.5, ge=0.0, le=1.0, description="Source provenance heuristic score")
+
+    def model_post_init(self, __context: Any) -> None:
+        if not self.id:
+            self.id = generate_finding_id(self.run_id, self.source_url, self.claim)
 
 
 class ResearchFindings(BaseModel):

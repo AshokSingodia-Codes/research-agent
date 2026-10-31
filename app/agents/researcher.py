@@ -73,9 +73,13 @@ def research_subquestion(
     )
 
     # Ensure sub_question_id matches
+    from app.models.schemas import generate_finding_id
+
     findings_res.sub_question_id = sub_question.id
     for f in findings_res.findings:
         f.sub_question_id = sub_question.id
+        f.run_id = run_id
+        f.id = generate_finding_id(run_id, f.source_url, f.claim)
         if not f.retrieval_timestamp:
             f.retrieval_timestamp = time.time()
 

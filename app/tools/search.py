@@ -228,6 +228,7 @@ def _process_raw_results(
         claim_text = snippet[:250] if snippet else extracted_text[:250]
 
         finding = Finding(
+            run_id=run_id,
             sub_question_id=sub_question_id,
             claim=claim_text.replace("\n", " ").strip(),
             source_url=canon_url,

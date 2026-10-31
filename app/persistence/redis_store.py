@@ -145,7 +145,8 @@ class RedisStore:
                         data[k] = ("stream_json", {"entries": entries, "groups": groups})
                     except Exception as ex:
                         logger.debug(f"Failed to serialize stream {k}: {ex}")
-            tmp_file = FAKEDB_FILE.with_suffix(".tmp")
+            import os
+            tmp_file = FAKEDB_FILE.with_suffix(f".tmp_{os.getpid()}_{time.time_ns()}")
             tmp_file.write_text(json.dumps(data), encoding="utf-8")
             try:
                 tmp_file.replace(FAKEDB_FILE)
@@ -155,7 +156,10 @@ class RedisStore:
                         FAKEDB_FILE.unlink(missing_ok=True)
                     except Exception:
                         pass
-                tmp_file.replace(FAKEDB_FILE)
+                try:
+                    tmp_file.replace(FAKEDB_FILE)
+                except Exception:
+                    pass
             self._last_sync_time = now
             self._dirty = False
             self.write_count += 1

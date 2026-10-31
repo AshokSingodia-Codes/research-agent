@@ -20,14 +20,28 @@ def run_worker_process(run_id: str, topic: str, delay_per_step: float = 0.5):
     orig_generate = fake.generate_structured
     client = redis_store.get_client()
 
+    client.rpush(f"chaos:proc_events:{run_id}", f"start:{os.getpid()}")
+    redis_store.sync_to_disk(force=True)
+
     def recorded_generate(messages, output_schema, **kwargs):
         last_content = messages[-1].get("content", "")[:30] if messages else ""
         call_id = f"{output_schema.__name__}:{last_content}"
         client.rpush(f"chaos:raw_calls:{run_id}", call_id)
+        redis_store.sync_to_disk(force=True)
         return orig_generate(messages, output_schema, **kwargs)
 
     fake.generate_structured = recorded_generate
     llm_client.set_override_provider(fake)
+
+    import app.tools.search as search_module
+    orig_search = search_module.search_and_extract
+
+    def recorded_search(query, sub_question_id, **kwargs):
+        client.rpush(f"chaos:raw_searches:{run_id}", f"{sub_question_id}:{query[:30]}")
+        redis_store.sync_to_disk(force=True)
+        return orig_search(query, sub_question_id, **kwargs)
+
+    search_module.search_and_extract = recorded_search
 
     checkpointer = RedisCheckpointSaver()
     graph = build_research_graph(checkpointer=checkpointer)

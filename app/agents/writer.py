@@ -112,9 +112,11 @@ def write_report(
                     matched = finding_by_url[c_item.source_url]
                     c_item.finding_id = matched.id
                     c_item.domain = matched.domain
+                    c_item.claim = matched.claim
                 elif c_item.finding_id not in finding_by_id:
                     c_item.finding_id = f.id
                     c_item.source_url = f.source_url
                     c_item.domain = f.domain
+                    c_item.claim = f.claim
 
     return report, trace
