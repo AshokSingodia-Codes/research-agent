@@ -245,6 +245,25 @@ pytest --cov=app --cov-report=term-missing tests/
 
 ---
 
+## 📊 Benchmark Evaluation (Empirical Results)
+
+Automated evaluation across 16 benchmark tasks spanning technical deep dives, adversarial edge cases, and contradiction detection, comparing the multi-agent system against a naive single-prompt baseline (no search):
+
+- **Mode**: `REAL` (live LLM calls and Tavily web retrieval)
+- **Cumulative Cost**: `$0.1023 USD` across all 16 benchmark queries (under the `$2.00` safety cap)
+- **Full Report**: [docs/eval_report.md](docs/eval_report.md) & [docs/eval_report.json](docs/eval_report.json)
+
+| Evaluation Metric | Multi-Agent System | Naive Baseline | Absolute Lift |
+| :--- | :---: | :---: | :---: |
+| **Citation Existence / Validity** | **87.5%** | 0.0% | **+87.5%** |
+| **Citation Factual Support (Judge)** | **68.8%** | 0.0% | **+68.8%** |
+| **Plan-to-Report Coverage** | **81.2%** | 0.0% | **+81.2%** |
+| **Domain Diversity Ratio** | **90.1%** | 100.0% | **-9.9%** |
+| **Contradiction Detection Accuracy** | **86.2%** | 80.0% | **+6.2%** |
+| **Budget & Cost Compliance** | **93.8%** | N/A | **Enforced in Code** |
+
+---
+
 ## 🔒 Production Deployment & Environment Configuration
 
 ### Render Configuration (`render.yaml`)
