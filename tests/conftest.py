@@ -24,10 +24,9 @@ def is_redis_reachable() -> bool:
         return False
 
     try:
-        import redis
+        from app.persistence.redis_store import build_redis_client
 
-        client = redis.Redis.from_url(redis_url, socket_timeout=1.0, decode_responses=True)
-        client.ping()
+        client = build_redis_client(redis_url, socket_timeout=1.0, decode_responses=True)
         _REDIS_REACHABLE = True
     except Exception:
         _REDIS_REACHABLE = False

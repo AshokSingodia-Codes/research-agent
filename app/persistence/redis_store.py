@@ -37,6 +37,21 @@ def _get_shared_fake_server():
     return _shared_fake_server
 
 
+def build_redis_client(url: str, **kwargs: Any) -> redis.Redis:
+    """Creates a Redis client with automatic fallback to RESP2 for Redis versions without HELLO."""
+    client = redis.Redis.from_url(url, **kwargs)
+    try:
+        client.ping()
+    except redis.exceptions.ResponseError as pe:
+        if "HELLO" in str(pe):
+            kwargs["protocol"] = 2
+            client = redis.Redis.from_url(url, **kwargs)
+            client.ping()
+        else:
+            raise
+    return client
+
+
 class RedisStore:
     """
     Central Redis store manager supporting real Redis and fakeredis.
@@ -85,20 +100,12 @@ class RedisStore:
                     if self.persist_disk:
                         self.load_from_disk()
                 except Exception:
-                    self._client = redis.Redis.from_url(settings.redis_url, decode_responses=True)
+                    self._client = build_redis_client(settings.redis_url, decode_responses=True)
                     return self._client
             return self._fake_client
 
         try:
-            self._client = redis.Redis.from_url(settings.redis_url, decode_responses=True)
-            try:
-                self._client.ping()
-            except redis.exceptions.ResponseError as pe:
-                if "HELLO" in str(pe):
-                    self._client = redis.Redis.from_url(settings.redis_url, decode_responses=True, protocol=2)
-                    self._client.ping()
-                else:
-                    raise
+            self._client = build_redis_client(settings.redis_url, decode_responses=True)
         except Exception as e:
             logger.warning(f"Could not connect to Redis at {settings.redis_url} ({e}); falling back to fakeredis")
             import fakeredis

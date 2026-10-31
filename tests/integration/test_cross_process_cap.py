@@ -77,9 +77,10 @@ def test_lua_check_and_incr_concurrent_two_clients_real_redis():
 
     from app.budget.guard import LUA_CHECK_AND_INCR
     from app.config import settings
+    from app.persistence.redis_store import build_redis_client
 
     client1 = redis_store.get_client()
-    client2 = redis.Redis.from_url(settings.redis_url, decode_responses=True)
+    client2 = build_redis_client(settings.redis_url, decode_responses=True)
 
     key = "test:budget:lua_concurrent_charges"
     client1.delete(key)
