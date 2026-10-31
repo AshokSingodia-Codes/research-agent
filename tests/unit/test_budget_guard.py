@@ -458,3 +458,36 @@ def test_failed_or_cancelled_call_releases_budget_reservation_and_rejected_produ
     finally:
         settings.max_total_tokens = orig_cap
 
+
+def test_supervisor_handles_budget_exceeded_error_explicitly():
+    """
+    Validates that review_findings explicitly catches BudgetExceededError,
+    does not swallow it silently, and returns an ABORT decision with reason.
+    """
+    sub_q = SubQuestion(
+        id="sq_budget_test",
+        text="What are consensus leader lease bounds in production systems?",
+        rationale="Bounds lease invariants.",
+        priority=1,
+    )
+    guard = BudgetGuard(
+        max_total_tokens=100,
+        max_usd_cost=0.01,
+        wall_clock_timeout_seconds=60.0,
+        run_id="test_sup_budget",
+    )
+    guard.current_tokens = 150  # Over budget
+
+    decision, trace = review_findings(
+        sub_question=sub_q,
+        findings=[],
+        budget_guard=guard,
+        run_id="test_sup_budget",
+    )
+
+    assert decision.action == ReviewAction.ABORT
+    assert "budget" in decision.reason.lower()
+    assert trace.agent == "supervisor"
+    assert trace.provider == "code_guard"
+
+

@@ -1,8 +1,12 @@
-from app.budget.guard import BudgetGuard
+import logging
+
+from app.budget.guard import BudgetExceededError, BudgetGuard
 from app.config import settings
 from app.llm.client import llm_client
 from app.models.enums import ReviewAction
 from app.models.schemas import Finding, ReviewDecision, StepTrace, SubQuestion
+
+logger = logging.getLogger(__name__)
 
 SUPERVISOR_SYSTEM_PROMPT = """Evaluate research findings for a specific sub-question and determine whether they meet quality and grounding criteria.
 
@@ -31,9 +35,29 @@ def review_findings(
     # 1. Immediate budget circuit breaker check
     if budget_guard is not None:
         try:
+            budget_guard.check_wall_clock()
+            budget_guard.check_tokens()
+            budget_guard.check_usd_cost()
             budget_guard.check_before_call(estimated_tokens=0)
-        except Exception:
-            pass
+        except BudgetExceededError as be:
+            logger.warning(f"Supervisor budget check exceeded for {sub_question.id}: {be}")
+            decision = ReviewDecision(
+                sub_question_id=sub_question.id,
+                action=ReviewAction.ABORT,
+                reason=f"Terminating research due to budget exhaustion: {be.reason}",
+            )
+            trace = StepTrace(
+                run_id=run_id,
+                agent="supervisor",
+                provider="code_guard",
+                model="deterministic",
+                input_data={"sub_question_id": sub_question.id, "findings_count": len(findings)},
+                output_data=decision.model_dump(),
+            )
+            return decision, trace
+        except Exception as e:
+            logger.exception(f"Unexpected error during supervisor budget check for {sub_question.id}: {e}")
+
     if budget_guard is not None and budget_guard.is_exhausted:
         decision = ReviewDecision(
             sub_question_id=sub_question.id,
@@ -47,7 +71,6 @@ def review_findings(
             model="deterministic",
             input_data={"sub_question_id": sub_question.id, "findings_count": len(findings)},
             output_data=decision.model_dump(),
-            timestamp=0.0,
         )
         return decision, trace
 
@@ -71,15 +94,32 @@ def review_findings(
         {"role": "user", "content": user_prompt},
     ]
 
-    decision, trace = llm_client.generate_with_repair(
-        agent_name="supervisor",
-        messages=messages,
-        output_schema=ReviewDecision,
-        run_id=run_id,
-        parent_step_id=parent_step_id,
-        budget_guard=budget_guard,
-        model=settings.supervisor_model,
-    )
+    try:
+        decision, trace = llm_client.generate_with_repair(
+            agent_name="supervisor",
+            messages=messages,
+            output_schema=ReviewDecision,
+            run_id=run_id,
+            parent_step_id=parent_step_id,
+            budget_guard=budget_guard,
+            model=settings.supervisor_model,
+        )
+    except BudgetExceededError as be:
+        logger.warning(f"Supervisor LLM call exceeded budget for {sub_question.id}: {be}")
+        decision = ReviewDecision(
+            sub_question_id=sub_question.id,
+            action=ReviewAction.ABORT,
+            reason=f"Terminating research due to budget exhaustion: {be.reason}",
+        )
+        trace = StepTrace(
+            run_id=run_id,
+            agent="supervisor",
+            provider="code_guard",
+            model="deterministic",
+            input_data={"sub_question_id": sub_question.id, "findings_count": len(findings)},
+            output_data=decision.model_dump(),
+        )
+        return decision, trace
 
     decision.sub_question_id = sub_question.id
 
