@@ -44,3 +44,4 @@ dump.rdb
 coverage_html/
 .ruff_cache/
 scratch/
+.vscode/

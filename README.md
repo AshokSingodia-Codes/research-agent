@@ -2,8 +2,7 @@
 
 [![Live Frontend](https://img.shields.io/badge/Frontend-Vercel-black?style=flat&logo=vercel)](https://research-agent-osy9-cq80otzv4-ashok-a994.vercel.app)
 [![Live Backend API](https://img.shields.io/badge/API-Render-46E3B7?style=flat&logo=render)](https://research-agent-api-49ii.onrender.com/health)
-[![Tests](https://img.shields.io/badge/tests-123%20passed-brightgreen.svg)]()
-[![Coverage](https://img.shields.io/badge/coverage-76%25-brightgreen.svg)]()
+[![CI](https://github.com/AshokSingodia-Codes/research-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/AshokSingodia-Codes/research-agent/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.12-blue.svg)]()
 [![Framework](https://img.shields.io/badge/LangGraph-0.2.60-orange.svg)]()
 [![State Store](https://img.shields.io/badge/Redis-Durable%20Checkpoints-red.svg)]()
@@ -29,7 +28,7 @@ Most agent demonstrations fail on process restart, hallucinate sources, loop end
 1. **Durable State & Crash Resumption**: Powered by LangGraph state checkpointing backed by Redis. If a worker process crashes, is killed, or restarts mid-workflow, it automatically reclaims and resumes from the exact last completed node without replaying expensive LLM or search steps.
 2. **Instant Asynchronous Cancellation**: Clicking "Cancel" immediately aborts active LangGraph threads, web searches, and synthesis loops in real-time. It records a permanent `cancelled` state, releases worker concurrency slots, and prevents phantom report overwrites.
 3. **Multi-Provider LLM Fallback Cascade**: If the primary LLM provider (e.g. Groq) encounters a 429 rate limit or outage, the request automatically falls back in real time through Anthropic, Gemini, OpenRouter, or Grok without failing the user's research run.
-4. **Citation Grounding & Contradiction Detection**: Every claim is cross-checked against source text. Unverified claims are flagged, conflicting source claims are synthesized with balance, and citation links are verified before report compilation.
+4. **Citation Existence Validation & Contradiction Detection**: Citations are verified against retrieved findings (validating citation IDs and source URLs exist). Conflicting source claims are synthesized with balance, and citation links are verified before report compilation.
 5. **Deterministic Budget Guards**: Token limits, search caps, wall-clock timeouts, and strict revision limits are enforced directly at graph edges—never delegated to probabilistic LLM prompts.
 6. **Step-Level Observability (`GET /research/{id}/trace`)**: Full audit trail recording specialist node execution, exact inputs/outputs, tool invocations, token costs, and per-step latencies.
 
@@ -95,7 +94,7 @@ Most agent demonstrations fail on process restart, hallucinate sources, loop end
 |                                                  v                                                 |
 |                                      +------------------------+                                    |
 |                                      |   Citation Validator   |                                    |
-|                                      | Verifies source grounding                                   |
+|                                      | Validates citation existence & URLs |                               |
 |                                      +-----------+------------+                                    |
 |                                                  |                                                 |
 +--------------------------------------------------+-------------------------------------------------+

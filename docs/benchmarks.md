@@ -18,4 +18,4 @@
 ### Analysis
 With `MAX_PARALLEL_RESEARCHERS=1`, the 4 sub-questions execute sequentially through the fan-out wave, yielding an overall graph execution duration of ~2.28s (4 * 0.5s + planning, review, write and graph overhead).
 
-With `MAX_PARALLEL_RESEARCHERS=4`, the 4 sub-questions are dispatched concurrently using LangGraph `Send("research_one", ...)` guarded by `asyncio.Semaphore(4)`. The tasks execute overlapping in time, reducing execution duration to 0.545s, achieving a **4.19x** empirical speedup, substantially exceeding the 2.0x target.
+With `MAX_PARALLEL_RESEARCHERS=4`, the 4 sub-questions are dispatched concurrently using LangGraph `Send("research_one", ...)` guarded by `asyncio.Semaphore(4)`. The tasks execute overlapping in time, reducing execution duration to 0.545s, achieving a **4.19x** empirical speedup (measured under simulated 0.5s per-call latency with FakeProvider, not real LLM API latency), substantially exceeding the 2.0x target.
