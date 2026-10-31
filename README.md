@@ -238,8 +238,10 @@ pytest --cov=app --cov-report=term-missing tests/
 ```
 
 **Results:**
-- `123 passed, 3 skipped, 3 deselected in 18.66s`
-- **76% total code coverage** across all core packages.
+- CI Step 1 (Unit & Integration, FakeRedis): `129 passed, 3 skipped, 3 deselected in 18.84s`
+- CI Step 2 (Real Redis, Chaos & E2E): `5 passed, 130 deselected in 7.60s`
+- **Total:** `134 passed`, `0 failed`
+- **Coverage:** **76% total code coverage** across 4,115 statements.
 
 ---
 
