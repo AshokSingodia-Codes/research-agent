@@ -91,7 +91,14 @@ class RedisStore:
 
         try:
             self._client = redis.Redis.from_url(settings.redis_url, decode_responses=True)
-            self._client.ping()
+            try:
+                self._client.ping()
+            except redis.exceptions.ResponseError as pe:
+                if "HELLO" in str(pe):
+                    self._client = redis.Redis.from_url(settings.redis_url, decode_responses=True, protocol=2)
+                    self._client.ping()
+                else:
+                    raise
         except Exception as e:
             logger.warning(f"Could not connect to Redis at {settings.redis_url} ({e}); falling back to fakeredis")
             import fakeredis
