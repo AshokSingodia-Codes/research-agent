@@ -145,7 +145,7 @@ Initiates a new research run.
 ```bash
 curl -X POST "https://research-agent-api-49ii.onrender.com/research" \
      -H "Content-Type: application/json" \
-     -H "X-API-Key: test-key-12345" \
+     -H "X-API-Key: $API_KEY" \
      -d '{"question": "Recent breakthroughs in solid-state battery technology"}'
 ```
 **Response (202 Accepted):**
@@ -160,8 +160,10 @@ curl -X POST "https://research-agent-api-49ii.onrender.com/research" \
 ### `GET /research/{id}/stream`
 Real-time Server-Sent Events (SSE) progress feed:
 ```bash
-curl -N "https://research-agent-api-49ii.onrender.com/research/run_9a1f28b7c012/stream?api_key=test-key-12345"
+curl -N "https://research-agent-api-49ii.onrender.com/research/run_9a1f28b7c012/stream" \
+     -H "X-API-Key: $API_KEY"
 ```
+*(For browser `EventSource` connections, acquire a 60-second single-use token via `POST /research/{id}/stream-token` with the `X-API-Key` header and connect via `?token=...`)*
 
 ### `GET /research/{id}`
 Polls current run status or retrieves the completed report:
@@ -198,7 +200,7 @@ Polls current run status or retrieves the completed report:
 Cancels a running workflow immediately.
 ```bash
 curl -X POST "https://research-agent-api-49ii.onrender.com/research/run_9a1f28b7c012/cancel" \
-     -H "X-API-Key: test-key-12345"
+     -H "X-API-Key: $API_KEY"
 ```
 
 ### `GET /research/{id}/trace`

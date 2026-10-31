@@ -77,6 +77,7 @@ def reset_rate_limiter_and_fake_llm(request, monkeypatch):
     monkeypatch.setattr(settings, "mock_llm", "true")
     monkeypatch.setattr(settings, "mock_search", "true")
     monkeypatch.setattr(settings, "run_worker_inprocess", True)
+    monkeypatch.setattr(settings, "api_key", "test-ci-key-for-unit-tests-only")
 
     # Isolate fake redis per test (fresh instance, no disk persistence for unit/integration)
     if settings.use_fake_redis:

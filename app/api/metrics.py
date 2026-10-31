@@ -30,7 +30,6 @@ async def health_check() -> dict[str, Any]:
         "writer_model": settings.writer_model,
         "max_subquestions": settings.max_subquestions,
         "max_total_tokens": settings.max_total_tokens,
-        "default_api_key": settings.api_key,
         "timestamp": time.time(),
     }
 

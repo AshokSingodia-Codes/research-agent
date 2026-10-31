@@ -82,3 +82,47 @@ async def test_sse_ordering_and_reconnection_playback():
         idx2 = text.find("event: finding_added")
         idx3 = text.find("event: completed")
         assert idx2 < idx3, "SSE events must be ordered chronologically"
+
+
+@pytest.mark.asyncio
+async def test_sse_stream_token_acquisition_and_streaming(monkeypatch):
+    """Validates acquiring a run-scoped stream token via POST /stream-token and connecting via ?token=."""
+    test_key = "sec-test-key-32chars-for-test!!"
+    monkeypatch.setattr(settings, "api_key", test_key)
+    monkeypatch.setattr(settings, "stream_token_secret", "secret-stream-token-xyz")
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        run_id = f"test_token_sse_{int(time.time() * 1000)}"
+        redis_store.save_run_state(run_id=run_id, status="in_progress")
+
+        # 1. Acquire token with X-API-Key header
+        resp = await client.post(
+            f"/research/{run_id}/stream-token",
+            headers={"X-API-Key": test_key},
+        )
+        assert resp.status_code == 200
+        token_data = resp.json()
+        assert "token" in token_data
+        token = token_data["token"]
+        assert token_data["expires_in"] == 60
+
+        # 2. Connect with ?token= (no header)
+        queue = register_stream_queue(run_id)
+        await queue.put({"type": "complete", "data": {"status": "completed"}})
+        await queue.put(None)
+        async with client.stream("GET", f"/research/{run_id}/stream?token={token}") as stream_resp:
+            assert stream_resp.status_code == 200
+            assert "text/event-stream" in stream_resp.headers["content-type"]
+            lines = [line async for line in stream_resp.aiter_lines() if line]
+            assert any("complete" in line for line in lines)
+
+        # 3. Connecting again with the same token fails (single use)
+        async with client.stream("GET", f"/research/{run_id}/stream?token={token}") as replay_resp:
+            assert replay_resp.status_code == 403
+
+        # 4. Connecting with ?api_key= is rejected (no query api_key leakage)
+        async with client.stream(
+            "GET", f"/research/{run_id}/stream?api_key={test_key}"
+        ) as bad_resp:
+            assert bad_resp.status_code == 401

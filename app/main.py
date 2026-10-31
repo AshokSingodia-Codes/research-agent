@@ -15,16 +15,37 @@ from app.persistence.worker import worker
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
 
+def validate_production_security() -> None:
+    """Enforces strict API key and CORS policy requirements when running in production."""
+    if settings.env.lower() == "production":
+        KNOWN_TEST_KEYS = {
+            "test-key-12345",
+            "test",
+            "123456",
+            "12345678",
+            "admin",
+            "secret",
+            "default",
+            "changeme",
+            "password",
+        }
+        if (
+            not settings.api_key
+            or len(settings.api_key) < 16
+            or settings.api_key.startswith("your_")
+            or settings.api_key.lower() in KNOWN_TEST_KEYS
+        ):
+            raise RuntimeError(
+                "CRITICAL: Production deployment requires a secure, non-default API_KEY of at least 16 characters."
+            )
+        if any(origin == "*" for origin in settings.cors_origins):
+            raise RuntimeError("CRITICAL: CORS allow_origins must not contain '*' in production.")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Production security validation
-    import logging
-    logger = logging.getLogger("app.main")
-    if settings.env.lower() == "production":
-        if not settings.api_key or settings.api_key.startswith("your_"):
-            raise RuntimeError("CRITICAL: Production deployment requires a non-empty API_KEY.")
-        if settings.api_key == "test-key-12345":
-            logger.warning("WARNING: Running in production with default API_KEY 'test-key-12345'. Please configure a secure API_KEY in Render environment variables.")
+    validate_production_security()
 
     # Startup: resume any incomplete or crashed workflows
     await worker.resume_interrupted_runs()

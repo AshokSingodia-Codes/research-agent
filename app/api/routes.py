@@ -6,7 +6,12 @@ from typing import Any
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from fastapi.responses import StreamingResponse
 
-from app.api.auth import check_research_rate_limit, verify_api_key
+from app.api.auth import (
+    check_research_rate_limit,
+    create_stream_token,
+    verify_api_key,
+    verify_stream_access,
+)
 from app.api.events import event_broker
 from app.graph.builder import build_research_graph
 from app.models.enums import RunStatus
@@ -131,12 +136,27 @@ async def get_research_status(
     )
 
 
+@router.post("/{run_id}/stream-token")
+@router.get("/{run_id}/stream-token")
+async def get_stream_token(
+    run_id: str,
+    caller_id: str = Depends(verify_api_key),
+) -> dict[str, Any]:
+    """Generates a short-lived (60s), run-scoped HMAC token for browser EventSource SSE connections."""
+    token = create_stream_token(run_id=run_id, ttl_seconds=60)
+    return {
+        "run_id": run_id,
+        "token": token,
+        "expires_in": 60,
+    }
+
+
 @router.get("/{run_id}/events")
 @router.get("/{run_id}/stream")
 async def stream_research_events(
     run_id: str,
     last_event_id: str | None = Header(None, alias="Last-Event-ID"),
-    caller_id: str = Depends(verify_api_key),
+    caller_id: str = Depends(verify_stream_access),
 ):
     """
     Server-Sent Events (SSE) live progress stream.

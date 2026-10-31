@@ -11,7 +11,7 @@ function getApiUrl(path) {
 let currentRunId = null;
 let pollTimer = null;
 let eventSource = null;
-let apiKey = localStorage.getItem('multiagent_api_key') || 'test-key-12345';
+let apiKey = localStorage.getItem('multiagent_api_key') || '';
 
 document.addEventListener('DOMContentLoaded', () => {
     checkHealth();
@@ -29,13 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function checkHealth() {
     try {
-        const resp = await fetch(getApiUrl('/health'));
-        if (resp.ok) {
-            const data = await resp.json();
-            if (data.default_api_key && !localStorage.getItem('multiagent_api_key')) {
-                apiKey = data.default_api_key;
-            }
-        }
+        await fetch(getApiUrl('/health'));
     } catch (err) {
         console.warn("Health check error", err);
     }
@@ -184,13 +178,31 @@ async function startResearch() {
     }
 }
 
-function initStreamOrPolling(runId) {
+async function initStreamOrPolling(runId) {
     if (eventSource) {
         eventSource.close();
     }
 
     try {
-        eventSource = new EventSource(getApiUrl(`/research/${runId}/stream?api_key=${encodeURIComponent(apiKey)}`));
+        let streamUrl = getApiUrl(`/research/${runId}/stream`);
+        if (apiKey) {
+            try {
+                const tokenResp = await fetch(getApiUrl(`/research/${runId}/stream-token`), {
+                    method: 'POST',
+                    headers: { 'X-API-Key': apiKey }
+                });
+                if (tokenResp.ok) {
+                    const tokenData = await tokenResp.json();
+                    if (tokenData.token) {
+                        streamUrl += `?token=${encodeURIComponent(tokenData.token)}`;
+                    }
+                }
+            } catch (tokenErr) {
+                console.warn("Could not acquire stream token; falling back to direct stream/polling", tokenErr);
+            }
+        }
+
+        eventSource = new EventSource(streamUrl);
 
         eventSource.onmessage = (event) => {
             try {

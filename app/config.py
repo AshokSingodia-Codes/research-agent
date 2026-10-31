@@ -1,3 +1,5 @@
+from typing import Any
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,9 +17,25 @@ class Settings(BaseSettings):
     openrouter_api_key: str = ""
     grok_api_key: str = ""
     tavily_api_key: str = ""
-    api_key: str = "test-key-12345"  # System API key for endpoint auth
+    api_key: str = ""  # System API key for endpoint auth (required in production)
+    stream_token_secret: str = ""  # Secret for signing short-lived stream tokens
     env: str = "development"  # "development", "staging", "production"
     cors_origins: list[str] = ["http://localhost:8000", "http://127.0.0.1:8000"]
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v: Any) -> list[str]:
+        if isinstance(v, str):
+            import json
+
+            v_stripped = v.strip()
+            if v_stripped.startswith("[") and v_stripped.endswith("]"):
+                try:
+                    return json.loads(v_stripped)
+                except Exception:
+                    pass
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
 
     # Security & Integrity
     checkpoint_hmac_key: str = ""
