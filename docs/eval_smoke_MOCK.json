@@ -3,6 +3,7 @@
     "total_evaluations": 16,
     "agent": {
       "mean_citation_validity": 1.0,
+      "mean_citation_support": 1.0,
       "mean_plan_coverage": 0.25,
       "mean_domain_diversity": 1.0,
       "contradiction_accuracy": 0.8125,
@@ -10,15 +11,21 @@
     },
     "baseline": {
       "mean_citation_validity": 0.0,
+      "mean_citation_support": 0.0,
       "mean_plan_coverage": 0.0,
       "mean_domain_diversity": 1.0,
       "contradiction_accuracy": 0.8125
     },
     "statistical_lift": {
       "citation_validity_lift": 1.0,
+      "citation_support_lift": 1.0,
       "plan_coverage_lift": 0.25,
       "contradiction_lift": 0.0
-    }
+    },
+    "mode": "MOCK",
+    "cumulative_usd_cost": 0.0,
+    "cost_cap": 2.0,
+    "aborted_due_to_cost": false
   },
   "results": [
     {
@@ -33,6 +40,28 @@
           "valid_citations": 2,
           "hallucinated_citations": 0
         },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction with periodic snapshots bounds disk growth and enables quick recovery.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            }
+          ]
+        },
         "coverage": {
           "plan_coverage_ratio": 0.25,
           "total_subquestions": 4,
@@ -53,13 +82,13 @@
         "budget": {
           "budget_compliance": true,
           "total_tokens": 6400,
-          "token_limit": 50000,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
           "total_usd_cost": 0.0,
-          "usd_limit": 1.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
-          "wall_clock_seconds": 0.52,
-          "wall_clock_limit": 240.0,
+          "wall_clock_seconds": 0.41,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -74,10 +103,32 @@
       "baseline": {
         "citation": {
           "citation_validity_ratio": 0.0,
-          "citation_density_per_100_words": 6.25,
-          "total_citations_referenced": 3,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
           "valid_citations": 0,
-          "hallucinated_citations": 3
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction bounds disk growth and enables quick recovery.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
         },
         "coverage": {
           "plan_coverage_ratio": 0.0,
@@ -94,14 +145,14 @@
         },
         "budget": {
           "budget_compliance": true,
-          "total_tokens": 1250,
-          "token_limit": 50000,
+          "total_tokens": 800,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
-          "total_usd_cost": 0.0025,
-          "usd_limit": 1.0,
+          "total_usd_cost": 0.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
           "wall_clock_seconds": 0.05,
-          "wall_clock_limit": 240.0,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -112,6 +163,14 @@
           "contradiction_detected": false,
           "contradiction_accuracy": 1.0
         }
+      },
+      "metrics": {
+        "agent_tokens": 6400,
+        "agent_cost_usd": 0.0,
+        "agent_latency_s": 0.41,
+        "baseline_tokens": 800,
+        "baseline_cost_usd": 0.0,
+        "baseline_latency_s": 0.05
       }
     },
     {
@@ -126,6 +185,28 @@
           "valid_citations": 2,
           "hallucinated_citations": 0
         },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction with periodic snapshots bounds disk growth and enables quick recovery.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            }
+          ]
+        },
         "coverage": {
           "plan_coverage_ratio": 0.25,
           "total_subquestions": 4,
@@ -146,13 +227,13 @@
         "budget": {
           "budget_compliance": true,
           "total_tokens": 6400,
-          "token_limit": 50000,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
           "total_usd_cost": 0.0,
-          "usd_limit": 1.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
-          "wall_clock_seconds": 0.14,
-          "wall_clock_limit": 240.0,
+          "wall_clock_seconds": 0.22,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -167,10 +248,32 @@
       "baseline": {
         "citation": {
           "citation_validity_ratio": 0.0,
-          "citation_density_per_100_words": 6.82,
-          "total_citations_referenced": 3,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
           "valid_citations": 0,
-          "hallucinated_citations": 3
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction bounds disk growth and enables quick recovery.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
         },
         "coverage": {
           "plan_coverage_ratio": 0.0,
@@ -187,14 +290,14 @@
         },
         "budget": {
           "budget_compliance": true,
-          "total_tokens": 1250,
-          "token_limit": 50000,
+          "total_tokens": 800,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
-          "total_usd_cost": 0.0025,
-          "usd_limit": 1.0,
+          "total_usd_cost": 0.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
           "wall_clock_seconds": 0.05,
-          "wall_clock_limit": 240.0,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -205,6 +308,14 @@
           "contradiction_detected": false,
           "contradiction_accuracy": 1.0
         }
+      },
+      "metrics": {
+        "agent_tokens": 6400,
+        "agent_cost_usd": 0.0,
+        "agent_latency_s": 0.22,
+        "baseline_tokens": 800,
+        "baseline_cost_usd": 0.0,
+        "baseline_latency_s": 0.05
       }
     },
     {
@@ -219,6 +330,28 @@
           "valid_citations": 2,
           "hallucinated_citations": 0
         },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction with periodic snapshots bounds disk growth and enables quick recovery.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            }
+          ]
+        },
         "coverage": {
           "plan_coverage_ratio": 0.25,
           "total_subquestions": 4,
@@ -239,13 +372,13 @@
         "budget": {
           "budget_compliance": true,
           "total_tokens": 6400,
-          "token_limit": 50000,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
           "total_usd_cost": 0.0,
-          "usd_limit": 1.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
-          "wall_clock_seconds": 0.18,
-          "wall_clock_limit": 240.0,
+          "wall_clock_seconds": 0.28,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -260,10 +393,32 @@
       "baseline": {
         "citation": {
           "citation_validity_ratio": 0.0,
-          "citation_density_per_100_words": 6.0,
-          "total_citations_referenced": 3,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
           "valid_citations": 0,
-          "hallucinated_citations": 3
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction bounds disk growth and enables quick recovery.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
         },
         "coverage": {
           "plan_coverage_ratio": 0.0,
@@ -280,14 +435,14 @@
         },
         "budget": {
           "budget_compliance": true,
-          "total_tokens": 1250,
-          "token_limit": 50000,
+          "total_tokens": 800,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
-          "total_usd_cost": 0.0025,
-          "usd_limit": 1.0,
+          "total_usd_cost": 0.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
           "wall_clock_seconds": 0.05,
-          "wall_clock_limit": 240.0,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -298,6 +453,14 @@
           "contradiction_detected": false,
           "contradiction_accuracy": 1.0
         }
+      },
+      "metrics": {
+        "agent_tokens": 6400,
+        "agent_cost_usd": 0.0,
+        "agent_latency_s": 0.28,
+        "baseline_tokens": 800,
+        "baseline_cost_usd": 0.0,
+        "baseline_latency_s": 0.05
       }
     },
     {
@@ -312,6 +475,28 @@
           "valid_citations": 2,
           "hallucinated_citations": 0
         },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction with periodic snapshots bounds disk growth and enables quick recovery.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            }
+          ]
+        },
         "coverage": {
           "plan_coverage_ratio": 0.25,
           "total_subquestions": 4,
@@ -332,13 +517,13 @@
         "budget": {
           "budget_compliance": true,
           "total_tokens": 6400,
-          "token_limit": 50000,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
           "total_usd_cost": 0.0,
-          "usd_limit": 1.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
-          "wall_clock_seconds": 0.25,
-          "wall_clock_limit": 240.0,
+          "wall_clock_seconds": 0.33,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -353,10 +538,32 @@
       "baseline": {
         "citation": {
           "citation_validity_ratio": 0.0,
-          "citation_density_per_100_words": 6.25,
-          "total_citations_referenced": 3,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
           "valid_citations": 0,
-          "hallucinated_citations": 3
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction bounds disk growth and enables quick recovery.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
         },
         "coverage": {
           "plan_coverage_ratio": 0.0,
@@ -373,14 +580,14 @@
         },
         "budget": {
           "budget_compliance": true,
-          "total_tokens": 1250,
-          "token_limit": 50000,
+          "total_tokens": 800,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
-          "total_usd_cost": 0.0025,
-          "usd_limit": 1.0,
+          "total_usd_cost": 0.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
           "wall_clock_seconds": 0.05,
-          "wall_clock_limit": 240.0,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -391,6 +598,14 @@
           "contradiction_detected": false,
           "contradiction_accuracy": 1.0
         }
+      },
+      "metrics": {
+        "agent_tokens": 6400,
+        "agent_cost_usd": 0.0,
+        "agent_latency_s": 0.33,
+        "baseline_tokens": 800,
+        "baseline_cost_usd": 0.0,
+        "baseline_latency_s": 0.05
       }
     },
     {
@@ -405,6 +620,28 @@
           "valid_citations": 2,
           "hallucinated_citations": 0
         },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction with periodic snapshots bounds disk growth and enables quick recovery.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            }
+          ]
+        },
         "coverage": {
           "plan_coverage_ratio": 0.25,
           "total_subquestions": 4,
@@ -425,13 +662,13 @@
         "budget": {
           "budget_compliance": true,
           "total_tokens": 6400,
-          "token_limit": 50000,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
           "total_usd_cost": 0.0,
-          "usd_limit": 1.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
-          "wall_clock_seconds": 0.3,
-          "wall_clock_limit": 240.0,
+          "wall_clock_seconds": 0.58,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -446,10 +683,32 @@
       "baseline": {
         "citation": {
           "citation_validity_ratio": 0.0,
-          "citation_density_per_100_words": 6.0,
-          "total_citations_referenced": 3,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
           "valid_citations": 0,
-          "hallucinated_citations": 3
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction bounds disk growth and enables quick recovery.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
         },
         "coverage": {
           "plan_coverage_ratio": 0.0,
@@ -466,14 +725,14 @@
         },
         "budget": {
           "budget_compliance": true,
-          "total_tokens": 1250,
-          "token_limit": 50000,
+          "total_tokens": 800,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
-          "total_usd_cost": 0.0025,
-          "usd_limit": 1.0,
+          "total_usd_cost": 0.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
           "wall_clock_seconds": 0.05,
-          "wall_clock_limit": 240.0,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -484,6 +743,14 @@
           "contradiction_detected": false,
           "contradiction_accuracy": 1.0
         }
+      },
+      "metrics": {
+        "agent_tokens": 6400,
+        "agent_cost_usd": 0.0,
+        "agent_latency_s": 0.58,
+        "baseline_tokens": 800,
+        "baseline_cost_usd": 0.0,
+        "baseline_latency_s": 0.05
       }
     },
     {
@@ -498,6 +765,28 @@
           "valid_citations": 2,
           "hallucinated_citations": 0
         },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction with periodic snapshots bounds disk growth and enables quick recovery.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            }
+          ]
+        },
         "coverage": {
           "plan_coverage_ratio": 0.25,
           "total_subquestions": 4,
@@ -518,13 +807,13 @@
         "budget": {
           "budget_compliance": true,
           "total_tokens": 6400,
-          "token_limit": 50000,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
           "total_usd_cost": 0.0,
-          "usd_limit": 1.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
-          "wall_clock_seconds": 0.38,
-          "wall_clock_limit": 240.0,
+          "wall_clock_seconds": 0.82,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -539,10 +828,32 @@
       "baseline": {
         "citation": {
           "citation_validity_ratio": 0.0,
-          "citation_density_per_100_words": 5.77,
-          "total_citations_referenced": 3,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
           "valid_citations": 0,
-          "hallucinated_citations": 3
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction bounds disk growth and enables quick recovery.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
         },
         "coverage": {
           "plan_coverage_ratio": 0.0,
@@ -559,14 +870,14 @@
         },
         "budget": {
           "budget_compliance": true,
-          "total_tokens": 1250,
-          "token_limit": 50000,
+          "total_tokens": 800,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
-          "total_usd_cost": 0.0025,
-          "usd_limit": 1.0,
+          "total_usd_cost": 0.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
           "wall_clock_seconds": 0.05,
-          "wall_clock_limit": 240.0,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -577,6 +888,14 @@
           "contradiction_detected": false,
           "contradiction_accuracy": 1.0
         }
+      },
+      "metrics": {
+        "agent_tokens": 6400,
+        "agent_cost_usd": 0.0,
+        "agent_latency_s": 0.82,
+        "baseline_tokens": 800,
+        "baseline_cost_usd": 0.0,
+        "baseline_latency_s": 0.05
       }
     },
     {
@@ -591,6 +910,28 @@
           "valid_citations": 2,
           "hallucinated_citations": 0
         },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction with periodic snapshots bounds disk growth and enables quick recovery.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            }
+          ]
+        },
         "coverage": {
           "plan_coverage_ratio": 0.25,
           "total_subquestions": 4,
@@ -611,13 +952,13 @@
         "budget": {
           "budget_compliance": true,
           "total_tokens": 6400,
-          "token_limit": 50000,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
           "total_usd_cost": 0.0,
-          "usd_limit": 1.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
-          "wall_clock_seconds": 0.48,
-          "wall_clock_limit": 240.0,
+          "wall_clock_seconds": 0.96,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -632,10 +973,32 @@
       "baseline": {
         "citation": {
           "citation_validity_ratio": 0.0,
-          "citation_density_per_100_words": 7.5,
-          "total_citations_referenced": 3,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
           "valid_citations": 0,
-          "hallucinated_citations": 3
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction bounds disk growth and enables quick recovery.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
         },
         "coverage": {
           "plan_coverage_ratio": 0.0,
@@ -652,14 +1015,14 @@
         },
         "budget": {
           "budget_compliance": true,
-          "total_tokens": 1250,
-          "token_limit": 50000,
+          "total_tokens": 800,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
-          "total_usd_cost": 0.0025,
-          "usd_limit": 1.0,
+          "total_usd_cost": 0.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
           "wall_clock_seconds": 0.05,
-          "wall_clock_limit": 240.0,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -670,6 +1033,14 @@
           "contradiction_detected": false,
           "contradiction_accuracy": 1.0
         }
+      },
+      "metrics": {
+        "agent_tokens": 6400,
+        "agent_cost_usd": 0.0,
+        "agent_latency_s": 0.96,
+        "baseline_tokens": 800,
+        "baseline_cost_usd": 0.0,
+        "baseline_latency_s": 0.05
       }
     },
     {
@@ -684,6 +1055,28 @@
           "valid_citations": 2,
           "hallucinated_citations": 0
         },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction with periodic snapshots bounds disk growth and enables quick recovery.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            }
+          ]
+        },
         "coverage": {
           "plan_coverage_ratio": 0.25,
           "total_subquestions": 4,
@@ -704,13 +1097,13 @@
         "budget": {
           "budget_compliance": true,
           "total_tokens": 6400,
-          "token_limit": 50000,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
           "total_usd_cost": 0.0,
-          "usd_limit": 1.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
-          "wall_clock_seconds": 0.48,
-          "wall_clock_limit": 240.0,
+          "wall_clock_seconds": 0.95,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -725,10 +1118,32 @@
       "baseline": {
         "citation": {
           "citation_validity_ratio": 0.0,
-          "citation_density_per_100_words": 9.38,
-          "total_citations_referenced": 3,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
           "valid_citations": 0,
-          "hallucinated_citations": 3
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction bounds disk growth and enables quick recovery.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
         },
         "coverage": {
           "plan_coverage_ratio": 0.0,
@@ -745,14 +1160,14 @@
         },
         "budget": {
           "budget_compliance": true,
-          "total_tokens": 1250,
-          "token_limit": 50000,
+          "total_tokens": 800,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
-          "total_usd_cost": 0.0025,
-          "usd_limit": 1.0,
+          "total_usd_cost": 0.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
           "wall_clock_seconds": 0.05,
-          "wall_clock_limit": 240.0,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -763,6 +1178,14 @@
           "contradiction_detected": false,
           "contradiction_accuracy": 1.0
         }
+      },
+      "metrics": {
+        "agent_tokens": 6400,
+        "agent_cost_usd": 0.0,
+        "agent_latency_s": 0.95,
+        "baseline_tokens": 800,
+        "baseline_cost_usd": 0.0,
+        "baseline_latency_s": 0.05
       }
     },
     {
@@ -777,6 +1200,28 @@
           "valid_citations": 2,
           "hallucinated_citations": 0
         },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction with periodic snapshots bounds disk growth and enables quick recovery.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            }
+          ]
+        },
         "coverage": {
           "plan_coverage_ratio": 0.25,
           "total_subquestions": 4,
@@ -797,13 +1242,13 @@
         "budget": {
           "budget_compliance": true,
           "total_tokens": 6400,
-          "token_limit": 50000,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
           "total_usd_cost": 0.0,
-          "usd_limit": 1.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
-          "wall_clock_seconds": 0.56,
-          "wall_clock_limit": 240.0,
+          "wall_clock_seconds": 1.21,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -818,10 +1263,32 @@
       "baseline": {
         "citation": {
           "citation_validity_ratio": 0.0,
-          "citation_density_per_100_words": 5.36,
-          "total_citations_referenced": 3,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
           "valid_citations": 0,
-          "hallucinated_citations": 3
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction bounds disk growth and enables quick recovery.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
         },
         "coverage": {
           "plan_coverage_ratio": 0.0,
@@ -838,14 +1305,14 @@
         },
         "budget": {
           "budget_compliance": true,
-          "total_tokens": 1250,
-          "token_limit": 50000,
+          "total_tokens": 800,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
-          "total_usd_cost": 0.0025,
-          "usd_limit": 1.0,
+          "total_usd_cost": 0.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
           "wall_clock_seconds": 0.05,
-          "wall_clock_limit": 240.0,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -856,6 +1323,14 @@
           "contradiction_detected": false,
           "contradiction_accuracy": 1.0
         }
+      },
+      "metrics": {
+        "agent_tokens": 6400,
+        "agent_cost_usd": 0.0,
+        "agent_latency_s": 1.21,
+        "baseline_tokens": 800,
+        "baseline_cost_usd": 0.0,
+        "baseline_latency_s": 0.05
       }
     },
     {
@@ -870,6 +1345,28 @@
           "valid_citations": 2,
           "hallucinated_citations": 0
         },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction with periodic snapshots bounds disk growth and enables quick recovery.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            }
+          ]
+        },
         "coverage": {
           "plan_coverage_ratio": 0.25,
           "total_subquestions": 4,
@@ -890,13 +1387,13 @@
         "budget": {
           "budget_compliance": true,
           "total_tokens": 6400,
-          "token_limit": 50000,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
           "total_usd_cost": 0.0,
-          "usd_limit": 1.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
-          "wall_clock_seconds": 0.54,
-          "wall_clock_limit": 240.0,
+          "wall_clock_seconds": 1.2,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -911,10 +1408,32 @@
       "baseline": {
         "citation": {
           "citation_validity_ratio": 0.0,
-          "citation_density_per_100_words": 6.82,
-          "total_citations_referenced": 3,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
           "valid_citations": 0,
-          "hallucinated_citations": 3
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction bounds disk growth and enables quick recovery.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
         },
         "coverage": {
           "plan_coverage_ratio": 0.0,
@@ -931,14 +1450,14 @@
         },
         "budget": {
           "budget_compliance": true,
-          "total_tokens": 1250,
-          "token_limit": 50000,
+          "total_tokens": 800,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
-          "total_usd_cost": 0.0025,
-          "usd_limit": 1.0,
+          "total_usd_cost": 0.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
           "wall_clock_seconds": 0.05,
-          "wall_clock_limit": 240.0,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -949,6 +1468,14 @@
           "contradiction_detected": false,
           "contradiction_accuracy": 1.0
         }
+      },
+      "metrics": {
+        "agent_tokens": 6400,
+        "agent_cost_usd": 0.0,
+        "agent_latency_s": 1.2,
+        "baseline_tokens": 800,
+        "baseline_cost_usd": 0.0,
+        "baseline_latency_s": 0.05
       }
     },
     {
@@ -963,6 +1490,28 @@
           "valid_citations": 2,
           "hallucinated_citations": 0
         },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction with periodic snapshots bounds disk growth and enables quick recovery.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            }
+          ]
+        },
         "coverage": {
           "plan_coverage_ratio": 0.25,
           "total_subquestions": 4,
@@ -983,13 +1532,13 @@
         "budget": {
           "budget_compliance": true,
           "total_tokens": 6400,
-          "token_limit": 50000,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
           "total_usd_cost": 0.0,
-          "usd_limit": 1.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
-          "wall_clock_seconds": 0.61,
-          "wall_clock_limit": 240.0,
+          "wall_clock_seconds": 1.37,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -1004,10 +1553,32 @@
       "baseline": {
         "citation": {
           "citation_validity_ratio": 0.0,
-          "citation_density_per_100_words": 6.25,
-          "total_citations_referenced": 3,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
           "valid_citations": 0,
-          "hallucinated_citations": 3
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction bounds disk growth and enables quick recovery.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
         },
         "coverage": {
           "plan_coverage_ratio": 0.0,
@@ -1024,14 +1595,14 @@
         },
         "budget": {
           "budget_compliance": true,
-          "total_tokens": 1250,
-          "token_limit": 50000,
+          "total_tokens": 800,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
-          "total_usd_cost": 0.0025,
-          "usd_limit": 1.0,
+          "total_usd_cost": 0.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
           "wall_clock_seconds": 0.05,
-          "wall_clock_limit": 240.0,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -1042,6 +1613,14 @@
           "contradiction_detected": false,
           "contradiction_accuracy": 0.0
         }
+      },
+      "metrics": {
+        "agent_tokens": 6400,
+        "agent_cost_usd": 0.0,
+        "agent_latency_s": 1.37,
+        "baseline_tokens": 800,
+        "baseline_cost_usd": 0.0,
+        "baseline_latency_s": 0.05
       }
     },
     {
@@ -1056,6 +1635,28 @@
           "valid_citations": 2,
           "hallucinated_citations": 0
         },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction with periodic snapshots bounds disk growth and enables quick recovery.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            }
+          ]
+        },
         "coverage": {
           "plan_coverage_ratio": 0.25,
           "total_subquestions": 4,
@@ -1076,13 +1677,13 @@
         "budget": {
           "budget_compliance": true,
           "total_tokens": 6400,
-          "token_limit": 50000,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
           "total_usd_cost": 0.0,
-          "usd_limit": 1.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
-          "wall_clock_seconds": 0.66,
-          "wall_clock_limit": 240.0,
+          "wall_clock_seconds": 1.39,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -1097,10 +1698,32 @@
       "baseline": {
         "citation": {
           "citation_validity_ratio": 0.0,
-          "citation_density_per_100_words": 6.25,
-          "total_citations_referenced": 3,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
           "valid_citations": 0,
-          "hallucinated_citations": 3
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction bounds disk growth and enables quick recovery.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
         },
         "coverage": {
           "plan_coverage_ratio": 0.0,
@@ -1117,14 +1740,14 @@
         },
         "budget": {
           "budget_compliance": true,
-          "total_tokens": 1250,
-          "token_limit": 50000,
+          "total_tokens": 800,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
-          "total_usd_cost": 0.0025,
-          "usd_limit": 1.0,
+          "total_usd_cost": 0.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
           "wall_clock_seconds": 0.05,
-          "wall_clock_limit": 240.0,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -1135,6 +1758,14 @@
           "contradiction_detected": false,
           "contradiction_accuracy": 0.0
         }
+      },
+      "metrics": {
+        "agent_tokens": 6400,
+        "agent_cost_usd": 0.0,
+        "agent_latency_s": 1.39,
+        "baseline_tokens": 800,
+        "baseline_cost_usd": 0.0,
+        "baseline_latency_s": 0.05
       }
     },
     {
@@ -1149,6 +1780,28 @@
           "valid_citations": 2,
           "hallucinated_citations": 0
         },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction with periodic snapshots bounds disk growth and enables quick recovery.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            }
+          ]
+        },
         "coverage": {
           "plan_coverage_ratio": 0.25,
           "total_subquestions": 4,
@@ -1169,13 +1822,13 @@
         "budget": {
           "budget_compliance": true,
           "total_tokens": 6400,
-          "token_limit": 50000,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
           "total_usd_cost": 0.0,
-          "usd_limit": 1.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
-          "wall_clock_seconds": 0.71,
-          "wall_clock_limit": 240.0,
+          "wall_clock_seconds": 1.39,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -1190,10 +1843,32 @@
       "baseline": {
         "citation": {
           "citation_validity_ratio": 0.0,
-          "citation_density_per_100_words": 6.25,
-          "total_citations_referenced": 3,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
           "valid_citations": 0,
-          "hallucinated_citations": 3
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction bounds disk growth and enables quick recovery.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
         },
         "coverage": {
           "plan_coverage_ratio": 0.0,
@@ -1210,14 +1885,14 @@
         },
         "budget": {
           "budget_compliance": true,
-          "total_tokens": 1250,
-          "token_limit": 50000,
+          "total_tokens": 800,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
-          "total_usd_cost": 0.0025,
-          "usd_limit": 1.0,
+          "total_usd_cost": 0.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
           "wall_clock_seconds": 0.05,
-          "wall_clock_limit": 240.0,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -1228,6 +1903,14 @@
           "contradiction_detected": false,
           "contradiction_accuracy": 0.0
         }
+      },
+      "metrics": {
+        "agent_tokens": 6400,
+        "agent_cost_usd": 0.0,
+        "agent_latency_s": 1.39,
+        "baseline_tokens": 800,
+        "baseline_cost_usd": 0.0,
+        "baseline_latency_s": 0.05
       }
     },
     {
@@ -1242,6 +1925,28 @@
           "valid_citations": 2,
           "hallucinated_citations": 0
         },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction with periodic snapshots bounds disk growth and enables quick recovery.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            }
+          ]
+        },
         "coverage": {
           "plan_coverage_ratio": 0.25,
           "total_subquestions": 4,
@@ -1262,13 +1967,13 @@
         "budget": {
           "budget_compliance": true,
           "total_tokens": 6400,
-          "token_limit": 50000,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
           "total_usd_cost": 0.0,
-          "usd_limit": 1.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
-          "wall_clock_seconds": 0.79,
-          "wall_clock_limit": 240.0,
+          "wall_clock_seconds": 1.48,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -1283,10 +1988,32 @@
       "baseline": {
         "citation": {
           "citation_validity_ratio": 0.0,
-          "citation_density_per_100_words": 5.77,
-          "total_citations_referenced": 3,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
           "valid_citations": 0,
-          "hallucinated_citations": 3
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction bounds disk growth and enables quick recovery.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
         },
         "coverage": {
           "plan_coverage_ratio": 0.0,
@@ -1303,14 +2030,14 @@
         },
         "budget": {
           "budget_compliance": true,
-          "total_tokens": 1250,
-          "token_limit": 50000,
+          "total_tokens": 800,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
-          "total_usd_cost": 0.0025,
-          "usd_limit": 1.0,
+          "total_usd_cost": 0.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
           "wall_clock_seconds": 0.05,
-          "wall_clock_limit": 240.0,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -1321,6 +2048,14 @@
           "contradiction_detected": false,
           "contradiction_accuracy": 1.0
         }
+      },
+      "metrics": {
+        "agent_tokens": 6400,
+        "agent_cost_usd": 0.0,
+        "agent_latency_s": 1.48,
+        "baseline_tokens": 800,
+        "baseline_cost_usd": 0.0,
+        "baseline_latency_s": 0.05
       }
     },
     {
@@ -1335,6 +2070,28 @@
           "valid_citations": 2,
           "hallucinated_citations": 0
         },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction with periodic snapshots bounds disk growth and enables quick recovery.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            }
+          ]
+        },
         "coverage": {
           "plan_coverage_ratio": 0.25,
           "total_subquestions": 4,
@@ -1355,13 +2112,13 @@
         "budget": {
           "budget_compliance": true,
           "total_tokens": 6400,
-          "token_limit": 50000,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
           "total_usd_cost": 0.0,
-          "usd_limit": 1.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
-          "wall_clock_seconds": 0.84,
-          "wall_clock_limit": 240.0,
+          "wall_clock_seconds": 1.5,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -1376,10 +2133,32 @@
       "baseline": {
         "citation": {
           "citation_validity_ratio": 0.0,
-          "citation_density_per_100_words": 5.77,
-          "total_citations_referenced": 3,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
           "valid_citations": 0,
-          "hallucinated_citations": 3
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction bounds disk growth and enables quick recovery.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
         },
         "coverage": {
           "plan_coverage_ratio": 0.0,
@@ -1396,14 +2175,14 @@
         },
         "budget": {
           "budget_compliance": true,
-          "total_tokens": 1250,
-          "token_limit": 50000,
+          "total_tokens": 800,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
-          "total_usd_cost": 0.0025,
-          "usd_limit": 1.0,
+          "total_usd_cost": 0.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
           "wall_clock_seconds": 0.05,
-          "wall_clock_limit": 240.0,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -1414,6 +2193,14 @@
           "contradiction_detected": false,
           "contradiction_accuracy": 1.0
         }
+      },
+      "metrics": {
+        "agent_tokens": 6400,
+        "agent_cost_usd": 0.0,
+        "agent_latency_s": 1.5,
+        "baseline_tokens": 800,
+        "baseline_cost_usd": 0.0,
+        "baseline_latency_s": 0.05
       }
     },
     {
@@ -1428,6 +2215,28 @@
           "valid_citations": 2,
           "hallucinated_citations": 0
         },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction with periodic snapshots bounds disk growth and enables quick recovery.",
+              "is_supported": true,
+              "reasoning": "Mock lexical NLI overlap: 100.0%"
+            }
+          ]
+        },
         "coverage": {
           "plan_coverage_ratio": 0.25,
           "total_subquestions": 4,
@@ -1448,13 +2257,13 @@
         "budget": {
           "budget_compliance": true,
           "total_tokens": 6400,
-          "token_limit": 50000,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
           "total_usd_cost": 0.0,
-          "usd_limit": 1.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
-          "wall_clock_seconds": 0.89,
-          "wall_clock_limit": 240.0,
+          "wall_clock_seconds": 1.68,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -1469,10 +2278,32 @@
       "baseline": {
         "citation": {
           "citation_validity_ratio": 0.0,
-          "citation_density_per_100_words": 6.0,
-          "total_citations_referenced": 3,
+          "citation_density_per_100_words": 8.33,
+          "total_citations_referenced": 2,
           "valid_citations": 0,
-          "hallucinated_citations": 3
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Distributed consensus ensures strong data consistency across clustered nodes.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Log compaction bounds disk growth and enables quick recovery.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
         },
         "coverage": {
           "plan_coverage_ratio": 0.0,
@@ -1489,14 +2320,14 @@
         },
         "budget": {
           "budget_compliance": true,
-          "total_tokens": 1250,
-          "token_limit": 50000,
+          "total_tokens": 800,
+          "token_limit": 150000,
           "token_limit_exceeded": false,
-          "total_usd_cost": 0.0025,
-          "usd_limit": 1.0,
+          "total_usd_cost": 0.0,
+          "usd_limit": 2.0,
           "usd_limit_exceeded": false,
           "wall_clock_seconds": 0.05,
-          "wall_clock_limit": 240.0,
+          "wall_clock_limit": 600.0,
           "wall_clock_exceeded": false,
           "partial_degradation_triggered": false,
           "degradation_reason": null
@@ -1507,6 +2338,14 @@
           "contradiction_detected": false,
           "contradiction_accuracy": 1.0
         }
+      },
+      "metrics": {
+        "agent_tokens": 6400,
+        "agent_cost_usd": 0.0,
+        "agent_latency_s": 1.68,
+        "baseline_tokens": 800,
+        "baseline_cost_usd": 0.0,
+        "baseline_latency_s": 0.05
       }
     }
   ]

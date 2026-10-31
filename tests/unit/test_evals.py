@@ -145,5 +145,61 @@ def test_run_evaluations_cli_mock_integration(tmp_path):
     assert "summary" in res
     assert "results" in res
     assert len(res["results"]) == 2
-    assert (out_dir / "eval_report.json").exists()
-    assert (out_dir / "eval_report.md").exists()
+    assert (out_dir / "eval_smoke_MOCK.json").exists()
+    assert (out_dir / "eval_smoke_MOCK.md").exists()
+    content = (out_dir / "eval_smoke_MOCK.md").read_text(encoding="utf-8")
+    assert "MOCK: pipeline smoke test, not a quality result" in content
+
+
+def test_citation_support_scorer_logic():
+    from app.evals.scorers.citation_support import score_citation_support
+    from app.models.schemas import CitationKey
+
+    finding = Finding(
+        id="f_sup_1",
+        sub_question_id="sq_1",
+        claim="Raft provides consensus via leader election and log replication.",
+        source_url="https://raft.github.io/raft.pdf",
+        domain="raft.github.io",
+        snippet="Raft provides consensus via leader election and log replication across nodes.",
+        retrieval_timestamp=100.0,
+        content_hash="h1",
+    )
+    supported_cite = CitationKey(
+        key="[1]",
+        finding_id=finding.id,
+        source_url=finding.source_url,
+        domain=finding.domain,
+        claim="Raft provides consensus via leader election and log replication.",
+    )
+    unsupported_cite = CitationKey(
+        key="[2]",
+        finding_id="fnd_nonexistent_99",
+        source_url="https://unbacked.org",
+        domain="unbacked.org",
+        claim="Quantum hypervisors bypass speed of light limits.",
+    )
+    report = Report(
+        topic="Consensus",
+        summary="Summary",
+        sections=[ReportSection(title="Overview", content="Claims [1] and [2].", citations=["[1]", "[2]"])],
+        citations={
+            "[1]": supported_cite,
+            "[2]": unsupported_cite,
+        },
+    )
+    scores = score_citation_support(report, [finding], mock=True)
+    assert scores["total_citations_evaluated"] == 2
+    assert scores["supported_citations"] == 1
+    assert scores["unsupported_citations"] == 1
+    assert scores["citation_support_ratio"] == 0.5
+
+
+def test_evaluations_cli_cost_cap_enforcement(tmp_path):
+    dataset_file = Path("app/evals/datasets/core.jsonl")
+    out_dir = tmp_path / "eval_cost_cap"
+    # Set a tiny cost cap to force early termination
+    res = run_evaluations(dataset_file, out_dir, mock=False, sample_limit=5, cost_cap=0.0)
+    assert res["summary"]["cost_cap"] == 0.0
+    assert res["summary"]["aborted_due_to_cost"] is True
+    assert len(res["results"]) == 0  # aborted before 1st run due to cap 0.0
