@@ -1,0 +1,2767 @@
+{
+  "summary": {
+    "total_evaluations": 16,
+    "agent": {
+      "mean_citation_validity": 0.875,
+      "mean_citation_support": 0.6875,
+      "mean_plan_coverage": 0.8125,
+      "mean_domain_diversity": 0.901,
+      "contradiction_accuracy": 0.8625,
+      "budget_compliance_ratio": 0.9375
+    },
+    "baseline": {
+      "mean_citation_validity": 0.0,
+      "mean_citation_support": 0.0,
+      "mean_plan_coverage": 0.0,
+      "mean_domain_diversity": 1.0,
+      "contradiction_accuracy": 0.8
+    },
+    "statistical_lift": {
+      "citation_validity_lift": 0.875,
+      "citation_support_lift": 0.6875,
+      "plan_coverage_lift": 0.8125,
+      "contradiction_lift": 0.0625
+    },
+    "mode": "REAL",
+    "cumulative_usd_cost": 0.1023,
+    "cost_cap": 2.0,
+    "aborted_due_to_cost": false
+  },
+  "results": [
+    {
+      "id": "eval_01",
+      "category": "technical",
+      "topic": "Raft vs Paxos log compaction under high write throughput",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 1.51,
+          "total_citations_referenced": 3,
+          "valid_citations": 3,
+          "hallucinated_citations": 0
+        },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 3,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 3,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "The lightweight log compaction approach in MultiPaxos significantly improves performance stability compared to naive versions.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, providing direct support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Adaptive Log Compaction (ALC) improves Raft performance under high write loads.",
+              "is_supported": true,
+              "reasoning": "The source evidence directly restates the claim, providing direct support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[3]",
+              "claim": "Without log compaction, Raft nodes can accumulate millions of entries, causing memory and disk pressure and slow crash recovery.",
+              "is_supported": true,
+              "reasoning": "The source evidence is an exact match to the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 1.0,
+          "total_subquestions": 5,
+          "covered_subquestions": 5,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 3,
+          "domain_diversity_ratio": 0.6667,
+          "max_domain_concentration": 0.6667,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 25518,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0048,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 54.85,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 0.39,
+          "total_citations_referenced": 2,
+          "valid_citations": 0,
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "The Raft consensus algorithm uses leader\u2011driven log replication and supports snapshot\u2011based log compaction.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Classic Paxos does not prescribe a specific log compaction strategy, but implementations often use checkpointing or log truncation.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 2548,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0011,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 4.12,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "metrics": {
+        "agent_tokens": 25518,
+        "agent_cost_usd": 0.004754,
+        "agent_latency_s": 54.85,
+        "baseline_tokens": 2548,
+        "baseline_cost_usd": 0.00115,
+        "baseline_latency_s": 4.12
+      }
+    },
+    {
+      "id": "eval_02",
+      "category": "technical",
+      "topic": "Zero-Knowledge rollup throughput bottlenecks in EVM architectures",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 1.8,
+          "total_citations_referenced": 7,
+          "valid_citations": 7,
+          "hallucinated_citations": 0
+        },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 8,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 8,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "ZK rollups represent accounts by an index instead of an address to compress calldata.",
+              "is_supported": true,
+              "reasoning": "The source evidence is identical to the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "ZK-rollup operators post only a minimal summary of batch changes to the mainnet, avoiding individual transaction data.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, providing direct support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[3]",
+              "claim": "Hardware acceleration using GPUs, FPGAs, or ASICs can reduce proof generation times from minutes to seconds.",
+              "is_supported": true,
+              "reasoning": "The source evidence directly restates the claim, providing identical content, thus fully supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[4]",
+              "claim": "R1CS requires compositional gadget libraries, increasing proof generation complexity.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, providing direct support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[5]",
+              "claim": "ZK rollups use DEFLATE or LZ77 compression to reduce calldata size.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, providing direct support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[6]",
+              "claim": "EIP-4844 reduces data posting costs for rollups",
+              "is_supported": true,
+              "reasoning": "The source evidence directly states that EIP-4844 reduces data posting costs for rollups, which matches the claim exactly.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[7]",
+              "claim": "Rollup transaction volume increased after EIP-4844",
+              "is_supported": true,
+              "reasoning": "The source evidence directly states that rollup transaction volume increased after EIP-4844, which matches the claim exactly.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[8]",
+              "claim": "Rollup transaction volume increased after EIP-4844",
+              "is_supported": true,
+              "reasoning": "The source evidence directly restates the claim that rollup transaction volume increased after EIP-4844.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 1.0,
+          "total_subquestions": 5,
+          "covered_subquestions": 5,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 5,
+          "total_sources": 8,
+          "domain_diversity_ratio": 0.625,
+          "max_domain_concentration": 0.25,
+          "duplicate_content_ratio": 0.25
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 36559,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0071,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 110.66,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 0.33,
+          "total_citations_referenced": 2,
+          "valid_citations": 0,
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Current ZK rollup deployments report throughput below theoretical limits due to EVM constraints.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Verifier gas limits and calldata costs create a ceiling on rollup batch size within the EVM.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 2575,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0012,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 3.96,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "metrics": {
+        "agent_tokens": 36559,
+        "agent_cost_usd": 0.00706,
+        "agent_latency_s": 110.66,
+        "baseline_tokens": 2575,
+        "baseline_cost_usd": 0.001166,
+        "baseline_latency_s": 3.96
+      }
+    },
+    {
+      "id": "eval_03",
+      "category": "technical",
+      "topic": "LSM-tree read amplification mitigation via Bloom filters and prefix tries",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 1.55,
+          "total_citations_referenced": 3,
+          "valid_citations": 3,
+          "hallucinated_citations": 0
+        },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 3,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 3,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Bloom filters reduce read amplification from O(L) to about 1 disk hit per level in LSM-trees.",
+              "is_supported": true,
+              "reasoning": "The source evidence is identical to the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Rosetta uses a prefix trie that indexes the whole prefix of each key, equivalent to a Bloom filter, to reduce point\u2011lookup disk accesses.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[3]",
+              "claim": "Prefix Bloom Filters hash only the prefix portion of keys, potentially reducing false positives compared to full\u2011key Bloom filters.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 1.0,
+          "total_subquestions": 5,
+          "covered_subquestions": 5,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 3,
+          "total_sources": 3,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.3333,
+          "duplicate_content_ratio": 0.3333
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 20754,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0043,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 56.1,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 0.61,
+          "total_citations_referenced": 5,
+          "valid_citations": 0,
+          "hallucinated_citations": 5
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 5,
+          "total_citations_evaluated": 5,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Original LSM-tree design and its read amplification characteristics",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Bloom filter probabilistic membership testing",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[3]",
+              "claim": "Prefix trie structures for range query optimization",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[4]",
+              "claim": "Empirical evaluation of Bloom filters and prefix tries in LSM-trees",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[5]",
+              "claim": "Future directions for LSM-tree read path improvements",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 3430,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0017,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 5.92,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "metrics": {
+        "agent_tokens": 20754,
+        "agent_cost_usd": 0.004344,
+        "agent_latency_s": 56.1,
+        "baseline_tokens": 3430,
+        "baseline_cost_usd": 0.00168,
+        "baseline_latency_s": 5.92
+      }
+    },
+    {
+      "id": "eval_04",
+      "category": "technical",
+      "topic": "Multi-version concurrency control in distributed PostgreSQL: CockroachDB vs YugabyteDB",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 4.12,
+          "total_citations_referenced": 7,
+          "valid_citations": 7,
+          "hallucinated_citations": 0
+        },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 7,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 7,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "CockroachDB implements MVCC with strict serializable isolation by default.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "YugabyteDB retains intermediate MVCC versions for 15 minutes by default.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, providing direct support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[3]",
+              "claim": "PostgreSQL uses VACUUM to garbage\u2011collect old row versions, preventing table bloat.",
+              "is_supported": true,
+              "reasoning": "The source evidence directly restates the claim, confirming that PostgreSQL uses VACUUM to garbage\u2011collect old row versions and prevent table bloat.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[4]",
+              "claim": "PostgreSQL and SQL Server use multiple versions with garbage collection; SQL Server stores old versions in tempdb.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[5]",
+              "claim": "PostgreSQL and SQL Server use multiple versions with garbage collection; SQL Server stores old versions in tempdb.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, providing direct support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[6]",
+              "claim": "CockroachDB's MVCC design can cause transaction contention, leading to serialization conflicts when concurrent writes target the same row.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly restates the claim, providing direct support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[7]",
+              "claim": "YugabyteDB and CockroachDB deployments often use AWS i3.4xlarge nodes (16\u202fvCPUs, 122\u202fGB RAM, 2\u202f\u00d7\u202f1.9\u202fTB SSD) with XFS, replication factor\u202f3, and multi\u2011AZ configuration to handle MVCC workloads.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, providing direct support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 1.0,
+          "total_subquestions": 5,
+          "covered_subquestions": 5,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 6,
+          "total_sources": 7,
+          "domain_diversity_ratio": 0.8571,
+          "max_domain_concentration": 0.2857,
+          "duplicate_content_ratio": 0.2857
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 33361,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0065,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 115.71,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 2.49,
+          "total_citations_referenced": 18,
+          "valid_citations": 0,
+          "hallucinated_citations": 18
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 18,
+          "total_citations_evaluated": 18,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "CockroachDB uses MVCC with hybrid logical clocks to provide serializable isolation",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "CockroachDB provides PostgreSQL\u2011compatible SQL layer",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[3]",
+              "claim": "YugabyteDB employs a Spanner\u2011inspired hybrid timestamp model for MVCC",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[4]",
+              "claim": "YugabyteDB can enable read\u2011your\u2011writes mode to reduce latency",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[5]",
+              "claim": "PostgreSQL MVCC stores multiple row versions with timestamps",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[6]",
+              "claim": "CockroachDB uses distributed two\u2011phase commit with Raft per range",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[7]",
+              "claim": "YugabyteDB uses hybrid 2PC and supports multiple isolation levels",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[8]",
+              "claim": "Hybrid logical clocks combine physical time with logical counters",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[9]",
+              "claim": "CockroachDB runs a distributed two\u2011phase commit protocol",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[10]",
+              "claim": "CockroachDB provides serializable isolation without a separate timestamp oracle",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[11]",
+              "claim": "CockroachDB's Raft per range adds write latency under contention",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[12]",
+              "claim": "YugabyteDB batches writes locally before consensus",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[13]",
+              "claim": "YugabyteDB supports both serializable and snapshot isolation",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[14]",
+              "claim": "Benchmarks show higher tail latency for CockroachDB under high contention",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[15]",
+              "claim": "YugabyteDB maintains lower latency under high contention",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[16]",
+              "claim": "CockroachDB defaults to serializable isolation",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[17]",
+              "claim": "CockroachDB includes automatic rebalancing and node management UI",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[18]",
+              "claim": "YugabyteDB exposes Prometheus metrics for MVCC internals",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 6798,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0023,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 14.06,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "metrics": {
+        "agent_tokens": 33361,
+        "agent_cost_usd": 0.006517,
+        "agent_latency_s": 115.71,
+        "baseline_tokens": 6798,
+        "baseline_cost_usd": 0.002263,
+        "baseline_latency_s": 14.06
+      }
+    },
+    {
+      "id": "eval_05",
+      "category": "technical",
+      "topic": "eBPF-based packet processing overhead compared to Linux iptables and nftables",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 1.83,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "eBPF XDP processes packets before socket buffer allocation, reducing memory overhead compared to iptables.",
+              "is_supported": true,
+              "reasoning": "The source evidence directly restates the claim, providing factual support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "XDP provides a significant performance increase compared to nftables.",
+              "is_supported": true,
+              "reasoning": "The source evidence is identical to the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 1.0,
+          "total_subquestions": 4,
+          "covered_subquestions": 4,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.5
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 25526,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0047,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 88.06,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 0.4,
+          "total_citations_referenced": 2,
+          "valid_citations": 0,
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "eBPF XDP processing adds ~50\u202fns latency per packet, outperforming iptables and nftables",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Benchmark comparisons show eBPF reduces CPU usage by 30% vs iptables under 10\u202fMpps traffic",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 2368,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.001,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 3.75,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "metrics": {
+        "agent_tokens": 25526,
+        "agent_cost_usd": 0.004736,
+        "agent_latency_s": 88.06,
+        "baseline_tokens": 2368,
+        "baseline_cost_usd": 0.001041,
+        "baseline_latency_s": 3.75
+      }
+    },
+    {
+      "id": "eval_06",
+      "category": "technical",
+      "topic": "Cache coherence protocols in distributed GPU memory fabrics: NVLink vs CXL",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 0.0,
+          "total_citations_referenced": 0,
+          "valid_citations": 0,
+          "hallucinated_citations": 0
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 0,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": []
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 5,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_2",
+            "sq_3",
+            "sq_4",
+            "sq_5"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 5,
+          "total_sources": 5,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.2,
+          "duplicate_content_ratio": 0.4
+        },
+        "budget": {
+          "budget_compliance": false,
+          "total_tokens": 16354,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0029,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 4282.37,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": true,
+          "partial_degradation_triggered": true,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 0.26,
+          "total_citations_referenced": 2,
+          "valid_citations": 0,
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "NVLink implements a directory-based cache coherence protocol for multi-GPU systems.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "CXL defines a memory semantics layer that supports cache-coherent memory access across heterogeneous devices.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 3545,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0014,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 25.08,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "metrics": {
+        "agent_tokens": 16354,
+        "agent_cost_usd": 0.002886,
+        "agent_latency_s": 4282.37,
+        "baseline_tokens": 3545,
+        "baseline_cost_usd": 0.001418,
+        "baseline_latency_s": 25.08
+      }
+    },
+    {
+      "id": "eval_07",
+      "category": "adversarial",
+      "topic": "FlurbleGlock-9000 quantum hypervisor kernel architecture",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 0.0,
+          "total_citations_referenced": 0,
+          "valid_citations": 0,
+          "hallucinated_citations": 0
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 0,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": []
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 4,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_2",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 17751,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0033,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 62.46,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 0.86,
+          "total_citations_referenced": 4,
+          "valid_citations": 0,
+          "hallucinated_citations": 4
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 4,
+          "total_citations_evaluated": 4,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "FlurbleGlock-9000 achieves up to 3.2\u00d7 speed\u2011up over prior monolithic quantum OS designs.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "The hypervisor provides formal isolation guarantees enforced by hardware\u2011level quantum control registers.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[3]",
+              "claim": "Quantum Resource Manager reduces idle\u2011time errors by 27% in simulated workloads.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[4]",
+              "claim": "Future extensions will add support for topological qubits and machine\u2011learning\u2011driven scheduling.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 2535,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0011,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 4.16,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "metrics": {
+        "agent_tokens": 17751,
+        "agent_cost_usd": 0.003308,
+        "agent_latency_s": 62.46,
+        "baseline_tokens": 2535,
+        "baseline_cost_usd": 0.001142,
+        "baseline_latency_s": 4.16
+      }
+    },
+    {
+      "id": "eval_08",
+      "category": "adversarial",
+      "topic": "Consensus",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 3.6,
+          "total_citations_referenced": 5,
+          "valid_citations": 5,
+          "hallucinated_citations": 0
+        },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 5,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 5,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Paxos, Raft, Zab, PBFT, and Hotstuff are the main consensus algorithm families used in distributed systems.",
+              "is_supported": true,
+              "reasoning": "The source evidence directly restates the claim, providing identical content.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Studies evaluated throughput, latency, fault tolerance, energy efficiency, and consensus time for PBFT, Tendermint, HotStuff, and Streamlet.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[3]",
+              "claim": "HotStuff, Kauri, Narwhal & Tusk were assessed in a performance study of blockchain-generation BFT protocols.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[4]",
+              "claim": "Scalability, security, and decentralization are key factors when choosing a consensus mechanism.",
+              "is_supported": true,
+              "reasoning": "The source evidence is identical to the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[5]",
+              "claim": "Proof of Work offers strong security but is energy\u2011intensive, while Proof of Stake is energy\u2011efficient but can lead to centralization.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 1.0,
+          "total_subquestions": 4,
+          "covered_subquestions": 4,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 4,
+          "total_sources": 5,
+          "domain_diversity_ratio": 0.8,
+          "max_domain_concentration": 0.4,
+          "duplicate_content_ratio": 0.4
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 24080,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0047,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 67.2,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 2.07,
+          "total_citations_referenced": 5,
+          "valid_citations": 0,
+          "hallucinated_citations": 5
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 5,
+          "total_citations_evaluated": 5,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Consensus in scientific communities emerges through iterative peer review and replication.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Social consensus formation can be modeled using network dynamics and opinion averaging.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[3]",
+              "claim": "Consensus conferences are a structured method for policy deliberation.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[4]",
+              "claim": "Consensus can be undermined by misinformation and echo chambers.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[5]",
+              "claim": "Scientific paradigms shift when consensus breaks down.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 2555,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0012,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 4.29,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "metrics": {
+        "agent_tokens": 24080,
+        "agent_cost_usd": 0.004674,
+        "agent_latency_s": 67.2,
+        "baseline_tokens": 2555,
+        "baseline_cost_usd": 0.001159,
+        "baseline_latency_s": 4.29
+      }
+    },
+    {
+      "id": "eval_09",
+      "category": "adversarial",
+      "topic": "Exhaustive historical analysis of every cryptographic hash function constructed between 1975 and 2025",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 1.32,
+          "total_citations_referenced": 1,
+          "valid_citations": 1,
+          "hallucinated_citations": 0
+        },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 1,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 1,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "MD5 and SHA-1 are popular cryptographic hash functions.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, directly confirming that MD5 and SHA-1 are popular cryptographic hash functions.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 1.0,
+          "total_subquestions": 5,
+          "covered_subquestions": 5,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 1,
+          "total_sources": 1,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 1.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 20236,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0042,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 52.41,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 2.77,
+          "total_citations_referenced": 17,
+          "valid_citations": 0,
+          "hallucinated_citations": 17
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 17,
+          "total_citations_evaluated": 17,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Overview of hash function evolution",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "NIST guidance on hash function usage",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[3]",
+              "claim": "Merkle's early description of one-way compression",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[4]",
+              "claim": "RIPEMD design and security",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[5]",
+              "claim": "MD5 specification",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[6]",
+              "claim": "SHA-1 specification",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[7]",
+              "claim": "MD4 cryptanalysis",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[8]",
+              "claim": "Practical MD5 collisions",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[9]",
+              "claim": "SHA-2 family standards",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[10]",
+              "claim": "Whirlpool standard",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[11]",
+              "claim": "First practical SHA-1 collision",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[12]",
+              "claim": "Keccak sponge construction",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[13]",
+              "claim": "BLAKE2 design and performance",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[14]",
+              "claim": "Skein design",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[15]",
+              "claim": "2024 reduced-round SHA-256 collision",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[16]",
+              "claim": "Comprehensive list of hash functions up to 2025",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[17]",
+              "claim": "Comparative security assessment of modern hash functions",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 3705,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0018,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 10.72,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 1,
+          "contradiction_expected": false,
+          "contradiction_detected": true,
+          "contradiction_accuracy": 0.8
+        }
+      },
+      "metrics": {
+        "agent_tokens": 20236,
+        "agent_cost_usd": 0.004177,
+        "agent_latency_s": 52.41,
+        "baseline_tokens": 3705,
+        "baseline_cost_usd": 0.001841,
+        "baseline_latency_s": 10.72
+      }
+    },
+    {
+      "id": "eval_10",
+      "category": "adversarial",
+      "topic": "SQL vs NoSQL databases in enterprise applications",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 2.3,
+          "total_citations_referenced": 5,
+          "valid_citations": 5,
+          "hallucinated_citations": 0
+        },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 5,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 5,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "MongoDB 8.0 achieves up to 36% higher read throughput and 200% faster time\u2011series aggregations compared to other NoSQL engines.",
+              "is_supported": true,
+              "reasoning": "The source evidence is identical to the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "MongoDB Atlas baseline cost $57/month versus PostgreSQL managed $20/month, leading to cost delta over multi-year deployment.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly restates the claim, providing direct support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[3]",
+              "claim": "SQL databases enforce ACID transactions for strong consistency.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[4]",
+              "claim": "NoSQL databases often trade consistency for scalability, sacrificing full ACID compliance.",
+              "is_supported": true,
+              "reasoning": "The source evidence restates the claim verbatim, confirming its accuracy.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[5]",
+              "claim": "MongoDB Atlas baseline cost $57/month versus PostgreSQL managed $20/month, leading to cost delta over multi-year deployment.",
+              "is_supported": true,
+              "reasoning": "The source evidence directly restates the claim, providing direct support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 1.0,
+          "total_subquestions": 5,
+          "covered_subquestions": 5,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 4,
+          "total_sources": 5,
+          "domain_diversity_ratio": 0.8,
+          "max_domain_concentration": 0.4,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 31774,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0059,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 101.19,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 0.46,
+          "total_citations_referenced": 2,
+          "valid_citations": 0,
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "SQL databases provide ACID guarantees and are suited for transactional enterprise systems, while NoSQL offers horizontal scalability and flexible schemas.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "NoSQL databases excel in high\u2011throughput, low\u2011latency workloads and can be tuned for consistency levels, making them appropriate for big\u2011data and real\u2011time analytics.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 2170,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0009,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 3.37,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "metrics": {
+        "agent_tokens": 31774,
+        "agent_cost_usd": 0.005866,
+        "agent_latency_s": 101.19,
+        "baseline_tokens": 2170,
+        "baseline_cost_usd": 0.000925,
+        "baseline_latency_s": 3.37
+      }
+    },
+    {
+      "id": "eval_11",
+      "category": "contradiction",
+      "topic": "Impact of synchronous multi-datacenter replication on tail commit latencies",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 1.98,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 2,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Helios-0 has the closest latencies to the optimal; overhead over optimal commit latency is 7\u201354\u202fms.",
+              "is_supported": true,
+              "reasoning": "The source evidence is identical to the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Synchronous replication adds at least one network RTT to commit latency, typically 50\u2013150\u202fms across regions.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, providing direct support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 1.0,
+          "total_subquestions": 5,
+          "covered_subquestions": 5,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 29658,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0051,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 86.26,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": true,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 0.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 0.52,
+          "total_citations_referenced": 2,
+          "valid_citations": 0,
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Synchronous replication across data centers adds at least 100\u202fms of propagation delay per 10,000\u202fkm and dominates tail latency.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Hierarchical quorum and adaptive timeout techniques can reduce 99th\u2011percentile commit latency by up to 70% in multi\u2011datacenter deployments.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 2099,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0009,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 3.32,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": true,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 0.0
+        }
+      },
+      "metrics": {
+        "agent_tokens": 29658,
+        "agent_cost_usd": 0.005091,
+        "agent_latency_s": 86.26,
+        "baseline_tokens": 2099,
+        "baseline_cost_usd": 0.00088,
+        "baseline_latency_s": 3.32
+      }
+    },
+    {
+      "id": "eval_12",
+      "category": "contradiction",
+      "topic": "Optimal garbage collection strategies for high-throughput JVM memory heaps",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 5.0,
+          "total_citations_referenced": 8,
+          "valid_citations": 8,
+          "hallucinated_citations": 0
+        },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 8,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 8,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "For IBM Content Collector, increasing thread count to two to four per CPU core improves throughput in high\u2011throughput scenarios.",
+              "is_supported": true,
+              "reasoning": "The source evidence is identical to the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "For G1 GC in high\u2011throughput scenarios, allowing slightly longer pauses reduces GC frequency and improves throughput.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[3]",
+              "claim": "LinkedIn\u2019s high\u2011throughput services prioritize low\u2011latency garbage\u2011collector settings.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, providing direct support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[4]",
+              "claim": "Parallel GC delivers the highest throughput on large heaps under sustained load.",
+              "is_supported": true,
+              "reasoning": "The source evidence restates the claim verbatim, providing direct support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[5]",
+              "claim": "Larger heap sizes increase pause times unless concurrent collectors are used.",
+              "is_supported": true,
+              "reasoning": "The source evidence is identical to the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[6]",
+              "claim": "High allocation rates cause fragmentation, requiring compaction and increasing pause times.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[7]",
+              "claim": "The LXR collector achieves low latency and high throughput by using stop\u2011the\u2011world reference counting instead of concurrent copying.",
+              "is_supported": true,
+              "reasoning": "The source evidence directly restates the claim, providing explicit support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[8]",
+              "claim": "G1GC is the default garbage collector used by most Java services in production.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, confirming that G1GC is the default garbage collector used by most Java services in production.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 1.0,
+          "total_subquestions": 4,
+          "covered_subquestions": 4,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 8,
+          "total_sources": 8,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.125,
+          "duplicate_content_ratio": 0.25
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 25787,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0051,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 92.36,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": true,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 0.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 0.4,
+          "total_citations_referenced": 2,
+          "valid_citations": 0,
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Parallel Scavenge and G1 are the primary collectors recommended for high\u2011throughput JVM workloads, with detailed tuning guidelines in official OpenJDK documentation.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "ZGC and Shenandoah provide low\u2011latency garbage collection suitable for large heaps, with performance benchmarks showing sub\u201110\u202fms pauses.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 3589,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0018,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 6.43,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": true,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 0.0
+        }
+      },
+      "metrics": {
+        "agent_tokens": 25787,
+        "agent_cost_usd": 0.005099,
+        "agent_latency_s": 92.36,
+        "baseline_tokens": 3589,
+        "baseline_cost_usd": 0.001775,
+        "baseline_latency_s": 6.43
+      }
+    },
+    {
+      "id": "eval_13",
+      "category": "contradiction",
+      "topic": "Performance and security trade-offs of kernel-bypass networking via DPDK",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 2.02,
+          "total_citations_referenced": 8,
+          "valid_citations": 8,
+          "hallucinated_citations": 0
+        },
+        "citation_support": {
+          "citation_support_ratio": 1.0,
+          "supported_citations": 8,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 8,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "DPDK can provide 3-5x performance improvement over kernel networking in typical data\u2011center workloads.",
+              "is_supported": true,
+              "reasoning": "The source evidence restates the claim verbatim, providing direct support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "DPDK reduces CPU cycles per packet and increases overall throughput by bypassing the kernel stack.",
+              "is_supported": true,
+              "reasoning": "The source evidence is identical to the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[3]",
+              "claim": "Cache Allocation Technology improves application performance by assigning CPU affinity to cache ways, which can be dedicated to real-time applications.",
+              "is_supported": true,
+              "reasoning": "The source evidence directly states that Cache Allocation Technology improves performance by assigning CPU affinity to cache ways dedicated to real-time applications, which exactly matches the claim.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[4]",
+              "claim": "Using regular memory causes performance degradation due to high rate of TLB misses.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, providing direct support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[5]",
+              "claim": "DPDK enables real\u2011time security monitoring by leveraging multi\u2011core CPUs.",
+              "is_supported": true,
+              "reasoning": "The source evidence is identical to the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[6]",
+              "claim": "DPDK\u2019s user\u2011space packet processing introduces a memory corruption flaw (CVE\u20112025\u201123259) that can lead to data corruption or code execution.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly restates the claim, providing direct support.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[7]",
+              "claim": "DPDK\u2019s Vhost library in user space can be exploited (CVE\u20112024\u201111614) to cause a denial of service on hypervisors, crashing the host and affecting all VMs.",
+              "is_supported": true,
+              "reasoning": "The source evidence is identical to the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            },
+            {
+              "citation_key": "[8]",
+              "claim": "Nanocorp\u2019s experience indicates that using DPDK caused many problems when aiming for 100Gbit/s network analysis.",
+              "is_supported": true,
+              "reasoning": "The source evidence exactly matches the claim, directly supporting it.",
+              "judge_model": "gemini:gemini-2.0-flash"
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 1.0,
+          "total_subquestions": 5,
+          "covered_subquestions": 5,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 8,
+          "total_sources": 8,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.125,
+          "duplicate_content_ratio": 0.125
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 35711,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0072,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 99.92,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 1,
+          "contradiction_expected": true,
+          "contradiction_detected": true,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 0.68,
+          "total_citations_referenced": 3,
+          "valid_citations": 0,
+          "hallucinated_citations": 3
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 3,
+          "total_citations_evaluated": 3,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "DPDK provides high packet processing throughput by bypassing kernel network stack.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Kernel-bypass can expose applications to new attack surfaces such as DMA attacks and reduced isolation.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[3]",
+              "claim": "Best practices for securing DPDK include using IOMMU, memory isolation, and packet filtering.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 2830,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0013,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 7.58,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": true,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 0.0
+        }
+      },
+      "metrics": {
+        "agent_tokens": 35711,
+        "agent_cost_usd": 0.007195,
+        "agent_latency_s": 99.92,
+        "baseline_tokens": 2830,
+        "baseline_cost_usd": 0.001319,
+        "baseline_latency_s": 7.58
+      }
+    },
+    {
+      "id": "eval_14",
+      "category": "architecture",
+      "topic": "Vector database approximate nearest neighbor search: HNSW vs DiskANN vs IVF",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 4.0,
+          "total_citations_referenced": 2,
+          "valid_citations": 2,
+          "hallucinated_citations": 0
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "On standard benchmarks, HNSW, IVF, and DiskANN all achieve query latencies in the single-digit to low double-digit millisecond range when run over a few million embeddings.",
+              "is_supported": false,
+              "reasoning": "Judge error: openrouter rate limit exceeded: Error code: 429 - {'error': {'message': 'Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day', 'code': 429, 'metadata': {'headers': {'X-RateLimit-Limit': '50', 'X-RateLimit-Remaining': '0', 'X-RateLimit-Reset': '1793491200000'}, 'limit_source': 'openrouter_free_tier_daily', 'remedy_hint': 'Wait for the daily reset (see X-RateLimit-Reset), or purchase credits to raise your free-model daily limit.', 'provider_name': None}}, 'user_id': 'user_3JSQKaJx6jQxvw4cuQMolAAMfM8'}"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Index build time for 160M vectors ranges from 3 to 6 hours depending on parameters.",
+              "is_supported": false,
+              "reasoning": "Judge error: openrouter rate limit exceeded: Error code: 429 - {'error': {'message': 'Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day', 'code': 429, 'metadata': {'headers': {'X-RateLimit-Limit': '50', 'X-RateLimit-Remaining': '0', 'X-RateLimit-Reset': '1793491200000'}, 'limit_source': 'openrouter_free_tier_daily', 'remedy_hint': 'Wait for the daily reset (see X-RateLimit-Reset), or purchase credits to raise your free-model daily limit.', 'provider_name': None}}, 'user_id': 'user_3JSQKaJx6jQxvw4cuQMolAAMfM8'}"
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 1.0,
+          "total_subquestions": 5,
+          "covered_subquestions": 5,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 2,
+          "total_sources": 2,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.5,
+          "duplicate_content_ratio": 0.5
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 29507,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.005,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 66.27,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 0.26,
+          "total_citations_referenced": 2,
+          "valid_citations": 0,
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "HNSW provides logarithmic search complexity with high recall and is suitable for RAM\u2011resident workloads.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "DiskANN enables billion\u2011scale ANN search with sub\u2011second latency using SSD storage, while IVF\u2011PQ offers compact storage with trade\u2011off in recall.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 2872,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0013,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 5.03,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "metrics": {
+        "agent_tokens": 29507,
+        "agent_cost_usd": 0.005024,
+        "agent_latency_s": 66.27,
+        "baseline_tokens": 2872,
+        "baseline_cost_usd": 0.001343,
+        "baseline_latency_s": 5.03
+      }
+    },
+    {
+      "id": "eval_15",
+      "category": "architecture",
+      "topic": "Microservices vs Modular Monolith latency profiles at 100k requests per second",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 1.0,
+          "citation_density_per_100_words": 1.56,
+          "total_citations_referenced": 5,
+          "valid_citations": 5,
+          "hallucinated_citations": 0
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 5,
+          "total_citations_evaluated": 5,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "A modular monolith can handle 100,000 requests per second with a 47\u202fms p95 latency.",
+              "is_supported": false,
+              "reasoning": "Judge error: openrouter rate limit exceeded: Error code: 429 - {'error': {'message': 'Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day', 'code': 429, 'metadata': {'headers': {'X-RateLimit-Limit': '50', 'X-RateLimit-Remaining': '0', 'X-RateLimit-Reset': '1793491200000'}, 'limit_source': 'openrouter_free_tier_daily', 'remedy_hint': 'Wait for the daily reset (see X-RateLimit-Reset), or purchase credits to raise your free-model daily limit.', 'provider_name': None}}, 'user_id': 'user_3JSQKaJx6jQxvw4cuQMolAAMfM8'}"
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "A modular monolith eliminates inter-service REST/gRPC overhead, drastically reducing latency.",
+              "is_supported": false,
+              "reasoning": "Judge error: openrouter rate limit exceeded: Error code: 429 - {'error': {'message': 'Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day', 'code': 429, 'metadata': {'headers': {'X-RateLimit-Limit': '50', 'X-RateLimit-Remaining': '0', 'X-RateLimit-Reset': '1793491200000'}, 'limit_source': 'openrouter_free_tier_daily', 'remedy_hint': 'Wait for the daily reset (see X-RateLimit-Reset), or purchase credits to raise your free-model daily limit.', 'provider_name': None}}, 'user_id': 'user_3JSQKaJx6jQxvw4cuQMolAAMfM8'}"
+            },
+            {
+              "citation_key": "[3]",
+              "claim": "Go FastHttp framework achieved 1,396,685.83\u202fRPS with an average latency of 99.98\u202fms.",
+              "is_supported": false,
+              "reasoning": "Judge error: openrouter rate limit exceeded: Error code: 429 - {'error': {'message': 'Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day', 'code': 429, 'metadata': {'headers': {'X-RateLimit-Limit': '50', 'X-RateLimit-Remaining': '0', 'X-RateLimit-Reset': '1793491200000'}, 'limit_source': 'openrouter_free_tier_daily', 'remedy_hint': 'Wait for the daily reset (see X-RateLimit-Reset), or purchase credits to raise your free-model daily limit.', 'provider_name': None}}, 'user_id': 'user_3JSQKaJx6jQxvw4cuQMolAAMfM8'}"
+            },
+            {
+              "citation_key": "[4]",
+              "claim": "Using gRPC and batching reduces latency in microservices by minimizing network calls.",
+              "is_supported": false,
+              "reasoning": "Judge error: openrouter rate limit exceeded: Error code: 429 - {'error': {'message': 'Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day', 'code': 429, 'metadata': {'headers': {'X-RateLimit-Limit': '50', 'X-RateLimit-Remaining': '0', 'X-RateLimit-Reset': '1793491200000'}, 'limit_source': 'openrouter_free_tier_daily', 'remedy_hint': 'Wait for the daily reset (see X-RateLimit-Reset), or purchase credits to raise your free-model daily limit.', 'provider_name': None}}, 'user_id': 'user_3JSQKaJx6jQxvw4cuQMolAAMfM8'}"
+            },
+            {
+              "citation_key": "[5]",
+              "claim": "Microservice HTTP call latency ranges 1-5ms.",
+              "is_supported": false,
+              "reasoning": "Judge error: openrouter rate limit exceeded: Error code: 429 - {'error': {'message': 'Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day', 'code': 429, 'metadata': {'headers': {'X-RateLimit-Limit': '50', 'X-RateLimit-Remaining': '0', 'X-RateLimit-Reset': '1793491200000'}, 'limit_source': 'openrouter_free_tier_daily', 'remedy_hint': 'Wait for the daily reset (see X-RateLimit-Reset), or purchase credits to raise your free-model daily limit.', 'provider_name': None}}, 'user_id': 'user_3JSQKaJx6jQxvw4cuQMolAAMfM8'}"
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 1.0,
+          "total_subquestions": 5,
+          "covered_subquestions": 5,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 5,
+          "total_sources": 5,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.2,
+          "duplicate_content_ratio": 0.4
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 35391,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.007,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 97.4,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 1,
+          "contradiction_expected": false,
+          "contradiction_detected": true,
+          "contradiction_accuracy": 0.8
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 0.29,
+          "total_citations_referenced": 2,
+          "valid_citations": 0,
+          "hallucinated_citations": 2
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 2,
+          "total_citations_evaluated": 2,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "Modular monoliths achieve sub\u20112\u202fms median latency at 100k\u202fRPS with tight tail distribution.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Microservice architectures exhibit median latency around 4\u20115\u202fms and p99 latency up to 30\u202fms under 100k\u202fRPS load.",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 2790,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0013,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 10.85,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "metrics": {
+        "agent_tokens": 35391,
+        "agent_cost_usd": 0.006964,
+        "agent_latency_s": 97.4,
+        "baseline_tokens": 2790,
+        "baseline_cost_usd": 0.001294,
+        "baseline_latency_s": 10.85
+      }
+    },
+    {
+      "id": "eval_16",
+      "category": "architecture",
+      "topic": "Distributed tracing instrumentation overhead: OpenTelemetry tail-based sampling vs head-based sampling",
+      "agent": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 0.0,
+          "total_citations_referenced": 0,
+          "valid_citations": 0,
+          "hallucinated_citations": 0
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 0,
+          "total_citations_evaluated": 0,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": []
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 4,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": [
+            "sq_1",
+            "sq_2",
+            "sq_3",
+            "sq_4"
+          ]
+        },
+        "diversity": {
+          "unique_domains_count": 6,
+          "total_sources": 9,
+          "domain_diversity_ratio": 0.6667,
+          "max_domain_concentration": 0.4444,
+          "duplicate_content_ratio": 0.1111
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 11899,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0029,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 194.43,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": true,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "baseline": {
+        "citation": {
+          "citation_validity_ratio": 0.0,
+          "citation_density_per_100_words": 0.61,
+          "total_citations_referenced": 4,
+          "valid_citations": 0,
+          "hallucinated_citations": 4
+        },
+        "citation_support": {
+          "citation_support_ratio": 0.0,
+          "supported_citations": 0,
+          "unsupported_citations": 4,
+          "total_citations_evaluated": 4,
+          "judge_provider": "gemini",
+          "judge_model": "gemini-2.0-flash",
+          "evaluations": [
+            {
+              "citation_key": "[1]",
+              "claim": "OpenTelemetry defines head\u2011based sampling semantics and supports tail\u2011based sampling via collector",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[2]",
+              "claim": "Tail\u2011based sampling moves sampling decision to backend, reducing instrumentation overhead",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[3]",
+              "claim": "Head\u2011based sampling incurs per\u2011span overhead proportional to instrumentation rate",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            },
+            {
+              "citation_key": "[4]",
+              "claim": "Instrumentation overhead can be 5\u201110% CPU per service",
+              "is_supported": false,
+              "reasoning": "No backing source evidence or finding found."
+            }
+          ]
+        },
+        "coverage": {
+          "plan_coverage_ratio": 0.0,
+          "total_subquestions": 0,
+          "covered_subquestions": 0,
+          "uncovered_subquestions": []
+        },
+        "diversity": {
+          "unique_domains_count": 0,
+          "total_sources": 0,
+          "domain_diversity_ratio": 1.0,
+          "max_domain_concentration": 0.0,
+          "duplicate_content_ratio": 0.0
+        },
+        "budget": {
+          "budget_compliance": true,
+          "total_tokens": 2815,
+          "token_limit": 150000,
+          "token_limit_exceeded": false,
+          "total_usd_cost": 0.0013,
+          "usd_limit": 2.0,
+          "usd_limit_exceeded": false,
+          "wall_clock_seconds": 8.26,
+          "wall_clock_limit": 600.0,
+          "wall_clock_exceeded": false,
+          "partial_degradation_triggered": false,
+          "degradation_reason": null
+        },
+        "contradiction": {
+          "contradictions_found_count": 0,
+          "contradiction_expected": false,
+          "contradiction_detected": false,
+          "contradiction_accuracy": 1.0
+        }
+      },
+      "metrics": {
+        "agent_tokens": 11899,
+        "agent_cost_usd": 0.00292,
+        "agent_latency_s": 194.43,
+        "baseline_tokens": 2815,
+        "baseline_cost_usd": 0.00131,
+        "baseline_latency_s": 8.26
+      }
+    }
+  ]
+}
