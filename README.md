@@ -1,6 +1,6 @@
 # Multi-Agent Research Assistant
 
-[![Live Frontend](https://img.shields.io/badge/Frontend-Vercel-black?style=flat&logo=vercel)](https://research-agent-osy9-cq80otzv4-ashok-a994.vercel.app)
+[![Live Frontend](https://img.shields.io/badge/Frontend-Vercel-black?style=flat&logo=vercel)](https://research-agent-sooty-rho.vercel.app)
 [![Live Backend API](https://img.shields.io/badge/API-Render-46E3B7?style=flat&logo=render)](https://research-agent-api-49ii.onrender.com/health)
 [![CI](https://github.com/AshokSingodia-Codes/research-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/AshokSingodia-Codes/research-agent/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.12-blue.svg)]()
@@ -14,7 +14,7 @@
 
 ## 🌐 Live Deployments
 
-- **Frontend (Vercel)**: [https://research-agent-osy9-cq80otzv4-ashok-a994.vercel.app](https://research-agent-osy9-cq80otzv4-ashok-a994.vercel.app)
+- **Frontend (Vercel)**: [https://research-agent-sooty-rho.vercel.app](https://research-agent-sooty-rho.vercel.app)
 - **Backend API (Render)**: [https://research-agent-api-49ii.onrender.com](https://research-agent-api-49ii.onrender.com)
 - **Healthcheck Endpoint**: [https://research-agent-api-49ii.onrender.com/health](https://research-agent-api-49ii.onrender.com/health)
 - **Prometheus Metrics**: [https://research-agent-api-49ii.onrender.com/metrics](https://research-agent-api-49ii.onrender.com/metrics)
@@ -254,7 +254,7 @@ pytest --cov=app --cov-report=term-missing tests/
 | `ENV` | API & Worker | Execution environment | `production` |
 | `API_KEY` | API | Production secret key ($\ge 16$ chars) | Generated 32-char token |
 | `STREAM_TOKEN_SECRET` | API | Secret for signing short-lived HMAC stream tokens | Generated 32-char token |
-| `CORS_ORIGINS` | API | Allowed frontend origins (JSON array, no wildcard `*`) | `["https://<your-vercel-domain>.vercel.app"]` |
+| `CORS_ORIGINS` | API | Allowed frontend origins (JSON array, no wildcard `*`) | `["https://research-agent-sooty-rho.vercel.app"]` |
 | `REDIS_URL` | API & Worker | Real Redis connection string | `redis://multiagent-research-redis:6379/0` |
 | `USE_FAKE_REDIS` | API & Worker | Persistence mode | `false` |
 | `RUN_WORKER_INPROCESS`| API | Run background worker in separate process | `false` |

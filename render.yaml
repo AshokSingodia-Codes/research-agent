@@ -26,7 +26,7 @@ services:
       - key: STREAM_TOKEN_SECRET
         generateValue: true
       - key: CORS_ORIGINS
-        value: '["https://research-agent-osy9-cq80otzv4-ashok-a994.vercel.app"]' # Set to your Vercel production domain(s) e.g. ["https://your-frontend.vercel.app"]
+        value: '["https://research-agent-sooty-rho.vercel.app"]'
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: GROQ_API_KEY
