@@ -6,8 +6,6 @@ from typing import Any
 
 from langchain_core.runnables import RunnableLambda
 
-logger = logging.getLogger(__name__)
-
 from app.agents.critic import critique_report
 from app.agents.planner import plan_research
 from app.agents.researcher import research_subquestion
@@ -19,6 +17,8 @@ from app.graph.state import AgentState
 from app.llm.client import llm_client
 from app.models.enums import ReviewAction, RunStatus, ToolStatus
 from app.models.schemas import Finding, ResearchFindings, ReviewDecision, StepTrace, SubQuestion
+
+logger = logging.getLogger(__name__)
 
 
 def _get_or_create_guard(state: dict[str, Any]) -> BudgetGuard:

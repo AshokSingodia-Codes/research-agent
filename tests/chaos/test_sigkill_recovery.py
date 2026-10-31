@@ -77,7 +77,7 @@ def test_chaos_subprocess_sigkill_and_resumption():
     chaos_searches = [s.decode("utf-8") if isinstance(s, bytes) else s for s in client.lrange(f"chaos:raw_searches:{chaos_run_id}", 0, -1)]
     proc_events = [p.decode("utf-8") if isinstance(p, bytes) else p for p in client.lrange(f"chaos:proc_events:{chaos_run_id}", 0, -1)]
 
-    print(f"\n--- CHAOS RECOVERY TRACE ---")
+    print("\n--- CHAOS RECOVERY TRACE ---")
     print(f"Proc events: {proc_events}")
     print(f"Baseline LLM calls ({len(baseline_calls)}): {baseline_calls}")
     print(f"Chaos LLM calls    ({len(chaos_calls)}): {chaos_calls}")

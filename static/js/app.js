@@ -13,6 +13,19 @@ let pollTimer = null;
 let eventSource = null;
 let apiKey = localStorage.getItem('multiagent_api_key') || '';
 
+function promptApiKey() {
+    const current = localStorage.getItem('multiagent_api_key') || '';
+    const entered = prompt("Enter your Multi-Agent Research API Key:", current);
+    if (entered !== null) {
+        apiKey = entered.trim();
+        if (apiKey) {
+            localStorage.setItem('multiagent_api_key', apiKey);
+        } else {
+            localStorage.removeItem('multiagent_api_key');
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     checkHealth();
 
@@ -158,6 +171,14 @@ async function startResearch() {
         });
 
         if (!resp.ok) {
+            if (resp.status === 401) {
+                const entered = prompt("Access denied (401 Unauthorized). Please enter your valid API key:");
+                if (entered) {
+                    apiKey = entered.trim();
+                    localStorage.setItem('multiagent_api_key', apiKey);
+                    return startResearch();
+                }
+            }
             throw new Error(`HTTP error ${resp.status}`);
         }
 

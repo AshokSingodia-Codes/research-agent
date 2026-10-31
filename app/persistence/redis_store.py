@@ -43,7 +43,13 @@ def build_redis_client(url: str, **kwargs: Any) -> redis.Redis:
     try:
         client.ping()
     except redis.exceptions.ResponseError as pe:
-        if "HELLO" in str(pe):
+        err_msg = str(pe)
+        if "HELLO" in err_msg or "unknown command `HELLO`" in err_msg.lower():
+            logger.warning(
+                "Redis server at %s rejected HELLO command (%s); falling back to RESP2 protocol.",
+                url,
+                pe,
+            )
             kwargs["protocol"] = 2
             client = redis.Redis.from_url(url, **kwargs)
             client.ping()

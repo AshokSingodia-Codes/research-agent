@@ -13,6 +13,7 @@ from app.api.auth import (
     verify_stream_access,
 )
 from app.api.events import event_broker
+from app.config import settings
 from app.graph.builder import build_research_graph
 from app.models.enums import RunStatus
 from app.models.schemas import (
@@ -21,7 +22,6 @@ from app.models.schemas import (
     ResearchRunResponse,
     ResearchStatusResponse,
 )
-from app.config import settings
 from app.persistence.checkpointer import checkpointer
 from app.persistence.redis_store import redis_store
 from app.persistence.worker import worker

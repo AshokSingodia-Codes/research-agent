@@ -26,7 +26,7 @@ def is_redis_reachable() -> bool:
     try:
         from app.persistence.redis_store import build_redis_client
 
-        client = build_redis_client(redis_url, socket_timeout=1.0, decode_responses=True)
+        build_redis_client(redis_url, socket_timeout=1.0, decode_responses=True)
         _REDIS_REACHABLE = True
     except Exception:
         _REDIS_REACHABLE = False

@@ -73,8 +73,6 @@ def test_lua_check_and_incr_concurrent_two_clients_real_redis():
     """
     import concurrent.futures
 
-    import redis
-
     from app.budget.guard import LUA_CHECK_AND_INCR
     from app.config import settings
     from app.persistence.redis_store import build_redis_client

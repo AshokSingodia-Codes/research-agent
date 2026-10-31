@@ -129,7 +129,6 @@ class OpenAICompatibleProvider(LLMProvider):
                     max_tokens=max_tokens,
                     temperature=temperature,
                 )
-                latency = time.time() - start_time
                 break
             except Exception as e:
                 err_str = str(e).lower()

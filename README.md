@@ -245,6 +245,30 @@ pytest --cov=app --cov-report=term-missing tests/
 
 ---
 
+## 🔒 Production Deployment & Environment Configuration
+
+### Render Configuration (`render.yaml`)
+
+| Variable | Service | Description | Example / Default |
+| :--- | :--- | :--- | :--- |
+| `ENV` | API & Worker | Execution environment | `production` |
+| `API_KEY` | API | Production secret key ($\ge 16$ chars) | Generated 32-char token |
+| `STREAM_TOKEN_SECRET` | API | Secret for signing short-lived HMAC stream tokens | Generated 32-char token |
+| `CORS_ORIGINS` | API | Allowed frontend origins (JSON array, no wildcard `*`) | `["https://<your-vercel-domain>.vercel.app"]` |
+| `REDIS_URL` | API & Worker | Real Redis connection string | `redis://multiagent-research-redis:6379/0` |
+| `USE_FAKE_REDIS` | API & Worker | Persistence mode | `false` |
+| `RUN_WORKER_INPROCESS`| API | Run background worker in separate process | `false` |
+| `GROQ_API_KEY` | API & Worker | Groq LLM API key | Sync from Render secret |
+| `ANTHROPIC_API_KEY` | API & Worker | Anthropic LLM API key | Sync from Render secret |
+| `TAVILY_API_KEY` | API & Worker | Tavily web search API key | Sync from Render secret |
+
+### Vercel Frontend Configuration
+The frontend is hosted as static assets on Vercel (`static/index.html`, `static/js/app.js`, `static/css/styles.css`).
+- `window.API_BASE_URL` points to the deployed Render backend (e.g. `https://research-agent-api-49ii.onrender.com`).
+- **Visitor Access**: Neither `app.js` nor Vercel embeds the private `API_KEY`. Visitors can click the **🔑 API Key** button in the header or enter a key when prompted (persisted client-side in `localStorage['multiagent_api_key']`).
+
+---
+
 ## 🛠️ Local Development
 
 ```bash
