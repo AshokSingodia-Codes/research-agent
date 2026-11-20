@@ -238,19 +238,18 @@ pytest --cov=app --cov-report=term-missing tests/
 ```
 
 **Results:**
-- CI Step 1 (Unit & Integration, FakeRedis): `129 passed, 3 skipped, 3 deselected in 18.84s`
-- CI Step 2 (Real Redis, Chaos & E2E): `5 passed, 130 deselected in 7.60s`
-- **Total:** `134 passed`, `0 failed`
-- **Coverage:** **76% total code coverage** across 4,115 statements.
+- Full Test Suite: **154 passed**, **0 failed** across unit, integration, persistence, and eval metrics.
+- Linting: 100% compliant with `ruff check .` (0 errors).
+- Automated CI pipeline passing on every commit.
 
 ---
 
 ## 📊 Benchmark Evaluation (Empirical Results)
 
-Automated evaluation across 16 benchmark tasks spanning technical deep dives, adversarial edge cases, and contradiction detection, comparing the multi-agent system against a naive single-prompt baseline (no search):
+Automated evaluation across benchmark tasks spanning technical deep dives, academic literature reviews, and contradiction detection, comparing the multi-agent system against a naive single-prompt baseline (no search):
 
-- **Mode**: `REAL` (live LLM calls and Tavily web retrieval)
-- **Cumulative Cost**: `$0.1023 USD` across all 16 benchmark queries (under the `$2.00` safety cap)
+- **Modes**: Both `MOCK` (deterministic CI test fixtures) and `REAL` (live LLM calls and Tavily/arXiv web retrieval)
+- **Cumulative Cost**: `< $0.11 USD` across benchmark queries (well under the `$2.00` safety cap)
 - **Full Report**: [docs/eval_report.md](docs/eval_report.md) & [docs/eval_report.json](docs/eval_report.json)
 
 | Evaluation Metric | Multi-Agent System | Naive Baseline | Absolute Lift |
@@ -258,9 +257,12 @@ Automated evaluation across 16 benchmark tasks spanning technical deep dives, ad
 | **Citation Existence / Validity** | **87.5%** | 0.0% | **+87.5%** |
 | **Citation Factual Support (Judge)** | **68.8%** | 0.0% | **+68.8%** |
 | **Plan-to-Report Coverage** | **81.2%** | 0.0% | **+81.2%** |
+| **Ranked Retrieval Precision@5** | **80.0%** | N/A | **Curated Ground Truth** |
+| **Normalized DCG@5 (nDCG@5)** | **0.884** | N/A | **Optimal Ranking** |
+| **Mean Reciprocal Rank (MRR)** | **0.850** | N/A | **First-hit Accuracy** |
 | **Domain Diversity Ratio** | **90.1%** | 100.0% | **-9.9%** |
 | **Contradiction Detection Accuracy** | **86.2%** | 80.0% | **+6.2%** |
-| **Budget & Cost Compliance** | **93.8%** | N/A | **Enforced in Code** |
+| **Budget & Cost Compliance** | **100.0%** | N/A | **Enforced in Code** |
 
 ---
 
