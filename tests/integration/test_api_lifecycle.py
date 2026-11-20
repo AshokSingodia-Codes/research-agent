@@ -199,3 +199,32 @@ async def test_fastapi_research_lifecycle_and_trace_endpoints():
         assert trace_data["run_id"] == run_id
         assert trace_data["total_steps"] > 0
         assert len(trace_data["steps"]) == trace_data["total_steps"]
+
+        # 6. GET /research/{id}/report.md
+        md_resp = await client.get(f"/research/{run_id}/report.md", headers=headers)
+        assert md_resp.status_code == 200
+        assert "text/markdown" in md_resp.headers["content-type"]
+        assert "# " in md_resp.text
+
+        # 7. GET /research/{id}/report.html
+        html_resp = await client.get(f"/research/{run_id}/report.html", headers=headers)
+        assert html_resp.status_code == 200
+        assert "text/html" in html_resp.headers["content-type"]
+        assert "<!DOCTYPE html>" in html_resp.text
+
+        # 8. GET /research/{id}/run.json
+        bundle_resp = await client.get(f"/research/{run_id}/run.json", headers=headers)
+        assert bundle_resp.status_code == 200
+        bundle = bundle_resp.json()
+        assert bundle["run_id"] == run_id
+        assert "state" in bundle
+        assert "report" in bundle
+
+        # 9. DELETE /research/{id}
+        del_resp = await client.delete(f"/research/{run_id}", headers=headers)
+        assert del_resp.status_code == 200
+        assert del_resp.json()["status"] == "deleted"
+
+        # 10. GET /research/{id} after deletion returns 404
+        get_deleted = await client.get(f"/research/{run_id}", headers=headers)
+        assert get_deleted.status_code == 404

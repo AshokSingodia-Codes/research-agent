@@ -51,5 +51,19 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: research_agent_ui
+    command: streamlit run ui/app.py --server.port 8501 --server.address 0.0.0.0
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://api:8000
+    depends_on:
+      - api
+    restart: unless-stopped
+
 volumes:
   redis_data:

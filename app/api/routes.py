@@ -3,7 +3,7 @@ import logging
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 from fastapi.responses import StreamingResponse
 
 from app.api.auth import (
@@ -26,6 +26,7 @@ from app.persistence.checkpointer import checkpointer
 from app.persistence.redis_store import redis_store
 from app.persistence.worker import worker
 from app.services.citation_validator import validate_citations
+from app.services.renderer import render_html, render_markdown
 
 logger = logging.getLogger(__name__)
 
@@ -200,6 +201,90 @@ async def get_research_trace(
         "total_latency_ms": round(total_latency, 2),
         "steps": raw_steps,
     }
+
+
+@router.get("/{run_id}/report.md", response_class=Response)
+async def get_report_markdown(
+    run_id: str,
+    caller_id: str = Depends(verify_api_key),
+) -> Response:
+    """Exports synthesized final report in clean GitHub-flavored Markdown."""
+    raw_json = redis_store.get_final_report(run_id)
+    if not raw_json:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Report for run '{run_id}' not found or run still in progress.",
+        )
+    try:
+        report = Report.model_validate_json(raw_json)
+        md_text = render_markdown(report)
+        return Response(content=md_text, media_type="text/markdown; charset=utf-8")
+    except Exception as e:
+        logger.exception(f"Failed to render Markdown report: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to format report.")
+
+
+@router.get("/{run_id}/report.html", response_class=Response)
+async def get_report_html(
+    run_id: str,
+    caller_id: str = Depends(verify_api_key),
+) -> Response:
+    """Exports interactive, styled HTML research report with jump-links to cited references."""
+    raw_json = redis_store.get_final_report(run_id)
+    if not raw_json:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Report for run '{run_id}' not found or run still in progress.",
+        )
+    try:
+        report = Report.model_validate_json(raw_json)
+        html_text = render_html(report, run_id=run_id)
+        return Response(content=html_text, media_type="text/html; charset=utf-8")
+    except Exception as e:
+        logger.exception(f"Failed to render HTML report: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to format report.")
+
+
+@router.get("/{run_id}/run.json")
+async def get_run_bundle(
+    run_id: str,
+    caller_id: str = Depends(verify_api_key),
+) -> dict[str, Any]:
+    """Exports entire execution bundle: status, run state, final report, and granular step trace."""
+    state = redis_store.get_run_state(run_id)
+    if not state:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Run '{run_id}' not found.")
+
+    raw_report = redis_store.get_final_report(run_id)
+    final_report = None
+    if raw_report:
+        try:
+            final_report = Report.model_validate_json(raw_report)
+        except Exception:
+            final_report = None
+
+    raw_steps = redis_store.get_trace_steps(run_id)
+    return {
+        "run_id": run_id,
+        "state": state,
+        "report": final_report,
+        "trace": raw_steps,
+    }
+
+
+@router.delete("/{run_id}")
+async def delete_research_run(
+    run_id: str,
+    caller_id: str = Depends(verify_api_key),
+) -> dict[str, Any]:
+    """Deletes all persistent state, trace logs, and reports associated with a research run."""
+    state = redis_store.get_run_state(run_id)
+    if not state:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Run '{run_id}' not found.")
+
+    redis_store.delete_run(run_id)
+    event_broker.publish_event(run_id, "deleted", {"run_id": run_id})
+    return {"status": "deleted", "run_id": run_id}
 
 
 @router.post("/{run_id}/approve", status_code=status.HTTP_200_OK)

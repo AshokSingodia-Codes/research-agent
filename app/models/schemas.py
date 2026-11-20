@@ -129,10 +129,20 @@ class Report(BaseModel):
     citation_coverage: float = Field(default=1.0, ge=0.0, le=1.0)
 
 
+class ClaimCheck(BaseModel):
+    claim: str
+    chunk_ids: list[str] = Field(default_factory=list)
+    verdict: Literal["supported", "partial", "unsupported"] = "supported"
+    reason: str = ""
+
+
 class CritiqueResult(BaseModel):
     unsupported_claims: list[str] = Field(default_factory=list)
     missing_plan_coverage: list[str] = Field(default_factory=list)
     passed: bool = True
+    action: Literal["pass", "revise_draft", "retrieve_more"] = "pass"
+    support_rate: float | None = None
+    checks: list[ClaimCheck] = Field(default_factory=list)
     critique_notes: str = ""
 
 

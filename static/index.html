@@ -19,9 +19,12 @@
 
         <!-- Scholarly Clean Header -->
         <header>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                 <div class="header-badge">Autonomous Synthesis</div>
-                <button id="apiKeyBtn" class="suggestion-chip" style="font-size: 0.75rem; padding: 4px 10px; cursor: pointer;" onclick="promptApiKey()" title="Configure backend API Key">🔑 API Key</button>
+                <div style="display: flex; gap: 6px;">
+                    <button id="backendUrlBtn" class="suggestion-chip" style="font-size: 0.75rem; padding: 4px 10px; cursor: pointer;" onclick="promptBackendUrl()" title="Configure Render Backend URL">🌐 Backend URL</button>
+                    <button id="apiKeyBtn" class="suggestion-chip" style="font-size: 0.75rem; padding: 4px 10px; cursor: pointer;" onclick="promptApiKey()" title="Configure backend API Key">🔑 API Key</button>
+                </div>
             </div>
             <h1>Research Assistant</h1>
             <p>Ask any topic. Get a thoroughly sourced, academic-grade report.</p>

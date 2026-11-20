@@ -91,10 +91,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS Middleware with environment-driven allowlist
+# CORS Middleware with environment-driven allowlist and dynamic Vercel regex support
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app|http://localhost:\d+|http://127\.0\.0\.1:\d+",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

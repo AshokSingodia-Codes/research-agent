@@ -102,3 +102,34 @@ def route_after_review(state: AgentState) -> Literal["dispatch", "write"]:
         return "write"
 
     return "dispatch"
+
+
+def route_after_critic(state: AgentState) -> Literal["write", "dispatch", "finish"]:
+    """
+    Routes after critic evaluation:
+    - If partial, cancelled, or iteration limit exceeded -> finish
+    - If action == 'revise_draft' -> loop back to write
+    - If action == 'retrieve_more' -> loop back to dispatch
+    - Otherwise -> finish
+    """
+    from app.config import settings
+
+    if state.get("partial") or state.get("cancelled"):
+        return "finish"
+
+    critique = state.get("critique")
+    if not critique:
+        return "finish"
+
+    revision_loops = state.get("revision_loops", 0)
+    max_loops = getattr(settings, "max_revision_loops", 1)
+    if revision_loops >= max_loops:
+        return "finish"
+
+    action = getattr(critique, "action", "pass")
+    if action == "revise_draft":
+        return "write"
+    elif action == "retrieve_more":
+        return "dispatch"
+
+    return "finish"

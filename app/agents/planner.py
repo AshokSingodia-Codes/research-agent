@@ -1,10 +1,19 @@
+from pathlib import Path
 from typing import Any
 
 from app.config import settings
 from app.llm.client import llm_client
 from app.models.schemas import ResearchPlan, StepTrace
 
-PLANNER_SYSTEM_PROMPT = """Decompose the user's research question into focused, non-overlapping, and empirically answerable sub-questions.
+
+def _load_planner_prompt() -> str:
+    prompt_file = Path(__file__).parent.parent / "prompts" / "planner.md"
+    if prompt_file.exists():
+        try:
+            return prompt_file.read_text(encoding="utf-8").strip()
+        except Exception:
+            pass
+    return """Decompose the user's research question into focused, non-overlapping, and empirically answerable sub-questions.
 
 Requirements:
 1. Generate between 3 and 5 focused sub-questions. Keep each concise and focused.
@@ -18,6 +27,9 @@ Requirements:
    - expected_source_types: list of 1 to 3 short strings only (e.g. ["academic_papers", "benchmarks"])
    - depends_on: list of prerequisite sub-question IDs if this sub-question depends on another
 """
+
+
+PLANNER_SYSTEM_PROMPT = _load_planner_prompt()
 
 
 def plan_research(

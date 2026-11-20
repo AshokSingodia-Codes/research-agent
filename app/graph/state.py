@@ -95,6 +95,7 @@ class AgentState(TypedDict, total=False):
     draft_report: Report | None
     final_report: Report | None
     critique: CritiqueResult | None
+    revision_loops: int
     partial: Annotated[bool, reduce_bool]
     degradation_reason: Annotated[str | None, reduce_last_str]
     total_tokens: Annotated[int, operator.add]

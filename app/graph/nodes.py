@@ -391,6 +391,13 @@ def write_node(state: AgentState) -> dict[str, Any]:
     degradation_reason = state.get("degradation_reason")
     guard = _get_or_create_guard(state)
 
+    critique = state.get("critique")
+    flagged = critique.unsupported_claims if critique and getattr(critique, "action", "") == "revise_draft" else None
+    missing = critique.missing_plan_coverage if critique and getattr(critique, "action", "") == "retrieve_more" else None
+    revision_count = state.get("revision_loops", 0)
+    if critique and getattr(critique, "action", "") == "revise_draft":
+        revision_count += 1
+
     try:
         report, trace = write_report(
             topic=question,
@@ -398,11 +405,15 @@ def write_node(state: AgentState) -> dict[str, Any]:
             conflicting_evidence=conflicts,
             partial=partial,
             degradation_reason=degradation_reason,
+            previous_draft=state.get("draft_report"),
+            flagged_claims=flagged,
+            missing_topics=missing,
             run_id=run_id,
             budget_guard=guard,
         )
         return {
             "draft_report": report,
+            "revision_loops": revision_count,
             "total_tokens": trace.total_tokens,
             "total_usd_cost": trace.usd_cost,
             "trace_log": [trace],
@@ -454,12 +465,20 @@ def critic_node(state: AgentState) -> dict[str, Any]:
             run_id=run_id,
             budget_guard=guard,
         )
+
+        final_draft = draft_report
+        if critique.unsupported_claims:
+            from app.agents.critic import remove_unsupported_sentences
+
+            final_draft = remove_unsupported_sentences(draft_report, critique.unsupported_claims)
+
         return {
             "critique": critique,
+            "draft_report": final_draft,
             "total_tokens": trace.total_tokens,
             "total_usd_cost": trace.usd_cost,
             "trace_log": [trace],
-            "status": RunStatus.COMPLETED,
+            "status": RunStatus.COMPLETED if getattr(critique, "action", "pass") == "pass" else RunStatus.REVIEWING,
             "budget_summary": guard.get_summary(),
         }
     except Exception as e:

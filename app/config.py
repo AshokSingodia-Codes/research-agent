@@ -92,6 +92,13 @@ class Settings(BaseSettings):
 
     # Citation Thresholds
     citation_coverage_threshold: float = 0.80
+    support_threshold: float = 0.80
+
+    # Academic Search & Vector Settings
+    openalex_api_key: str = ""
+    openalex_mailto: str = ""
+    enable_academic_search: bool = True
+    embedder: str = "hash"  # "hash" (deterministic offline/fast) or "bge"
 
     # Mock Overrides for Tests ("true", "false", "auto")
     mock_search: str = "auto"

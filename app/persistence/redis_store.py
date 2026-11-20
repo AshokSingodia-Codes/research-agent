@@ -477,6 +477,27 @@ class RedisStore:
             val = client.get(key)
         return val
 
+    # --- Run Deletion / Cleanup ---
+
+    def delete_run(self, run_id: str) -> bool:
+        """Deletes all persistent keys and indexes associated with a run."""
+        client = self.get_client()
+        keys = [
+            f"research:state:{run_id}",
+            f"research:trace:{run_id}",
+            f"research:report:{run_id}",
+            f"research:lock:{run_id}",
+            f"research:cancel:{run_id}",
+        ]
+        try:
+            client.delete(*keys)
+            client.srem("research:running_runs", run_id)
+            self.sync_to_disk()
+            return True
+        except Exception as e:
+            logger.warning(f"Failed to delete run {run_id}: {e}")
+            return False
+
 
 redis_store = RedisStore()
 atexit.register(redis_store.flush)

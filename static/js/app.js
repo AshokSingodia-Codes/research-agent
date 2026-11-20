@@ -13,9 +13,26 @@ let pollTimer = null;
 let eventSource = null;
 let apiKey = localStorage.getItem('multiagent_api_key') || '';
 
+function promptBackendUrl() {
+    const current = localStorage.getItem('multiagent_api_base') || '';
+    const entered = prompt(
+        "Enter your deployed Render backend URL (e.g. https://multiagent-research-api.onrender.com):",
+        current
+    );
+    if (entered !== null) {
+        const cleaned = entered.trim().replace(/\/+$/, '');
+        if (cleaned) {
+            localStorage.setItem('multiagent_api_base', cleaned);
+        } else {
+            localStorage.removeItem('multiagent_api_base');
+        }
+        window.location.reload();
+    }
+}
+
 function promptApiKey() {
     const current = localStorage.getItem('multiagent_api_key') || '';
-    const entered = prompt("Enter your Multi-Agent Research API Key:", current);
+    const entered = prompt("Enter your Multi-Agent Research API Key (from Render API_KEY env var):", current);
     if (entered !== null) {
         apiKey = entered.trim();
         if (apiKey) {
@@ -143,6 +160,15 @@ async function startResearch() {
     const topicInput = document.getElementById('topicInput');
     const topic = topicInput ? topicInput.value.trim() : "";
     if (!topic) return;
+
+    if (!API_BASE && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        const entered = prompt("Please enter your deployed Render Backend URL (e.g. https://multiagent-research-api.onrender.com):");
+        if (entered) {
+            localStorage.setItem('multiagent_api_base', entered.trim().replace(/\/+$/, ''));
+            window.location.reload();
+            return;
+        }
+    }
 
     const runBtn = document.getElementById('runBtn');
     const progressBox = document.getElementById('progressBox');

@@ -130,7 +130,53 @@ def search_and_extract(
         except Exception as e:
             logger.warning(f"DuckDuckGo search fallback encountered ({e}); falling back to mock search")
 
-    # 3. Deterministic Mock Search Fallback
+    # 3. Academic Paper Search (arXiv / OpenAlex / Semantic Scholar) if relevant or web search yields sparse results
+    if (
+        getattr(settings, "enable_academic_search", False)
+        and (len(raw_results) < max_results or any(term in query.lower() for term in ("arxiv", "paper", "algorithm", "protocol", "model", "neural", "benchmark", "dataset")))
+    ):
+        try:
+            from app.tools.arxiv import search_arxiv
+            ar_hits = search_arxiv(query, sub_question_id=sub_question_id, max_results=2, run_id=run_id)
+            for ah in ar_hits:
+                raw_results.append({
+                    "url": ah.source_url,
+                    "title": ah.claim[:60],
+                    "content": ah.extracted_text or ah.snippet,
+                    "snippet": ah.snippet,
+                })
+        except Exception as e:
+            logger.debug(f"arXiv search hook skipped: {e}")
+
+        if len(raw_results) < max_results:
+            try:
+                from app.tools.openalex import search_openalex
+                oa_hits = search_openalex(query, sub_question_id=sub_question_id, max_results=2, run_id=run_id)
+                for oh in oa_hits:
+                    raw_results.append({
+                        "url": oh.source_url,
+                        "title": oh.claim[:60],
+                        "content": oh.extracted_text or oh.snippet,
+                        "snippet": oh.snippet,
+                    })
+            except Exception as e:
+                logger.debug(f"OpenAlex search hook skipped: {e}")
+
+        if len(raw_results) < max_results:
+            try:
+                from app.tools.semantic_scholar import search_semantic_scholar
+                s2_hits = search_semantic_scholar(query, sub_question_id=sub_question_id, max_results=2, run_id=run_id)
+                for sh in s2_hits:
+                    raw_results.append({
+                        "url": sh.source_url,
+                        "title": sh.claim[:60],
+                        "content": sh.extracted_text or sh.snippet,
+                        "snippet": sh.snippet,
+                    })
+            except Exception as e:
+                logger.debug(f"Semantic Scholar search hook skipped: {e}")
+
+    # 4. Deterministic Mock Search Fallback
     if not raw_results:
         logger.info(f"Using mock search for query '{query}'")
         return _mock_search(query, sub_question_id, max_results, max_per_domain, run_id=run_id)
@@ -241,6 +287,23 @@ def _process_raw_results(
             source_quality_score=quality,
         )
         findings.append(finding)
+
+        # Index into global chunk vector store for semantic evidence search
+        try:
+            from app.tools.chunking import chunk_document_text
+            from app.tools.vectorstore import get_global_vector_store
+
+            store = get_global_vector_store()
+            body_text = extracted_text if extracted_text else snippet
+            chunks = chunk_document_text(
+                doc_id=finding.id,
+                source_url=canon_url,
+                domain=domain,
+                text=body_text,
+            )
+            store.add(chunks)
+        except Exception as e:
+            logger.debug(f"Vector store indexing skipped for {canon_url}: {e}")
 
     if not findings:
         return ToolResult(

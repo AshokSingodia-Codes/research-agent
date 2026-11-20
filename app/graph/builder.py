@@ -12,6 +12,7 @@ from app.graph.nodes import (
     write_node,
 )
 from app.graph.routing import (
+    route_after_critic,
     route_after_dispatch,
     route_after_plan,
     route_after_review,
@@ -68,7 +69,16 @@ def build_research_graph(
     )
 
     graph.add_edge("write", "critic")
-    graph.add_edge("critic", "finish")
+
+    graph.add_conditional_edges(
+        "critic",
+        route_after_critic,
+        {
+            "write": "write",
+            "dispatch": "dispatch",
+            "finish": "finish",
+        },
+    )
     graph.add_edge("finish", END)
 
     interrupt_nodes = ["write"] if interrupt_before_write else []

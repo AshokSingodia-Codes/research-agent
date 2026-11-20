@@ -27,11 +27,29 @@ services:
         generateValue: true
       - key: CORS_ORIGINS
         value: '["https://research-agent-sooty-rho.vercel.app"]'
-      - key: ANTHROPIC_API_KEY
-        sync: false
       - key: GROQ_API_KEY
         sync: false
+      - key: GROQ_MODEL
+        value: "openai/gpt-oss-120b"
+      - key: RESEARCHER_MODEL
+        value: "openai/gpt-oss-20b"
+      - key: PLANNER_MODEL
+        value: "openai/gpt-oss-120b"
+      - key: WRITER_MODEL
+        value: "openai/gpt-oss-120b"
+      - key: SUPERVISOR_MODEL
+        value: "openai/gpt-oss-120b"
+      - key: CRITIC_MODEL
+        value: "openai/gpt-oss-120b"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: "gemini-2.0-flash"
+      - key: ANTHROPIC_API_KEY
+        sync: false
       - key: TAVILY_API_KEY
+        sync: false
+      - key: SEMANTIC_SCHOLAR_API_KEY
         sync: false
       - key: MAX_SUBQUESTIONS
         value: "5"
@@ -58,11 +76,27 @@ services:
           type: redis
           name: multiagent-research-redis
           property: connectionString
-      - key: ANTHROPIC_API_KEY
-        sync: false
       - key: GROQ_API_KEY
         sync: false
+      - key: GROQ_MODEL
+        value: "openai/gpt-oss-120b"
+      - key: RESEARCHER_MODEL
+        value: "openai/gpt-oss-20b"
+      - key: PLANNER_MODEL
+        value: "openai/gpt-oss-120b"
+      - key: WRITER_MODEL
+        value: "openai/gpt-oss-120b"
+      - key: SUPERVISOR_MODEL
+        value: "openai/gpt-oss-120b"
+      - key: CRITIC_MODEL
+        value: "openai/gpt-oss-120b"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
       - key: TAVILY_API_KEY
+        sync: false
+      - key: SEMANTIC_SCHOLAR_API_KEY
         sync: false
       - key: MAX_SUBQUESTIONS
         value: "5"

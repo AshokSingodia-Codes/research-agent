@@ -1,11 +1,20 @@
 import time
+from pathlib import Path
 from typing import Any
 
 from app.config import settings
 from app.llm.client import llm_client
 from app.models.schemas import ResearchFindings, StepTrace, SubQuestion
 
-RESEARCHER_SYSTEM_PROMPT = """Extract factual research findings strictly grounded in the provided source material for the assigned sub-question.
+
+def _load_researcher_prompt() -> str:
+    prompt_file = Path(__file__).parent.parent / "prompts" / "researcher.md"
+    if prompt_file.exists():
+        try:
+            return prompt_file.read_text(encoding="utf-8").strip()
+        except Exception:
+            pass
+    return """Extract factual research findings strictly grounded in the provided source material for the assigned sub-question.
 
 Requirements:
 1. Extract 1 or 2 concise, high-quality factual findings ONLY.
@@ -21,6 +30,9 @@ Requirements:
    - confidence: float between 0.0 and 1.0
 5. For the 'status' property, always output "ok" (or "no_results").
 """
+
+
+RESEARCHER_SYSTEM_PROMPT = _load_researcher_prompt()
 
 
 def research_subquestion(

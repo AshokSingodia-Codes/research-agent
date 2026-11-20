@@ -1,0 +1,130 @@
+{
+  "name": "ISL Sign Language Production Literature Review Evaluation",
+  "version": 1,
+  "description": "Evaluation topics for a research-copilot literature-review pipeline. Must-cite papers are retrieval/coverage anchors, not an exhaustive gold bibliography.",
+  "topics": [
+    {
+      "id": "slp_architectures",
+      "question": "Compare neural architectures for text-to-sign language production, including text-to-pose pipelines, discrete motion-token generation, and multilingual 3D avatar generation. Explain the main design choices, evidence, and limitations.",
+      "filters": {
+        "max_papers": 20
+      },
+      "must_cite": [
+        {
+          "title": "Signs as Tokens: A Retrieval-Enhanced Multilingual Sign Language Generator",
+          "arxiv_id": "2411.17799"
+        },
+        {
+          "title": "A Data-Driven Representation for Sign Language Production",
+          "arxiv_id": "2404.11499"
+        },
+        {
+          "title": "Text2Sign: Towards Sign Language Production Using Neural Machine Translation and Generative Adversarial Networks",
+          "doi": "10.1007/s11263-019-01281-2"
+        }
+      ]
+    },
+    {
+      "id": "discrete_motion_representations",
+      "question": "Review discrete representations for sign-language pose generation, focusing on VQ-VAE or Pose-VQVAE tokenization, codebook design, autoregressive generation, and discrete diffusion. Compare reconstruction and generation trade-offs.",
+      "filters": {
+        "max_papers": 20
+      },
+      "must_cite": [
+        {
+          "title": "G2P-DDM: Generating Sign Pose Sequence from Gloss Sequence with Discrete Diffusion Model",
+          "arxiv_id": "2208.09141"
+        },
+        {
+          "title": "Signs as Tokens: A Retrieval-Enhanced Multilingual Sign Language Generator",
+          "arxiv_id": "2411.17799"
+        },
+        {
+          "title": "A Data-Driven Representation for Sign Language Production",
+          "arxiv_id": "2404.11499"
+        }
+      ]
+    },
+    {
+      "id": "isl_datasets_benchmarks",
+      "question": "Assess the available Indian Sign Language datasets and benchmarks for sign-language processing and text-to-pose research. Compare task coverage, annotation types, scale, splits, and the limitations these resources create for sign-language production.",
+      "filters": {
+        "max_papers": 20
+      },
+      "must_cite": [
+        {
+          "title": "iSign: A Benchmark for Indian Sign Language Processing",
+          "arxiv_id": "2407.05404"
+        },
+        {
+          "title": "ISLTranslate: Dataset for Translating Indian Sign Language",
+          "arxiv_id": "2307.05440"
+        }
+      ]
+    },
+    {
+      "id": "slp_evaluation",
+      "question": "How should sign-language production systems be evaluated beyond training loss? Review pose reconstruction and alignment metrics, back-translation or gloss-based metrics, token prediction accuracy, temporal consistency, and human evaluation. State what each metric captures and what it can miss.",
+      "filters": {
+        "max_papers": 20
+      },
+      "must_cite": [
+        {
+          "title": "Signs as Tokens: A Retrieval-Enhanced Multilingual Sign Language Generator",
+          "arxiv_id": "2411.17799"
+        },
+        {
+          "title": "G2P-DDM: Generating Sign Pose Sequence from Gloss Sequence with Discrete Diffusion Model",
+          "arxiv_id": "2208.09141"
+        },
+        {
+          "title": "A Data-Driven Representation for Sign Language Production",
+          "arxiv_id": "2404.11499"
+        }
+      ]
+    },
+    {
+      "id": "low_resource_isl_production",
+      "question": "What methods and data resources are relevant to building sign-language production systems for low-resource languages such as Indian Sign Language? Discuss dataset scarcity, transfer from other sign languages, pose-based representations, and evidence-supported limitations without assuming that results transfer directly to ISL.",
+      "filters": {
+        "max_papers": 20
+      },
+      "must_cite": [
+        {
+          "title": "iSign: A Benchmark for Indian Sign Language Processing",
+          "arxiv_id": "2407.05404"
+        },
+        {
+          "title": "ISLTranslate: Dataset for Translating Indian Sign Language",
+          "arxiv_id": "2307.05440"
+        },
+        {
+          "title": "A Gloss-driven Indian Sign Language Production System Using Learned Pose Representations",
+          "doi": "10.24963/ijcai.2026/823"
+        }
+      ]
+    },
+    {
+      "id": "generalization_and_motion_quality",
+      "question": "Review challenges in generalizing text-to-sign production to unseen sentences and producing coherent continuous motion. Cover compositionality, sign co-articulation, body-hand coordination, motion naturalness, and the strengths and weaknesses of available quantitative and qualitative evaluation protocols.",
+      "filters": {
+        "max_papers": 20
+      },
+      "must_cite": [
+        {
+          "title": "Signs as Tokens: A Retrieval-Enhanced Multilingual Sign Language Generator",
+          "arxiv_id": "2411.17799"
+        },
+        {
+          "title": "A Data-Driven Representation for Sign Language Production",
+          "arxiv_id": "2404.11499"
+        },
+        {
+          "title": "Text2Sign: Towards Sign Language Production Using Neural Machine Translation and Generative Adversarial Networks",
+          "doi": "10.1007/s11263-019-01281-2"
+        }
+      ]
+    }
+  ]
+}
+
